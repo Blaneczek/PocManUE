@@ -26,8 +26,54 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-public:
-	UPROPERTY(EditAnywhere)
+protected:
+	//MappingContext
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	class UInputMappingContext* MappingContext;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	class UInputAction* MoveUpDownAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	class UInputAction* MoveRightLeftAction;
+
+	UFUNCTION()
+	void MoveUpDown(const FInputActionValue& Value);
+	UFUNCTION()
+	void MoveRightLeft(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+private:
+	UPROPERTY(VisibleAnywhere)
+	class USphereComponent* CollisionSphere;
+
+	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* Mesh;
+
+	UPROPERTY(VisibleAnywhere)
+	class UBoxComponent* CollisionBoxForward;
+
+	UPROPERTY(VisibleAnywhere)
+	class UBoxComponent* CollisionBoxBackward;
+
+	UPROPERTY(VisibleAnywhere)
+	class UBoxComponent* CollisionBoxLeft;
+
+	UPROPERTY(VisibleAnywhere)
+	class UBoxComponent* CollisionBoxRight;
+
+	UPROPERTY(EditAnywhere)
+	float Speed = 50.f;
+
+	bool bPathAvailableForward;
+	bool bPathAvailableBackward;
+	bool bPathAvailableLeft;
+	bool bPathAvailableRight;
+	bool bIsMoving;
 
 };
