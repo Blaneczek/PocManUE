@@ -6,6 +6,17 @@
 #include "GameFramework/Pawn.h"
 #include "PMPlayer.generated.h"
 
+
+UENUM()
+enum EInputDirections
+{
+	NONE	UMETA(DisplayName = "None"),
+	UPWARD	UMETA(DisplayName = "Upward"),
+	DOWN	UMETA(DisplayName = "Down"),
+	LEFT	UMETA(DisplayName = "Left"),
+	RIGHT	UMETA(DisplayName = "Right")
+};
+
 UCLASS()
 class PACMAN_API APMPlayer : public APawn
 {
@@ -59,9 +70,6 @@ private:
 	class UBoxComponent* CollisionBoxForward;
 
 	UPROPERTY(VisibleAnywhere)
-	class UBoxComponent* CollisionBoxBackward;
-
-	UPROPERTY(VisibleAnywhere)
 	class UBoxComponent* CollisionBoxLeft;
 
 	UPROPERTY(VisibleAnywhere)
@@ -76,4 +84,6 @@ private:
 	bool bPathAvailableRight;
 	bool bIsMoving;
 
+
+	EInputDirections InputDirection = EInputDirections::NONE;
 };
