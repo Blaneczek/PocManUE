@@ -7,6 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SceneComponent.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -21,16 +22,25 @@ APMPlayer::APMPlayer()
 	RootComponent = CollisionSphere;
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(CollisionSphere);
-	CollisionBoxForward = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Box Forward"));
+	SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Scene Component"));
+	SceneComponent->SetupAttachment(Mesh);
+	SceneComponent->SetUsingAbsoluteRotation(true);
+	CollisionBoxFront = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Box Front"));
+	CollisionBoxFront->SetupAttachment(Mesh);
+
+	CollisionBoxTop = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Box Top"));
 	CollisionBoxLeft = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Box Left"));
 	CollisionBoxRight = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Box Right"));
-	CollisionBoxForward->SetupAttachment(Mesh);	
-	CollisionBoxLeft->SetupAttachment(Mesh);	
-	CollisionBoxRight->SetupAttachment(Mesh);	
+	CollisionBoxBottom = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Box Bottom"));
+	CollisionBoxTop->SetupAttachment(SceneComponent);
+	CollisionBoxLeft->SetupAttachment(SceneComponent);
+	CollisionBoxRight->SetupAttachment(SceneComponent);
+	CollisionBoxBottom->SetupAttachment(SceneComponent);
 
-	bPathAvailableForward = true;
+	bPathAvailableTop = true;
 	bPathAvailableRight = true;
 	bPathAvailableLeft = true;
+	bPathAvailableBottom = true;
 
 	bIsMoving = true;
 
@@ -50,13 +60,17 @@ void APMPlayer::BeginPlay()
 		}
 	}
 
-	CollisionBoxForward->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
+	CollisionBoxFront->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
+	CollisionBoxTop->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
 	CollisionBoxRight->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);	
 	CollisionBoxLeft->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
+	CollisionBoxBottom->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
 
-	CollisionBoxForward->OnComponentEndOverlap.AddDynamic(this, &APMPlayer::OnOverlapEnd);
+	CollisionBoxFront->OnComponentEndOverlap.AddDynamic(this, &APMPlayer::OnOverlapEnd);
+	CollisionBoxTop->OnComponentEndOverlap.AddDynamic(this, &APMPlayer::OnOverlapEnd);
 	CollisionBoxRight->OnComponentEndOverlap.AddDynamic(this, &APMPlayer::OnOverlapEnd);
 	CollisionBoxLeft->OnComponentEndOverlap.AddDynamic(this, &APMPlayer::OnOverlapEnd);
+	CollisionBoxBottom->OnComponentEndOverlap.AddDynamic(this, &APMPlayer::OnOverlapEnd);
 }
 
 // Called every frame
@@ -64,43 +78,67 @@ void APMPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	const float Rotation = GetActorRotation().Yaw;
+
 	switch (InputDirection)
 	{
-		case EInputDirections::UPWARD:
-			if ((Rotation == 90 && bPathAvailableLeft) || (Rotation == -90 && bPathAvailableRight) || (Rotation == 180))
+		case EInputDirections::TOP:
+			if (bPathAvailableTop)
 			{
 				SetActorRotation(FRotator(0, 0, 0));
 				InputDirection = EInputDirections::NONE;
 				UE_LOG(LogTemp, Warning, TEXT("UPWARD"));
 			}
+			/*if ((Rotation == 90 && bPathAvailableLeft) || (Rotation == -90 && bPathAvailableRight) || (Rotation == 180))
+			{
+				SetActorRotation(FRotator(0, 0, 0));
+				InputDirection = EInputDirections::NONE;
+				UE_LOG(LogTemp, Warning, TEXT("UPWARD"));
+			}*/
 			break;
 
-		case EInputDirections::DOWN:
-			if ((Rotation == 90 && bPathAvailableRight) || (Rotation == -90 && bPathAvailableLeft) || (Rotation == 0))
+		case EInputDirections::BOTTOM:
+			if (bPathAvailableBottom)
+			{
+				SetActorRotation(FRotator(0, 180, 0));
+				InputDirection = EInputDirections::NONE;
+				UE_LOG(LogTemp, Warning, TEXT("BOTTOM"));
+			}
+			/*if ((Rotation == 90 && bPathAvailableRight) || (Rotation == -90 && bPathAvailableLeft) || (Rotation == 0))
 			{
 				SetActorRotation(FRotator(0, 180, 0));
 				InputDirection = EInputDirections::NONE;
 				UE_LOG(LogTemp, Warning, TEXT("DOWN"));
-			}
+			}*/
 			break;
 
 		case EInputDirections::RIGHT:
-			if ((Rotation == 0 && bPathAvailableRight) || (Rotation == 180 && bPathAvailableLeft) || (Rotation == -90))
+			if (bPathAvailableRight)
 			{
 				SetActorRotation(FRotator(0, 90, 0));
 				InputDirection = EInputDirections::NONE;
 				UE_LOG(LogTemp, Warning, TEXT("RIGHT"));
 			}
+			/*if ((Rotation == 0 && bPathAvailableRight) || (Rotation == 180 && bPathAvailableLeft) || (Rotation == -90))
+			{
+				SetActorRotation(FRotator(0, 90, 0));
+				InputDirection = EInputDirections::NONE;
+				UE_LOG(LogTemp, Warning, TEXT("RIGHT"));
+			}*/
 			break;
 
 		case EInputDirections::LEFT:
-			if ((Rotation == 0 && bPathAvailableLeft) || (Rotation == 180 && bPathAvailableRight) || (Rotation == 90))
+			if (bPathAvailableLeft)
 			{
 				SetActorRotation(FRotator(0, -90, 0));
 				InputDirection = EInputDirections::NONE;
 				UE_LOG(LogTemp, Warning, TEXT("LEFT"));
 			}
+			/*if ((Rotation == 0 && bPathAvailableLeft) || (Rotation == 180 && bPathAvailableRight) || (Rotation == 90))
+			{
+				SetActorRotation(FRotator(0, -90, 0));
+				InputDirection = EInputDirections::NONE;
+				UE_LOG(LogTemp, Warning, TEXT("LEFT"));
+			}*/
 			break;
 
 		default: break;
@@ -131,11 +169,11 @@ void APMPlayer::MoveUpDown(const FInputActionValue& Value)
 	const float Rotation = GetActorRotation().Yaw;
 	if (Value.Get<float>() == 1.f)
 	{
-		InputDirection = EInputDirections::UPWARD;
+		InputDirection = EInputDirections::TOP;
 	}
 	else
 	{
-		InputDirection = EInputDirections::DOWN;
+		InputDirection = EInputDirections::BOTTOM;
 	}
 }
 
@@ -154,11 +192,15 @@ void APMPlayer::MoveRightLeft(const FInputActionValue& Value)
 
 void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && (OtherActor != this) && OtherComp)
+	if (OtherActor != nullptr && OtherActor != this && OverlappedComp != nullptr)
 	{
-		if (OverlappedComp == CollisionBoxForward)
+		if (OverlappedComp == CollisionBoxFront)
 		{
 			bIsMoving = false;
+		}
+		else if (OverlappedComp == CollisionBoxTop)
+		{
+			bPathAvailableTop = false;
 		}
 		else if (OverlappedComp == CollisionBoxRight)
 		{
@@ -168,16 +210,24 @@ void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Othe
 		{
 			bPathAvailableLeft = false;
 		}
+		else if (OverlappedComp == CollisionBoxBottom)
+		{
+			bPathAvailableBottom = false;
+		}
 	}
 }
 
 void APMPlayer::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor && (OtherActor != this) && OtherComp)
+	if (OtherActor != nullptr && OtherActor != this && OverlappedComp != nullptr)
 	{
-		if (OverlappedComp == CollisionBoxForward)
+		if (OverlappedComp == CollisionBoxFront)
 		{
 			bIsMoving = true;
+		}
+		else if (OverlappedComp == CollisionBoxTop)
+		{
+			bPathAvailableTop = true;
 		}
 		else if (OverlappedComp == CollisionBoxRight)
 		{
@@ -186,6 +236,10 @@ void APMPlayer::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 		else if (OverlappedComp == CollisionBoxLeft)
 		{
 			bPathAvailableLeft = true;
+		}
+		else if (OverlappedComp == CollisionBoxBottom)
+		{
+			bPathAvailableBottom = true;
 		}
 	}
 }

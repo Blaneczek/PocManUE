@@ -11,8 +11,8 @@ UENUM()
 enum EInputDirections
 {
 	NONE	UMETA(DisplayName = "None"),
-	UPWARD	UMETA(DisplayName = "Upward"),
-	DOWN	UMETA(DisplayName = "Down"),
+	TOP		UMETA(DisplayName = "Top"),
+	BOTTOM	UMETA(DisplayName = "Bottom"),
 	LEFT	UMETA(DisplayName = "Left"),
 	RIGHT	UMETA(DisplayName = "Right")
 };
@@ -67,7 +67,13 @@ private:
 	class UStaticMeshComponent* Mesh;
 
 	UPROPERTY(VisibleAnywhere)
-	class UBoxComponent* CollisionBoxForward;
+	class USceneComponent* SceneComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	class UBoxComponent* CollisionBoxTop;
+
+	UPROPERTY(VisibleAnywhere)
+	class UBoxComponent* CollisionBoxBottom;
 
 	UPROPERTY(VisibleAnywhere)
 	class UBoxComponent* CollisionBoxLeft;
@@ -75,11 +81,14 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class UBoxComponent* CollisionBoxRight;
 
+	UPROPERTY(VisibleAnywhere)
+	class UBoxComponent* CollisionBoxFront;
+
 	UPROPERTY(EditAnywhere)
 	float Speed = 50.f;
 
-	bool bPathAvailableForward;
-	bool bPathAvailableBackward;
+	bool bPathAvailableTop;
+	bool bPathAvailableBottom;
 	bool bPathAvailableLeft;
 	bool bPathAvailableRight;
 	bool bIsMoving;
