@@ -4,13 +4,14 @@
 #include "PMPlayer.h"
 #include "Components/StaticMeshComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Components/SceneComponent.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/GameplayStatics.h"
+#include "PMSpline.h"
+#include "Components/SplineComponent.h"
 
 // Sets default values
 APMPlayer::APMPlayer()
@@ -22,28 +23,9 @@ APMPlayer::APMPlayer()
 	RootComponent = CollisionSphere;
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(CollisionSphere);
-	SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Scene Component"));
-	SceneComponent->SetupAttachment(Mesh);
-	SceneComponent->SetUsingAbsoluteRotation(true);
-	CollisionBoxFront = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Box Front"));
-	CollisionBoxFront->SetupAttachment(Mesh);
-
-	CollisionBoxTop = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Box Top"));
-	CollisionBoxLeft = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Box Left"));
-	CollisionBoxRight = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Box Right"));
-	CollisionBoxBottom = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Box Bottom"));
-	CollisionBoxTop->SetupAttachment(SceneComponent);
-	CollisionBoxLeft->SetupAttachment(SceneComponent);
-	CollisionBoxRight->SetupAttachment(SceneComponent);
-	CollisionBoxBottom->SetupAttachment(SceneComponent);
-
-	bPathAvailableTop = true;
-	bPathAvailableRight = true;
-	bPathAvailableLeft = true;
-	bPathAvailableBottom = true;
-
-	bIsMoving = true;
-
+	
+	MovingDirection = 1.f;
+	PositionOnSpline = 0.f;
 }
 
 // Called when the game starts or when spawned
@@ -60,17 +42,21 @@ void APMPlayer::BeginPlay()
 		}
 	}
 
-	CollisionBoxFront->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
-	CollisionBoxTop->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
-	CollisionBoxRight->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);	
-	CollisionBoxLeft->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
-	CollisionBoxBottom->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
+	TArray<AActor*> OutActors;
+	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("Start")), OutActors);
 
-	CollisionBoxFront->OnComponentEndOverlap.AddDynamic(this, &APMPlayer::OnOverlapEnd);
-	CollisionBoxTop->OnComponentEndOverlap.AddDynamic(this, &APMPlayer::OnOverlapEnd);
-	CollisionBoxRight->OnComponentEndOverlap.AddDynamic(this, &APMPlayer::OnOverlapEnd);
-	CollisionBoxLeft->OnComponentEndOverlap.AddDynamic(this, &APMPlayer::OnOverlapEnd);
-	CollisionBoxBottom->OnComponentEndOverlap.AddDynamic(this, &APMPlayer::OnOverlapEnd);
+	for (AActor* item : OutActors)
+	{
+		CurrentSpline = Cast<APMSpline>(item);
+	}
+
+	if (CurrentSpline == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No valid CurrentSpline"));
+		return;
+	}
+
+	bIsMoving = true;
 }
 
 // Called every frame
@@ -78,76 +64,144 @@ void APMPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	UE_LOG(LogTemp, Warning, TEXT("Your Enum: %s"), *UEnum::GetValueAsString(CurrentDirection));
 
-	switch (InputDirection)
+	if (CurrentSpline == nullptr)
 	{
-		case EInputDirections::TOP:
-			if (bPathAvailableTop)
-			{
-				SetActorRotation(FRotator(0, 0, 0));
-				InputDirection = EInputDirections::NONE;
-				UE_LOG(LogTemp, Warning, TEXT("UPWARD"));
-			}
-			/*if ((Rotation == 90 && bPathAvailableLeft) || (Rotation == -90 && bPathAvailableRight) || (Rotation == 180))
-			{
-				SetActorRotation(FRotator(0, 0, 0));
-				InputDirection = EInputDirections::NONE;
-				UE_LOG(LogTemp, Warning, TEXT("UPWARD"));
-			}*/
-			break;
-
-		case EInputDirections::BOTTOM:
-			if (bPathAvailableBottom)
-			{
-				SetActorRotation(FRotator(0, 180, 0));
-				InputDirection = EInputDirections::NONE;
-				UE_LOG(LogTemp, Warning, TEXT("BOTTOM"));
-			}
-			/*if ((Rotation == 90 && bPathAvailableRight) || (Rotation == -90 && bPathAvailableLeft) || (Rotation == 0))
-			{
-				SetActorRotation(FRotator(0, 180, 0));
-				InputDirection = EInputDirections::NONE;
-				UE_LOG(LogTemp, Warning, TEXT("DOWN"));
-			}*/
-			break;
-
-		case EInputDirections::RIGHT:
-			if (bPathAvailableRight)
-			{
-				SetActorRotation(FRotator(0, 90, 0));
-				InputDirection = EInputDirections::NONE;
-				UE_LOG(LogTemp, Warning, TEXT("RIGHT"));
-			}
-			/*if ((Rotation == 0 && bPathAvailableRight) || (Rotation == 180 && bPathAvailableLeft) || (Rotation == -90))
-			{
-				SetActorRotation(FRotator(0, 90, 0));
-				InputDirection = EInputDirections::NONE;
-				UE_LOG(LogTemp, Warning, TEXT("RIGHT"));
-			}*/
-			break;
-
-		case EInputDirections::LEFT:
-			if (bPathAvailableLeft)
-			{
-				SetActorRotation(FRotator(0, -90, 0));
-				InputDirection = EInputDirections::NONE;
-				UE_LOG(LogTemp, Warning, TEXT("LEFT"));
-			}
-			/*if ((Rotation == 0 && bPathAvailableLeft) || (Rotation == 180 && bPathAvailableRight) || (Rotation == 90))
-			{
-				SetActorRotation(FRotator(0, -90, 0));
-				InputDirection = EInputDirections::NONE;
-				UE_LOG(LogTemp, Warning, TEXT("LEFT"));
-			}*/
-			break;
-
-		default: break;
-
+		UE_LOG(LogTemp, Warning, TEXT("No valid CurrentSpline in Tick"));
+		return;		
 	}
 
 	if (bIsMoving)
 	{
-		AddActorLocalOffset(FVector(Speed*DeltaTime, 0 , 0));
+		PositionOnSpline += DeltaTime * MovingDirection * Speed;
+		const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
+		SetActorLocation(NewLocation);
+
+		if (CheckIfAtPoint())
+		{
+			bIsMoving = false;
+		}
+	}
+	else
+	{
+		switch (DesiredDirection)
+		{
+			case EDirections::NONE:
+			{
+				switch (CurrentDirection)
+				{
+					case EDirections::UPWARD:
+					{
+						APMSpline* NewSpline = CurrentSpline->Splines.UPWARD;
+						if (NewSpline != nullptr)
+						{
+							CurrentSpline = NewSpline;
+							PositionOnSpline = 0.f;
+							bIsMoving = true;
+						}
+						break;
+					}
+					case EDirections::DOWN:
+					{
+						APMSpline* NewSpline = CurrentSpline->Splines.DOWN;
+						if (NewSpline != nullptr)
+						{
+							CurrentSpline = NewSpline;
+							PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
+							bIsMoving = true;
+						}
+						break;
+					}
+					case EDirections::LEFT:
+					{
+						APMSpline* NewSpline = CurrentSpline->Splines.LEFT;
+						if (NewSpline != nullptr)
+						{
+							CurrentSpline = NewSpline;
+							PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
+							bIsMoving = true;
+						}
+						break;
+					}
+					case EDirections::RIGHT:
+					{
+						APMSpline* NewSpline = CurrentSpline->Splines.RIGHT;
+						if (NewSpline != nullptr)
+						{
+							CurrentSpline = NewSpline;
+							PositionOnSpline = 0.f;
+							bIsMoving = true;
+						}
+						break;
+					}
+					default: break;
+				}
+				break;
+			}
+			case EDirections::UPWARD:
+			{
+				APMSpline* NewSpline = CurrentSpline->Splines.UPWARD;
+				if (NewSpline != nullptr)
+				{
+					CurrentSpline = NewSpline;
+					PositionOnSpline = 0.f;
+					MovingDirection = 1.f;
+					DesiredDirection = EDirections::NONE;
+					CurrentDirection = EDirections::UPWARD;
+					SetActorRotation(FRotator(0, 0, 0));
+					bIsMoving = true;
+				}
+				break;
+			}
+			case EDirections::DOWN:
+			{
+				APMSpline* NewSpline = CurrentSpline->Splines.DOWN;
+				if (NewSpline != nullptr)
+				{
+					CurrentSpline = NewSpline;
+					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);;
+					MovingDirection = -1.f;
+					DesiredDirection = EDirections::NONE;
+					CurrentDirection = EDirections::DOWN;
+					SetActorRotation(FRotator(0, 180, 0));
+					bIsMoving = true;
+				}
+				break;
+			}
+			case EDirections::LEFT:
+			{
+				APMSpline* NewSpline = CurrentSpline->Splines.LEFT;
+				if (NewSpline != nullptr)
+				{
+					CurrentSpline = NewSpline;
+					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);;
+					MovingDirection = -1.f;
+					DesiredDirection = EDirections::NONE;
+					CurrentDirection = EDirections::LEFT;
+					SetActorRotation(FRotator(0, -90, 0));
+					bIsMoving = true;
+				}
+				break;
+			}
+			case EDirections::RIGHT:
+			{
+				APMSpline* NewSpline = CurrentSpline->Splines.RIGHT;
+				if (NewSpline != nullptr)
+				{
+					CurrentSpline = NewSpline;
+					PositionOnSpline = 0.f;
+					MovingDirection = 1.f;
+					DesiredDirection = EDirections::NONE;
+					CurrentDirection = EDirections::RIGHT;
+					SetActorRotation(FRotator(0, 90, 0));
+					bIsMoving = true;
+					UE_LOG(LogTemp, Warning, TEXT("jest right"));
+				}
+				break;
+			}
+			default: break;
+		}
 	}
 }
 
@@ -166,80 +220,131 @@ void APMPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void APMPlayer::MoveUpDown(const FInputActionValue& Value)
 {
-	const float Rotation = GetActorRotation().Yaw;
 	if (Value.Get<float>() == 1.f)
 	{
-		InputDirection = EInputDirections::TOP;
+		switch (CurrentDirection)
+		{
+			case EDirections::DOWN:
+			{
+				CurrentDirection = EDirections::UPWARD;
+				SetActorRotation(FRotator(0, 0, 0));
+				MovingDirection = 1.f;
+				bIsMoving = true;
+				break;
+			}
+			case EDirections::LEFT:
+			{
+				DesiredDirection = EDirections::UPWARD;
+				bIsMoving = true;
+				break;
+			}
+			case EDirections::RIGHT:
+			{
+				DesiredDirection = EDirections::UPWARD;
+				bIsMoving = true;
+				break;
+			}
+			default: break;
+		}
 	}
 	else
 	{
-		InputDirection = EInputDirections::BOTTOM;
+		switch (CurrentDirection)
+		{
+			case EDirections::UPWARD:
+			{
+				CurrentDirection = EDirections::DOWN;
+				SetActorRotation(FRotator(0, 180, 0));
+				MovingDirection = -1.f;
+				bIsMoving = true;
+				break;
+			}
+			case EDirections::LEFT:
+			{
+				DesiredDirection = EDirections::DOWN;
+				bIsMoving = true;
+				break;
+			}
+			case EDirections::RIGHT:
+			{
+				DesiredDirection = EDirections::DOWN;
+				bIsMoving = true;
+				break;
+			}
+			default: break;
+		}
 	}
 }
 
 void APMPlayer::MoveRightLeft(const FInputActionValue& Value)
 {	
-	const float Rotation = GetActorRotation().Yaw;
 	if (Value.Get<float>() == 1.f)
 	{
-		InputDirection = EInputDirections::RIGHT;
+		switch (CurrentDirection)
+		{
+			case EDirections::LEFT:
+			{
+				CurrentDirection = EDirections::RIGHT;
+				SetActorRotation(FRotator(0, 90, 0));
+				MovingDirection = 1.f;
+				bIsMoving = true;
+				break;
+			}
+			case EDirections::UPWARD:
+			{
+				DesiredDirection = EDirections::RIGHT;
+				bIsMoving = true;
+				break;
+			}
+			case EDirections::DOWN:
+			{
+				DesiredDirection = EDirections::RIGHT;
+				bIsMoving = true;
+				break;
+			}
+			default: break;
+		}
 	}
 	else
 	{
-		InputDirection = EInputDirections::LEFT;
+		switch (CurrentDirection)
+		{
+		case EDirections::RIGHT:
+		{
+			CurrentDirection = EDirections::LEFT;
+			SetActorRotation(FRotator(0, -90, 0));
+			MovingDirection = -1.f;
+			bIsMoving = true;
+			break;
+		}
+		case EDirections::UPWARD:
+		{
+			DesiredDirection = EDirections::LEFT;
+			bIsMoving = true;
+			break;
+		}
+		case EDirections::DOWN:
+		{
+			DesiredDirection = EDirections::LEFT;
+			bIsMoving = true;
+			break;
+		}
+		default: break;
+		}
 	}
 }
 
 void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor != nullptr && OtherActor != this && OverlappedComp != nullptr)
-	{
-		if (OverlappedComp == CollisionBoxFront)
-		{
-			bIsMoving = false;
-		}
-		else if (OverlappedComp == CollisionBoxTop)
-		{
-			bPathAvailableTop = false;
-		}
-		else if (OverlappedComp == CollisionBoxRight)
-		{
-			bPathAvailableRight = false;
-		}
-		else if (OverlappedComp == CollisionBoxLeft)
-		{
-			bPathAvailableLeft = false;
-		}
-		else if (OverlappedComp == CollisionBoxBottom)
-		{
-			bPathAvailableBottom = false;
-		}
-	}
+	
 }
 
 void APMPlayer::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor != nullptr && OtherActor != this && OverlappedComp != nullptr)
-	{
-		if (OverlappedComp == CollisionBoxFront)
-		{
-			bIsMoving = true;
-		}
-		else if (OverlappedComp == CollisionBoxTop)
-		{
-			bPathAvailableTop = true;
-		}
-		else if (OverlappedComp == CollisionBoxRight)
-		{
-			bPathAvailableRight = true;
-		}
-		else if (OverlappedComp == CollisionBoxLeft)
-		{
-			bPathAvailableLeft = true;
-		}
-		else if (OverlappedComp == CollisionBoxBottom)
-		{
-			bPathAvailableBottom = true;
-		}
-	}
+	
+}
+
+bool APMPlayer::CheckIfAtPoint() const
+{
+	return GetActorLocation().Equals(CurrentSpline->SplineComponent->GetLocationAtSplinePoint(0, ESplineCoordinateSpace::World), 0) || GetActorLocation().Equals(CurrentSpline->SplineComponent->GetLocationAtSplinePoint(1, ESplineCoordinateSpace::World), 0);
 }

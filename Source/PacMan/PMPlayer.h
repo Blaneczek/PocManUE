@@ -8,13 +8,13 @@
 
 
 UENUM()
-enum EInputDirections
+enum EDirections
 {
 	NONE	UMETA(DisplayName = "None"),
-	TOP		UMETA(DisplayName = "Top"),
-	BOTTOM	UMETA(DisplayName = "Bottom"),
-	LEFT	UMETA(DisplayName = "Left"),
-	RIGHT	UMETA(DisplayName = "Right")
+	UPWARD	UMETA(DisplayName = "UP"),
+	DOWN	UMETA(DisplayName = "DOWN"),
+	LEFT	UMETA(DisplayName = "LEFT"),
+	RIGHT	UMETA(DisplayName = "RIGHT")
 };
 
 UCLASS()
@@ -47,7 +47,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
 	class UInputAction* MoveRightLeftAction;
-
+	
+public:
 	UFUNCTION()
 	void MoveUpDown(const FInputActionValue& Value);
 	UFUNCTION()
@@ -60,39 +61,29 @@ protected:
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 private:
+
+	bool CheckIfAtPoint() const;
+
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* CollisionSphere;
 
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* Mesh;
 
-	UPROPERTY(VisibleAnywhere)
-	class USceneComponent* SceneComponent;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class APMSpline> CurrentSplineClass;
 
-	UPROPERTY(VisibleAnywhere)
-	class UBoxComponent* CollisionBoxTop;
-
-	UPROPERTY(VisibleAnywhere)
-	class UBoxComponent* CollisionBoxBottom;
-
-	UPROPERTY(VisibleAnywhere)
-	class UBoxComponent* CollisionBoxLeft;
-
-	UPROPERTY(VisibleAnywhere)
-	class UBoxComponent* CollisionBoxRight;
-
-	UPROPERTY(VisibleAnywhere)
-	class UBoxComponent* CollisionBoxFront;
+	UPROPERTY()
+	class APMSpline* CurrentSpline;
 
 	UPROPERTY(EditAnywhere)
 	float Speed = 50.f;
 
-	bool bPathAvailableTop;
-	bool bPathAvailableBottom;
-	bool bPathAvailableLeft;
-	bool bPathAvailableRight;
+	EDirections DesiredDirection = EDirections::NONE;
+
+	EDirections CurrentDirection = EDirections::UPWARD;
+
+	float PositionOnSpline;
+	float MovingDirection;
 	bool bIsMoving;
-
-
-	EInputDirections InputDirection = EInputDirections::NONE;
 };
