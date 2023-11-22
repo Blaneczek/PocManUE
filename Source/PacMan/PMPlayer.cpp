@@ -64,8 +64,6 @@ void APMPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UE_LOG(LogTemp, Warning, TEXT("Your Enum: %s"), *UEnum::GetValueAsString(CurrentDirection));
-
 	if (CurrentSpline == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No valid CurrentSpline in Tick"));
@@ -85,124 +83,9 @@ void APMPlayer::Tick(float DeltaTime)
 	}
 	else
 	{
-		switch (DesiredDirection)
-		{
-			case EDirections::NONE:
-			{
-				switch (CurrentDirection)
-				{
-					case EDirections::UPWARD:
-					{
-						APMSpline* NewSpline = CurrentSpline->Splines.UPWARD;
-						if (NewSpline != nullptr)
-						{
-							CurrentSpline = NewSpline;
-							PositionOnSpline = 0.f;
-							bIsMoving = true;
-						}
-						break;
-					}
-					case EDirections::DOWN:
-					{
-						APMSpline* NewSpline = CurrentSpline->Splines.DOWN;
-						if (NewSpline != nullptr)
-						{
-							CurrentSpline = NewSpline;
-							PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
-							bIsMoving = true;
-						}
-						break;
-					}
-					case EDirections::LEFT:
-					{
-						APMSpline* NewSpline = CurrentSpline->Splines.LEFT;
-						if (NewSpline != nullptr)
-						{
-							CurrentSpline = NewSpline;
-							PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
-							bIsMoving = true;
-						}
-						break;
-					}
-					case EDirections::RIGHT:
-					{
-						APMSpline* NewSpline = CurrentSpline->Splines.RIGHT;
-						if (NewSpline != nullptr)
-						{
-							CurrentSpline = NewSpline;
-							PositionOnSpline = 0.f;
-							bIsMoving = true;
-						}
-						break;
-					}
-					default: break;
-				}
-				break;
-			}
-			case EDirections::UPWARD:
-			{
-				APMSpline* NewSpline = CurrentSpline->Splines.UPWARD;
-				if (NewSpline != nullptr)
-				{
-					CurrentSpline = NewSpline;
-					PositionOnSpline = 0.f;
-					MovingDirection = 1.f;
-					DesiredDirection = EDirections::NONE;
-					CurrentDirection = EDirections::UPWARD;
-					SetActorRotation(FRotator(0, 0, 0));
-					bIsMoving = true;
-				}
-				break;
-			}
-			case EDirections::DOWN:
-			{
-				APMSpline* NewSpline = CurrentSpline->Splines.DOWN;
-				if (NewSpline != nullptr)
-				{
-					CurrentSpline = NewSpline;
-					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);;
-					MovingDirection = -1.f;
-					DesiredDirection = EDirections::NONE;
-					CurrentDirection = EDirections::DOWN;
-					SetActorRotation(FRotator(0, 180, 0));
-					bIsMoving = true;
-				}
-				break;
-			}
-			case EDirections::LEFT:
-			{
-				APMSpline* NewSpline = CurrentSpline->Splines.LEFT;
-				if (NewSpline != nullptr)
-				{
-					CurrentSpline = NewSpline;
-					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);;
-					MovingDirection = -1.f;
-					DesiredDirection = EDirections::NONE;
-					CurrentDirection = EDirections::LEFT;
-					SetActorRotation(FRotator(0, -90, 0));
-					bIsMoving = true;
-				}
-				break;
-			}
-			case EDirections::RIGHT:
-			{
-				APMSpline* NewSpline = CurrentSpline->Splines.RIGHT;
-				if (NewSpline != nullptr)
-				{
-					CurrentSpline = NewSpline;
-					PositionOnSpline = 0.f;
-					MovingDirection = 1.f;
-					DesiredDirection = EDirections::NONE;
-					CurrentDirection = EDirections::RIGHT;
-					SetActorRotation(FRotator(0, 90, 0));
-					bIsMoving = true;
-					UE_LOG(LogTemp, Warning, TEXT("jest right"));
-				}
-				break;
-			}
-			default: break;
-		}
+		ChooseNewSpline();
 	}
+
 }
 
 // Called to bind functionality to input
@@ -235,13 +118,11 @@ void APMPlayer::MoveUpDown(const FInputActionValue& Value)
 			case EDirections::LEFT:
 			{
 				DesiredDirection = EDirections::UPWARD;
-				bIsMoving = true;
 				break;
 			}
 			case EDirections::RIGHT:
 			{
 				DesiredDirection = EDirections::UPWARD;
-				bIsMoving = true;
 				break;
 			}
 			default: break;
@@ -262,13 +143,11 @@ void APMPlayer::MoveUpDown(const FInputActionValue& Value)
 			case EDirections::LEFT:
 			{
 				DesiredDirection = EDirections::DOWN;
-				bIsMoving = true;
 				break;
 			}
 			case EDirections::RIGHT:
 			{
 				DesiredDirection = EDirections::DOWN;
-				bIsMoving = true;
 				break;
 			}
 			default: break;
@@ -293,13 +172,11 @@ void APMPlayer::MoveRightLeft(const FInputActionValue& Value)
 			case EDirections::UPWARD:
 			{
 				DesiredDirection = EDirections::RIGHT;
-				bIsMoving = true;
 				break;
 			}
 			case EDirections::DOWN:
 			{
 				DesiredDirection = EDirections::RIGHT;
-				bIsMoving = true;
 				break;
 			}
 			default: break;
@@ -320,13 +197,11 @@ void APMPlayer::MoveRightLeft(const FInputActionValue& Value)
 		case EDirections::UPWARD:
 		{
 			DesiredDirection = EDirections::LEFT;
-			bIsMoving = true;
 			break;
 		}
 		case EDirections::DOWN:
 		{
 			DesiredDirection = EDirections::LEFT;
-			bIsMoving = true;
 			break;
 		}
 		default: break;
@@ -346,5 +221,288 @@ void APMPlayer::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 
 bool APMPlayer::CheckIfAtPoint() const
 {
-	return GetActorLocation().Equals(CurrentSpline->SplineComponent->GetLocationAtSplinePoint(0, ESplineCoordinateSpace::World), 0) || GetActorLocation().Equals(CurrentSpline->SplineComponent->GetLocationAtSplinePoint(1, ESplineCoordinateSpace::World), 0);
+	return	GetActorLocation().Equals(CurrentSpline->SplineComponent->GetLocationAtSplinePoint(1, ESplineCoordinateSpace::World), 0) 
+			|| GetActorLocation().Equals(CurrentSpline->SplineComponent->GetLocationAtSplinePoint(0, ESplineCoordinateSpace::World), 0);
 }
+
+void APMPlayer::ChooseNewSpline()
+{
+	switch (CurrentDirection)
+	{
+		case EDirections::UPWARD:
+		{
+			switch (DesiredDirection)
+			{
+				case EDirections::NONE:
+				{
+					APMSpline* newSpline = CurrentSpline->Splines[1].UPWARD;
+					if (newSpline != nullptr)
+					{
+						CurrentSpline = newSpline;
+						PositionOnSpline = 1.f;
+						bIsMoving = true;
+					}
+					break;
+				}
+				case EDirections::RIGHT:
+				{
+					APMSpline* newSpline = CurrentSpline->Splines[1].RIGHT;
+					if (newSpline != nullptr)
+					{
+						CurrentSpline = newSpline;
+						PositionOnSpline = 1.f;
+						DesiredDirection = EDirections::NONE;
+						CurrentDirection = EDirections::RIGHT;
+						SetActorRotation(FRotator(0, 90, 0));
+						bIsMoving = true;
+					}
+					else
+					{
+						newSpline = CurrentSpline->Splines[1].UPWARD;
+						if (newSpline != nullptr)
+						{
+							CurrentSpline = newSpline;
+							PositionOnSpline = 1.f;
+							bIsMoving = true;
+						}
+					}
+					break;
+				}
+				case EDirections::LEFT:
+				{
+					APMSpline* newSpline = CurrentSpline->Splines[1].LEFT;
+					if (newSpline != nullptr)
+					{
+						CurrentSpline = newSpline;
+						PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
+						DesiredDirection = EDirections::NONE;
+						CurrentDirection = EDirections::LEFT;
+						SetActorRotation(FRotator(0, -90, 0));
+						MovingDirection = -1.f;
+						bIsMoving = true;
+					}
+					else
+					{
+						newSpline = CurrentSpline->Splines[1].UPWARD;
+						if (newSpline != nullptr)
+						{
+							CurrentSpline = newSpline;
+							PositionOnSpline = 1.f;
+							bIsMoving = true;
+						}
+					}
+					break;
+				}
+				default: break;
+			}
+			break;
+		}
+		case EDirections::DOWN:
+		{
+			switch (DesiredDirection)
+			{
+				case EDirections::NONE:
+				{
+					APMSpline* newSpline = CurrentSpline->Splines[0].DOWN;
+					if (newSpline != nullptr)
+					{
+						CurrentSpline = newSpline;
+						PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
+						bIsMoving = true;
+					}
+					break;
+				}
+				case EDirections::RIGHT:
+				{
+					APMSpline* newSpline = CurrentSpline->Splines[0].RIGHT;
+					if (newSpline != nullptr)
+					{
+						CurrentSpline = newSpline;
+						PositionOnSpline = 1.f;
+						DesiredDirection = EDirections::NONE;
+						CurrentDirection = EDirections::RIGHT;
+						SetActorRotation(FRotator(0, 90, 0));
+						MovingDirection = 1.f;
+						bIsMoving = true;
+					}
+					else
+					{
+						newSpline = CurrentSpline->Splines[0].DOWN;
+						if (newSpline != nullptr)
+						{
+							CurrentSpline = newSpline;
+							PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
+							bIsMoving = true;
+						}
+					}
+					break;
+				}
+				case EDirections::LEFT:
+				{
+					APMSpline* newSpline = CurrentSpline->Splines[0].LEFT;
+					if (newSpline != nullptr)
+					{
+						CurrentSpline = newSpline;
+						PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
+						DesiredDirection = EDirections::NONE;
+						CurrentDirection = EDirections::LEFT;
+						SetActorRotation(FRotator(0, -90, 0));
+						bIsMoving = true;
+					}
+					else
+					{
+						newSpline = CurrentSpline->Splines[0].DOWN;
+						if (newSpline != nullptr)
+						{
+							CurrentSpline = newSpline;
+							PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
+							bIsMoving = true;
+						}
+					}
+					break;
+				}
+				default: break;
+			}
+			break;
+		}
+		case EDirections::LEFT:
+		{
+			switch (DesiredDirection)
+			{
+				case EDirections::NONE:
+				{
+					APMSpline* newSpline = CurrentSpline->Splines[0].LEFT;
+					if (newSpline != nullptr)
+					{
+						CurrentSpline = newSpline;
+						PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
+						bIsMoving = true;
+					}
+					break;
+				}
+				case EDirections::UPWARD:
+				{
+					APMSpline* newSpline = CurrentSpline->Splines[0].UPWARD;
+					if (newSpline != nullptr)
+					{
+						CurrentSpline = newSpline;
+						PositionOnSpline = 1.f;
+						DesiredDirection = EDirections::NONE;
+						CurrentDirection = EDirections::UPWARD;
+						SetActorRotation(FRotator(0, 0, 0));
+						MovingDirection = 1.f;
+						bIsMoving = true;
+					}
+					else
+					{
+						newSpline = CurrentSpline->Splines[0].LEFT;
+						if (newSpline != nullptr)
+						{
+							CurrentSpline = newSpline;
+							PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
+							bIsMoving = true;
+						}
+					}
+					break;
+				}
+				case EDirections::DOWN:
+				{
+					APMSpline* newSpline = CurrentSpline->Splines[0].DOWN;
+					if (newSpline != nullptr)
+					{
+						CurrentSpline = newSpline;
+						PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
+						DesiredDirection = EDirections::NONE;
+						CurrentDirection = EDirections::DOWN;
+						SetActorRotation(FRotator(0, 180, 0));
+						bIsMoving = true;
+					}
+					else
+					{
+						newSpline = CurrentSpline->Splines[0].LEFT;
+						if (newSpline != nullptr)
+						{
+							CurrentSpline = newSpline;
+							PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
+							bIsMoving = true;
+						}
+					}
+					break;
+				}
+				default: break;
+			}
+			break;
+		}
+		case EDirections::RIGHT:
+		{
+			switch (DesiredDirection)
+			{
+				case EDirections::NONE:
+				{
+					APMSpline* newSpline = CurrentSpline->Splines[1].RIGHT;
+					if (newSpline != nullptr)
+					{
+						CurrentSpline = newSpline;
+						PositionOnSpline = 1.f;
+						bIsMoving = true;
+					}
+					break;
+				}
+				case EDirections::UPWARD:
+				{
+					APMSpline* newSpline = CurrentSpline->Splines[1].UPWARD;
+					if (newSpline != nullptr)
+					{
+						CurrentSpline = newSpline;
+						PositionOnSpline = 1.f;
+						DesiredDirection = EDirections::NONE;
+						CurrentDirection = EDirections::UPWARD;
+						SetActorRotation(FRotator(0, 0, 0));
+						bIsMoving = true;
+					}
+					else
+					{
+						newSpline = CurrentSpline->Splines[1].RIGHT;
+						if (newSpline != nullptr)
+						{
+							CurrentSpline = newSpline;
+							PositionOnSpline = 1.f;
+							bIsMoving = true;
+						}
+					}
+					break;
+				}
+				case EDirections::DOWN:
+				{
+					APMSpline* newSpline = CurrentSpline->Splines[1].DOWN;
+					if (newSpline != nullptr)
+					{
+						CurrentSpline = newSpline;
+						PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
+						DesiredDirection = EDirections::NONE;
+						CurrentDirection = EDirections::DOWN;
+						SetActorRotation(FRotator(0, 180, 0));
+						MovingDirection = -1.f;
+						bIsMoving = true;
+					}
+					else
+					{
+						newSpline = CurrentSpline->Splines[1].RIGHT;
+						if (newSpline != nullptr)
+						{
+							CurrentSpline = newSpline;
+							PositionOnSpline = 1.f;
+							bIsMoving = true;
+						}
+					}
+					break;
+				}
+				default: break;
+			}
+			break;
+		}
+		default: break;
+	}
+}
+
+

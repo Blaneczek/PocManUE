@@ -60,9 +60,11 @@ public:
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-private:
+protected:
 
 	bool CheckIfAtPoint() const;
+
+	void ChooseNewSpline();
 
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* CollisionSphere;

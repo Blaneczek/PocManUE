@@ -17,6 +17,8 @@ APMSpline::APMSpline()
 	SplineComponent = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
 	SplineComponent->SetupAttachment(SceneComponent);
 
+	Splines.Add(FSplines());
+	Splines.Add(FSplines());
 }
 
 

@@ -43,7 +43,7 @@ public:
 	class USplineComponent* SplineComponent;
 
 	UPROPERTY(EditAnywhere)
-	FSplines Splines;
+	TArray<FSplines> Splines;
 
 private:
 	UPROPERTY(VisibleAnywhere)
