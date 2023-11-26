@@ -83,7 +83,7 @@ protected:
 
 	EDirections DesiredDirection = EDirections::NONE;
 
-	EDirections CurrentDirection = EDirections::UPWARD;
+	EDirections CurrentDirection = EDirections::RIGHT;
 
 	float PositionOnSpline;
 	float MovingDirection;
