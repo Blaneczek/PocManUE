@@ -39,7 +39,7 @@ public:
 	APMSpline();
 
 public:		
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class USplineComponent* SplineComponent;
 
 	UPROPERTY(EditAnywhere)
