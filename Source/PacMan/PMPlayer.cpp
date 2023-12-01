@@ -161,7 +161,7 @@ void APMPlayer::MoveRightLeft(const FInputActionValue& Value)
 	{
 		switch (CurrentDirection)
 		{
-			case EDirections::LEFT:
+			case LEFT:
 			{
 				CurrentDirection = EDirections::RIGHT;
 				SetActorRotation(FRotator(0, 90, 0));
@@ -169,14 +169,14 @@ void APMPlayer::MoveRightLeft(const FInputActionValue& Value)
 				bIsMoving = true;
 				break;
 			}
-			case EDirections::UPWARD:
+			case UPWARD:
 			{
-				DesiredDirection = EDirections::RIGHT;
+				DesiredDirection = RIGHT;
 				break;
 			}
-			case EDirections::DOWN:
+			case DOWN:
 			{
-				DesiredDirection = EDirections::RIGHT;
+				DesiredDirection = RIGHT;
 				break;
 			}
 			default: break;
@@ -186,22 +186,22 @@ void APMPlayer::MoveRightLeft(const FInputActionValue& Value)
 	{
 		switch (CurrentDirection)
 		{
-		case EDirections::RIGHT:
+		case RIGHT:
 		{
-			CurrentDirection = EDirections::LEFT;
+			CurrentDirection = LEFT;
 			SetActorRotation(FRotator(0, -90, 0));
 			MovingDirection = -1.f;
 			bIsMoving = true;
 			break;
 		}
-		case EDirections::UPWARD:
+		case UPWARD:
 		{
-			DesiredDirection = EDirections::LEFT;
+			DesiredDirection = LEFT;
 			break;
 		}
-		case EDirections::DOWN:
+		case DOWN:
 		{
-			DesiredDirection = EDirections::LEFT;
+			DesiredDirection = LEFT;
 			break;
 		}
 		default: break;
@@ -229,11 +229,11 @@ void APMPlayer::ChooseNewSpline()
 {
 	switch (CurrentDirection)
 	{
-		case EDirections::UPWARD:
+		case UPWARD:
 		{
 			switch (DesiredDirection)
 			{
-				case EDirections::NONE:
+				case NONE:
 				{
 					APMSpline* newSpline = CurrentSpline->Splines[1].UPWARD;
 					if (newSpline != nullptr)
@@ -244,15 +244,15 @@ void APMPlayer::ChooseNewSpline()
 					}
 					break;
 				}
-				case EDirections::RIGHT:
+				case RIGHT:
 				{
 					APMSpline* newSpline = CurrentSpline->Splines[1].RIGHT;
 					if (newSpline != nullptr)
 					{
 						CurrentSpline = newSpline;
 						PositionOnSpline = 1.f;
-						DesiredDirection = EDirections::NONE;
-						CurrentDirection = EDirections::RIGHT;
+						DesiredDirection = NONE;
+						CurrentDirection = RIGHT;
 						SetActorRotation(FRotator(0, 90, 0));
 						bIsMoving = true;
 					}
@@ -268,15 +268,15 @@ void APMPlayer::ChooseNewSpline()
 					}
 					break;
 				}
-				case EDirections::LEFT:
+				case LEFT:
 				{
 					APMSpline* newSpline = CurrentSpline->Splines[1].LEFT;
 					if (newSpline != nullptr)
 					{
 						CurrentSpline = newSpline;
 						PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
-						DesiredDirection = EDirections::NONE;
-						CurrentDirection = EDirections::LEFT;
+						DesiredDirection = NONE;
+						CurrentDirection = LEFT;
 						SetActorRotation(FRotator(0, -90, 0));
 						MovingDirection = -1.f;
 						bIsMoving = true;
@@ -297,11 +297,11 @@ void APMPlayer::ChooseNewSpline()
 			}
 			break;
 		}
-		case EDirections::DOWN:
+		case DOWN:
 		{
 			switch (DesiredDirection)
 			{
-				case EDirections::NONE:
+				case NONE:
 				{
 					APMSpline* newSpline = CurrentSpline->Splines[0].DOWN;
 					if (newSpline != nullptr)
@@ -312,15 +312,15 @@ void APMPlayer::ChooseNewSpline()
 					}
 					break;
 				}
-				case EDirections::RIGHT:
+				case RIGHT:
 				{
 					APMSpline* newSpline = CurrentSpline->Splines[0].RIGHT;
 					if (newSpline != nullptr)
 					{
 						CurrentSpline = newSpline;
 						PositionOnSpline = 1.f;
-						DesiredDirection = EDirections::NONE;
-						CurrentDirection = EDirections::RIGHT;
+						DesiredDirection = NONE;
+						CurrentDirection = RIGHT;
 						SetActorRotation(FRotator(0, 90, 0));
 						MovingDirection = 1.f;
 						bIsMoving = true;
@@ -337,15 +337,15 @@ void APMPlayer::ChooseNewSpline()
 					}
 					break;
 				}
-				case EDirections::LEFT:
+				case LEFT:
 				{
 					APMSpline* newSpline = CurrentSpline->Splines[0].LEFT;
 					if (newSpline != nullptr)
 					{
 						CurrentSpline = newSpline;
 						PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
-						DesiredDirection = EDirections::NONE;
-						CurrentDirection = EDirections::LEFT;
+						DesiredDirection = NONE;
+						CurrentDirection = LEFT;
 						SetActorRotation(FRotator(0, -90, 0));
 						bIsMoving = true;
 					}
@@ -365,11 +365,11 @@ void APMPlayer::ChooseNewSpline()
 			}
 			break;
 		}
-		case EDirections::LEFT:
+		case LEFT:
 		{
 			switch (DesiredDirection)
 			{
-				case EDirections::NONE:
+				case NONE:
 				{
 					APMSpline* newSpline = CurrentSpline->Splines[0].LEFT;
 					if (newSpline != nullptr)
@@ -380,15 +380,15 @@ void APMPlayer::ChooseNewSpline()
 					}
 					break;
 				}
-				case EDirections::UPWARD:
+				case UPWARD:
 				{
 					APMSpline* newSpline = CurrentSpline->Splines[0].UPWARD;
 					if (newSpline != nullptr)
 					{
 						CurrentSpline = newSpline;
 						PositionOnSpline = 1.f;
-						DesiredDirection = EDirections::NONE;
-						CurrentDirection = EDirections::UPWARD;
+						DesiredDirection = NONE;
+						CurrentDirection = UPWARD;
 						SetActorRotation(FRotator(0, 0, 0));
 						MovingDirection = 1.f;
 						bIsMoving = true;
@@ -405,15 +405,15 @@ void APMPlayer::ChooseNewSpline()
 					}
 					break;
 				}
-				case EDirections::DOWN:
+				case DOWN:
 				{
 					APMSpline* newSpline = CurrentSpline->Splines[0].DOWN;
 					if (newSpline != nullptr)
 					{
 						CurrentSpline = newSpline;
 						PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
-						DesiredDirection = EDirections::NONE;
-						CurrentDirection = EDirections::DOWN;
+						DesiredDirection = NONE;
+						CurrentDirection = DOWN;
 						SetActorRotation(FRotator(0, 180, 0));
 						bIsMoving = true;
 					}
@@ -433,11 +433,11 @@ void APMPlayer::ChooseNewSpline()
 			}
 			break;
 		}
-		case EDirections::RIGHT:
+		case RIGHT:
 		{
 			switch (DesiredDirection)
 			{
-				case EDirections::NONE:
+				case NONE:
 				{
 					APMSpline* newSpline = CurrentSpline->Splines[1].RIGHT;
 					if (newSpline != nullptr)
@@ -448,15 +448,15 @@ void APMPlayer::ChooseNewSpline()
 					}
 					break;
 				}
-				case EDirections::UPWARD:
+				case UPWARD:
 				{
 					APMSpline* newSpline = CurrentSpline->Splines[1].UPWARD;
 					if (newSpline != nullptr)
 					{
 						CurrentSpline = newSpline;
 						PositionOnSpline = 1.f;
-						DesiredDirection = EDirections::NONE;
-						CurrentDirection = EDirections::UPWARD;
+						DesiredDirection = NONE;
+						CurrentDirection = UPWARD;
 						SetActorRotation(FRotator(0, 0, 0));
 						bIsMoving = true;
 					}
@@ -472,15 +472,15 @@ void APMPlayer::ChooseNewSpline()
 					}
 					break;
 				}
-				case EDirections::DOWN:
+				case DOWN:
 				{
 					APMSpline* newSpline = CurrentSpline->Splines[1].DOWN;
 					if (newSpline != nullptr)
 					{
 						CurrentSpline = newSpline;
 						PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1;
-						DesiredDirection = EDirections::NONE;
-						CurrentDirection = EDirections::DOWN;
+						DesiredDirection = NONE;
+						CurrentDirection = DOWN;
 						SetActorRotation(FRotator(0, 180, 0));
 						MovingDirection = -1.f;
 						bIsMoving = true;

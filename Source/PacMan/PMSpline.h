@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "PMSpline.generated.h"
 
+class USplineComponent;
+class USceneComponent;
 
 USTRUCT(BlueprintType)
 struct FSplines
@@ -38,14 +40,24 @@ public:
 	// Sets default values for this actor's properties
 	APMSpline();
 
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
 public:		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class USplineComponent* SplineComponent;
+	USplineComponent* SplineComponent;
 
 	UPROPERTY(EditAnywhere)
 	TArray<FSplines> Splines;
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	class USceneComponent* SceneComponent;
+	USceneComponent* SceneComponent;
+
+	UPROPERTY(EditAnywhere)
+	float Distance = 120.f;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class APMCoin> CoinClass;
 };

@@ -4,6 +4,8 @@
 #include "PMSpline.h"
 #include "Components/SplineComponent.h"
 #include "Components/SceneComponent.h"
+#include "PMCoin.h"
+
 
 // Sets default values
 APMSpline::APMSpline()
@@ -19,6 +21,28 @@ APMSpline::APMSpline()
 
 	Splines.Add(FSplines());
 	Splines.Add(FSplines());
+
+}
+
+void APMSpline::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (this->ActorHasTag(FName(TEXT("withoutCoins"))))
+	{
+		return;
+	}
+
+	int32 coinsNumber = FMath::RoundToInt(SplineComponent->GetSplineLength() / Distance);
+
+	for (int32 i = 0; i <= coinsNumber; ++i)
+	{		
+		const FVector Location = SplineComponent->GetLocationAtDistanceAlongSpline(Distance * i, ESplineCoordinateSpace::World);
+		const FRotator Rotation = FRotator(0, 0, 0);
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
+		GetWorld()->SpawnActor<APMCoin>(CoinClass, Location, Rotation, SpawnInfo);
+	}
 }
 
 

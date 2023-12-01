@@ -6,6 +6,13 @@
 #include "GameFramework/Pawn.h"
 #include "PMPlayer.generated.h"
 
+class USphereComponent;
+class UInputMappingContext;
+class UInputAction;
+class UInputAction;
+class USphereComponent;
+class UStaticMeshComponent;
+class APMSpline;
 
 UENUM()
 enum EDirections
@@ -40,13 +47,13 @@ public:
 protected:
 	//MappingContext
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
-	class UInputMappingContext* MappingContext;
+	UInputMappingContext* MappingContext;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
-	class UInputAction* MoveUpDownAction;
+	UInputAction* MoveUpDownAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
-	class UInputAction* MoveRightLeftAction;
+	UInputAction* MoveRightLeftAction;
 	
 public:
 	UFUNCTION()
@@ -61,31 +68,36 @@ public:
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 protected:
-
 	bool CheckIfAtPoint() const;
 
 	void ChooseNewSpline();
 
 	UPROPERTY(VisibleAnywhere)
-	class USphereComponent* CollisionSphere;
+	USphereComponent* CollisionSphere;
 
 	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* Mesh;
+	UStaticMeshComponent* Mesh;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class APMSpline> CurrentSplineClass;
+	TSubclassOf<APMSpline> CurrentSplineClass;
 
 	UPROPERTY()
-	class APMSpline* CurrentSpline;
+	APMSpline* CurrentSpline;
 
 	UPROPERTY(EditAnywhere)
 	float Speed = 50.f;
 
-	EDirections DesiredDirection = EDirections::NONE;
+	UPROPERTY()
+	TEnumAsByte<EDirections> DesiredDirection = NONE;
+	//EDirections DesiredDirection = EDirections::NONE;
 
-	EDirections CurrentDirection = EDirections::RIGHT;
+	UPROPERTY()
+	TEnumAsByte<EDirections>  CurrentDirection = RIGHT;
+	//EDirections CurrentDirection = EDirections::RIGHT;
 
 	float PositionOnSpline;
 	float MovingDirection;
 	bool bIsMoving;
+
+
 };
