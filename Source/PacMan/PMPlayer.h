@@ -15,7 +15,7 @@ class UStaticMeshComponent;
 class APMSpline;
 
 UENUM()
-enum EDirections
+enum EDirections : uint8
 {
 	NONE	UMETA(DisplayName = "None"),
 	UPWARD	UMETA(DisplayName = "UP"),
@@ -50,16 +50,27 @@ protected:
 	UInputMappingContext* MappingContext;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
-	UInputAction* MoveUpDownAction;
+	UInputAction* MoveUpAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
-	UInputAction* MoveRightLeftAction;
+	UInputAction* MoveDownAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	UInputAction* MoveLeftAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	UInputAction* MoveRightAction;
+
 	
 public:
 	UFUNCTION()
-	void MoveUpDown(const FInputActionValue& Value);
+	void MoveUp();
 	UFUNCTION()
-	void MoveRightLeft(const FInputActionValue& Value);
+	void MoveDown();
+	UFUNCTION()
+	void MoveLeft();
+	UFUNCTION()
+	void MoveRight();
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -67,11 +78,13 @@ public:
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-protected:
-	bool CheckIfAtPoint() const;
+	bool CheckIfAtPoint(int32 &SplineIndexOut) const;
 
 	void ChooseNewSpline();
 
+	void RotatePacman(float Yaw, TEnumAsByte<EDirections> Direction);
+
+public:
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* CollisionSphere;
 
@@ -88,16 +101,17 @@ protected:
 	float Speed = 50.f;
 
 	UPROPERTY()
-	TEnumAsByte<EDirections> DesiredDirection = NONE;
+	TEnumAsByte<EDirections> DesiredDirection;
 	//EDirections DesiredDirection = EDirections::NONE;
 
 	UPROPERTY()
-	TEnumAsByte<EDirections>  CurrentDirection = RIGHT;
+	TEnumAsByte<EDirections>  CurrentDirection;
 	//EDirections CurrentDirection = EDirections::RIGHT;
 
+private:
 	float PositionOnSpline;
 	float MovingDirection;
 	bool bIsMoving;
-
-
+	int32 SplineIndex;
+	EDirections TempDirection;
 };
