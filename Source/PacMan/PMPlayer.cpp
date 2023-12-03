@@ -77,7 +77,7 @@ void APMPlayer::Tick(float DeltaTime)
 	const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
 	SetActorLocation(NewLocation);
 
-	if (CheckIfAtPoint(SplineIndex))
+	if (CheckIfAtPoint())
 	{
 		bIsMoving = false;
 		ChooseNewSpline();
@@ -161,16 +161,16 @@ void APMPlayer::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	
 }
 
-bool APMPlayer::CheckIfAtPoint(int32& SplineIndexOut) const
+bool APMPlayer::CheckIfAtPoint()
 {
 	if (GetActorLocation().Equals(CurrentSpline->SplineComponent->GetLocationAtSplinePoint(1, ESplineCoordinateSpace::World), 0.5f))
 	{
-		SplineIndexOut = 1;
+		SplineIndex = 1;
 		return true;
 	}
 	else if (GetActorLocation().Equals(CurrentSpline->SplineComponent->GetLocationAtSplinePoint(0, ESplineCoordinateSpace::World), 0.5f))
 	{
-		SplineIndexOut = 0;
+		SplineIndex = 0;
 		return true;
 	}
 
