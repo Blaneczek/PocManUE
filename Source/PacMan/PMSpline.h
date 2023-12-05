@@ -15,16 +15,16 @@ struct FSplines
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, meta = (DisplayName = "UP"))
-	TObjectPtr<APMSpline> UPWARD;
+	APMSpline* UPWARD;
 
 	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, meta = (DisplayName = "DOWN"))
-	TObjectPtr<APMSpline> DOWN;
+	APMSpline* DOWN;
 
 	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, meta = (DisplayName = "LEFT"))
-	TObjectPtr<APMSpline> LEFT;
+	APMSpline* LEFT;
 
 	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, meta = (DisplayName = "RIGHT"))
-	TObjectPtr<APMSpline> RIGHT;
+	APMSpline* RIGHT;
 
 	FSplines()
 		: UPWARD(nullptr), DOWN(nullptr), LEFT(nullptr), RIGHT(nullptr)
@@ -48,7 +48,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USplineComponent* SplineComponent;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FSplines> Splines;
 
 private:

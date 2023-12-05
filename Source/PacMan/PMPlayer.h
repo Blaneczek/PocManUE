@@ -10,7 +10,6 @@ class USphereComponent;
 class UInputMappingContext;
 class UInputAction;
 class UInputAction;
-class USphereComponent;
 class UStaticMeshComponent;
 class APMSpline;
 
@@ -90,9 +89,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* Mesh;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<APMSpline> CurrentSplineClass;
 
 	UPROPERTY()
 	APMSpline* CurrentSpline;

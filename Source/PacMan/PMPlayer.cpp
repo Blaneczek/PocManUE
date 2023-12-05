@@ -24,7 +24,7 @@ APMPlayer::APMPlayer()
 	Mesh->SetupAttachment(CollisionSphere);
 	
 	MovingDirection = 1.f;
-	PositionOnSpline = 0.f;
+	PositionOnSpline = 1.f;
 	bIsMoving = false;
 	SplineIndex = 0;
 	TempDirection = NONE;
