@@ -8,6 +8,15 @@
 
 class UStaticMeshComponent;
 class APMSpline;
+class UPawnSensingComponent;
+
+UENUM()
+enum EGhostState : uint8
+{
+	NONE	UMETA(DisplayName = "NONE"),
+	PASSIVE	UMETA(DisplayName = "PASSIVE"),
+	ATTACK	UMETA(DisplayName = "ATTACK")
+};
 
 UCLASS()
 class PACMAN_API APMGhost : public APawn
@@ -30,17 +39,26 @@ public:
 
 	void ChooseNewSpline();
 
+	UFUNCTION()
+	void OnSeePawn(APawn* OtherPawn);
+
 public:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleDefaultsOnly)
 	UStaticMeshComponent* Mesh;
 
 	UPROPERTY()
 	APMSpline* CurrentSpline;
 
+	UPROPERTY(VisibleDefaultsOnly)
+	TObjectPtr<UPawnSensingComponent> PawnSensing;	
+
 	UPROPERTY(EditAnywhere)
 	float Speed = 50.f;
 
 private:
+	UPROPERTY()
+	TEnumAsByte<EGhostState> State;
+
 	float PositionOnSpline;
 	float MovingDirection;
 	bool bIsMoving;

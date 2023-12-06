@@ -6,6 +6,7 @@
 #include "PMSpline.h"
 #include "Components/SplineComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Perception/PawnSensingComponent.h"
 
 // Sets default values
 APMGhost::APMGhost()
@@ -13,11 +14,15 @@ APMGhost::APMGhost()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	Mesh->SetupAttachment(RootComponent);
+	RootComponent = Mesh;
+
+	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensing"));
 
 	MovingDirection = 1.f;
 	PositionOnSpline = 0.f;
 	SplineIndex = 0;
+	SetActorRotation(FRotator(0, 0, 0));
+	State = EGhostState::PASSIVE;
 }
 
 // Called when the game starts or when spawned
@@ -25,6 +30,16 @@ void APMGhost::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (PawnSensing != nullptr)
+	{
+		PawnSensing->OnSeePawn.AddDynamic(this, &APMGhost::OnSeePawn);
+		UE_LOG(LogTemp, Warning, TEXT("Jest"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("nie ma"));
+	}
+
 	TArray<AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("startGhost")), OutActors);
 
@@ -109,7 +124,6 @@ void APMGhost::ChooseNewSpline()
 		return;
 	}
 
-
 	switch (validSplines[randomIndex])
 	{
 		case 0:
@@ -117,6 +131,7 @@ void APMGhost::ChooseNewSpline()
 			CurrentSpline = CurrentSpline->Splines[SplineIndex].UPWARD;
 			PositionOnSpline = 1.f;
 			MovingDirection = 1.f;
+			SetActorRotation(FRotator(0, 0, 0));
 			return;
 		}
 		case 1:
@@ -124,6 +139,7 @@ void APMGhost::ChooseNewSpline()
 			CurrentSpline = CurrentSpline->Splines[SplineIndex].DOWN;
 			PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 			MovingDirection = -1.f;
+			SetActorRotation(FRotator(0, 180, 0));
 			return;
 		}
 		case 2:
@@ -131,6 +147,7 @@ void APMGhost::ChooseNewSpline()
 			CurrentSpline = CurrentSpline->Splines[SplineIndex].LEFT;
 			PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 			MovingDirection = -1.f;
+			SetActorRotation(FRotator(0, -90, 0));
 			return;
 		}
 		case 3:
@@ -138,10 +155,19 @@ void APMGhost::ChooseNewSpline()
 			CurrentSpline = CurrentSpline->Splines[SplineIndex].RIGHT;
 			PositionOnSpline = 1.f;
 			MovingDirection = 1.f;
+			SetActorRotation(FRotator(0, 90, 0));
 			return;
 		}
 		default: return;
 	}
 }
+
+void APMGhost::OnSeePawn(APawn* OtherPawn)
+{
+	FString message = TEXT("Saw Actor ") + OtherPawn->GetName();
+	UE_LOG(LogTemp, Warning, TEXT("Saw actor"));
+}
+
+
 
 
