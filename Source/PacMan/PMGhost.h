@@ -9,11 +9,11 @@
 class UStaticMeshComponent;
 class APMSpline;
 class UPawnSensingComponent;
+class APMPlayer;
 
 UENUM()
 enum EGhostState : uint8
 {
-	NONE	UMETA(DisplayName = "NONE"),
 	PASSIVE	UMETA(DisplayName = "PASSIVE"),
 	ATTACK	UMETA(DisplayName = "ATTACK")
 };
@@ -39,8 +39,13 @@ public:
 
 	void ChooseNewSpline();
 
+	int32 FindPath();
+
 	UFUNCTION()
 	void OnSeePawn(APawn* OtherPawn);
+
+	TMap<int32, APMSpline*> AvailableSplines(APMSpline* Spline);
+	TMap<int32, APMSpline*> AvailableSplines2(APMSpline* Spline, int32 index);
 
 public:
 	UPROPERTY(VisibleDefaultsOnly)
@@ -54,10 +59,13 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	float Speed = 50.f;
-
+	
 private:
 	UPROPERTY()
 	TEnumAsByte<EGhostState> State;
+
+	UPROPERTY()
+	TObjectPtr<APMPlayer> Player = nullptr;
 
 	float PositionOnSpline;
 	float MovingDirection;

@@ -83,6 +83,9 @@ public:
 
 	void RotatePacman(float Yaw, TEnumAsByte<EDirections> Direction);
 
+	void MarkSpline();
+	void UnmarkSpline();
+
 public:
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* CollisionSphere;
@@ -110,4 +113,5 @@ private:
 	bool bIsMoving;
 	int32 SplineIndex;
 	EDirections TempDirection;
+	bool bChased;
 };

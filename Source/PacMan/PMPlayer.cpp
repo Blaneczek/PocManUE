@@ -30,6 +30,7 @@ APMPlayer::APMPlayer()
 	TempDirection = NONE;
 	DesiredDirection = RIGHT;
 	CurrentDirection = RIGHT;
+	bChased = false;
 }
 
 // Called when the game starts or when spawned
@@ -79,8 +80,10 @@ void APMPlayer::Tick(float DeltaTime)
 
 	if (CheckIfAtPoint())
 	{
+		UnmarkSpline();
 		bIsMoving = false;
 		ChooseNewSpline();
+		MarkSpline();
 	}
 }
 
@@ -105,6 +108,17 @@ void APMPlayer::RotatePacman(float Yaw, TEnumAsByte<EDirections> Direction)
 	SetActorRotation(FRotator(0, Yaw, 0));
 	MovingDirection = Yaw >= 0 ? 1.f : -1.f;
 	bIsMoving = true;
+}
+
+void APMPlayer::MarkSpline()
+{
+	CurrentSpline->Tags.Add(FName("markedSpline"));
+	bChased = true;
+}
+
+void APMPlayer::UnmarkSpline()
+{
+	CurrentSpline->Tags.Remove(FName("markedSpline"));
 }
 
 void APMPlayer::MoveUp()
