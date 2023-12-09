@@ -18,6 +18,24 @@ enum EGhostState : uint8
 	ATTACK	UMETA(DisplayName = "ATTACK")
 };
 
+USTRUCT()
+struct FSplineQueueData
+{
+	GENERATED_BODY()
+
+	int32 firstSpline;
+	int32 currentSplineIndex;
+	APMSpline* Spline;
+
+	FSplineQueueData()
+	{
+	}
+
+	FSplineQueueData(int32 firstSpline, int32 currentSplineIndex, APMSpline* Spline)
+		: firstSpline(firstSpline), currentSplineIndex(currentSplineIndex), Spline(Spline)
+	{}
+};
+
 UCLASS()
 class PACMAN_API APMGhost : public APawn
 {
@@ -44,8 +62,7 @@ public:
 	UFUNCTION()
 	void OnSeePawn(APawn* OtherPawn);
 
-	TMap<int32, APMSpline*> AvailableSplines(APMSpline* Spline);
-	TMap<int32, APMSpline*> AvailableSplines2(APMSpline* Spline, int32 index);
+	TMap<int32, APMSpline*> AvailableSplines(APMSpline* Spline, int32 index);
 
 public:
 	UPROPERTY(VisibleDefaultsOnly)

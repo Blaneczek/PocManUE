@@ -8,6 +8,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Perception/PawnSensingComponent.h"
 #include "PMPlayer.h"
+#include <Queue>
 
 
 // Sets default values
@@ -171,6 +172,8 @@ void APMGhost::ChooseNewSpline()
 		case EGhostState::ATTACK:
 		{
 			int32 choosenSpline = FindPath();
+
+			UE_LOG(LogTemp, Warning, TEXT("sss: %s"), *FString::FromInt(choosenSpline));
 			
 			switch (choosenSpline)
 			{
@@ -227,7 +230,10 @@ void APMGhost::ChooseNewSpline()
 
 int32 APMGhost::FindPath()
 {
-	TMap<int32, APMSpline*> validSplines = AvailableSplines(CurrentSpline);
+	TMap<FString, APMSpline*> visitedSplines;
+	std::queue<FSplineQueueData> splineQueue;
+
+	TMap<int32, APMSpline*> validSplines = AvailableSplines(CurrentSpline, SplineIndex);
 
 	for (auto& item : validSplines)
 	{
@@ -235,60 +241,42 @@ int32 APMGhost::FindPath()
 		{
 			return item.Key;
 		}
-		else
-		{
-			if (item.Key == 0 || item.Key == 3)
-			{
-				TMap<int32, APMSpline*> validSplines2 = AvailableSplines2(item.Value, 1);
-				for (auto& item2 : validSplines2)
-				{
-					if (item2.Value->ActorHasTag(FName("markedSpline")))
-					{
-						return item.Key;
-					}
-					else
-					{
-						if (item2.Key == 0 || item2.Key == 3)
-						{
-							TMap<int32, APMSpline*> validSplines3 = AvailableSplines2(item.Value, 1);
-							for (auto& item3 : validSplines3)
-							{
-								if (item3.Value->ActorHasTag(FName("markedSpline")))
-								{
-									return item.Key;
-								}
-							}
-						}
-					}
-				}
-			}
-			else if (item.Key == 1 || item.Key == 2)
-			{
-				TMap<int32, APMSpline*> validSplines2 = AvailableSplines2(item.Value, 0);
-				for (auto& item2 : validSplines2)
-				{
-					if (item2.Value->ActorHasTag(FName("markedSpline")))
-					{
-						return item.Key;
-					}
-					else
-					{
-						if (item2.Key == 1 || item2.Key == 2)
-						{
-							TMap<int32, APMSpline*> validSplines3 = AvailableSplines2(item.Value, 1);
-							for (auto& item3 : validSplines3)
-							{
-								if (item3.Value->ActorHasTag(FName("markedSpline")))
-								{
-									return item.Key;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+
+		splineQueue.push(FSplineQueueData(item.Key, item.Key, item.Value));	
 	}
+
+	while (!splineQueue.empty())
+	{
+		APMSpline* checkedSpline = splineQueue.front().Spline;
+		int32 firstSpline = splineQueue.front().firstSpline;
+		int32 nextSplineIndex = splineQueue.front().currentSplineIndex;
+		splineQueue.pop();
+
+		if (nextSplineIndex == 0 || nextSplineIndex == 3)
+		{
+			validSplines = AvailableSplines(checkedSpline, 1);
+		}
+		else if (nextSplineIndex == 1 || nextSplineIndex == 2)
+		{
+			validSplines = AvailableSplines(checkedSpline, 0);
+		}
+
+		for (auto& item : validSplines)
+		{
+			FString splineName = item.Value->GetName();
+			if (!visitedSplines.Contains(splineName))
+			{
+				visitedSplines.Add(splineName, item.Value);
+				splineQueue.push(FSplineQueueData(firstSpline, item.Key, item.Value));
+
+				if (item.Value->ActorHasTag(FName("markedSpline")))
+				{
+					return firstSpline;
+				}
+			}
+		}		
+	}
+
 	return -1;
 }
 
@@ -302,31 +290,8 @@ void APMGhost::OnSeePawn(APawn* OtherPawn)
 	}
 }
 
-TMap<int32, APMSpline*> APMGhost::AvailableSplines(APMSpline* Spline)
-{
-	TMap<int32, APMSpline*> validSplines;
 
-	if (Spline->Splines[SplineIndex].UPWARD != nullptr)
-	{
-		validSplines.Add(0, Spline->Splines[SplineIndex].UPWARD);
-	}
-	if (Spline->Splines[SplineIndex].DOWN != nullptr)
-	{
-		validSplines.Add(1, Spline->Splines[SplineIndex].DOWN);
-	}
-	if (Spline->Splines[SplineIndex].LEFT != nullptr)
-	{
-		validSplines.Add(2, Spline->Splines[SplineIndex].LEFT);
-	}
-	if (Spline->Splines[SplineIndex].RIGHT != nullptr)
-	{
-		validSplines.Add(3, Spline->Splines[SplineIndex].RIGHT);
-	}
-
-	return validSplines;
-}
-
-TMap<int32, APMSpline*> APMGhost::AvailableSplines2(APMSpline* Spline, int32 index)
+TMap<int32, APMSpline*> APMGhost::AvailableSplines(APMSpline* Spline, int32 index)
 {
 	TMap<int32, APMSpline*> validSplines;
 
