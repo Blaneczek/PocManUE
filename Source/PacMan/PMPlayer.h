@@ -12,6 +12,7 @@ class UInputAction;
 class UInputAction;
 class UStaticMeshComponent;
 class APMSpline;
+class APMGameModeBase;
 
 UENUM()
 enum EDirections : uint8
@@ -74,14 +75,11 @@ public:
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	UFUNCTION()
-	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
 	bool CheckIfAtPoint();
 
 	void ChooseNewSpline();
 
-	void RotatePacman(float Yaw, TEnumAsByte<EDirections> Direction);
+	void RotatePlayer(float Yaw, TEnumAsByte<EDirections> Direction);
 
 	void MarkSpline();
 	void UnmarkSpline();
@@ -108,6 +106,7 @@ public:
 	//EDirections CurrentDirection = EDirections::RIGHT;
 
 private:
+	APMGameModeBase* GameMode = nullptr;
 	float PositionOnSpline;
 	float MovingDirection;
 	bool bIsMoving;

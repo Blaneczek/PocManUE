@@ -6,6 +6,7 @@
 #include "PMSpline.h"
 #include "Components/SplineComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SphereComponent.h"
 #include "Perception/PawnSensingComponent.h"
 #include "PMPlayer.h"
 #include <Queue>
@@ -16,13 +17,17 @@ APMGhost::APMGhost()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Collision Sphere"));
+	RootComponent = CollisionSphere;
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	RootComponent = Mesh;
+	Mesh->SetupAttachment(CollisionSphere);
 
 	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensing"));
 
 	MovingDirection = 1.f;
 	PositionOnSpline = 0.f;
+	bIsMoving = true;
 	SplineIndex = 0;
 	SetActorRotation(FRotator(0, 0, 0));
 	State = EGhostState::PASSIVE;
@@ -36,15 +41,14 @@ void APMGhost::BeginPlay()
 	if (PawnSensing != nullptr)
 	{
 		PawnSensing->OnSeePawn.AddDynamic(this, &APMGhost::OnSeePawn);
-		UE_LOG(LogTemp, Warning, TEXT("Jest"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("nie ma"));
+		UE_LOG(LogTemp, Warning, TEXT("PMGhost::BeginPlay | PawnSensing is nullptr"));
 	}
 
 	TArray<AActor*> OutActors;
-	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("startGhost")), OutActors);
+	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), GhostTag, OutActors);
 
 	for (AActor* item : OutActors)
 	{
@@ -53,11 +57,21 @@ void APMGhost::BeginPlay()
 
 	if (CurrentSpline == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No valid CurrentSpline"));
+		UE_LOG(LogTemp, Warning, TEXT("PMGhost::BeginPlay | CurrentSpline is nullptr"));
 		return;
 	}
 
 	Player = Cast<APMPlayer>(UGameplayStatics::GetPlayerController(GetWorld(),0)->GetPawn());
+	if (Player == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGhost::BeginPlay | Player is nullptr"));
+		return;
+	}
+	
+	if (State == EGhostState::WAIT)
+	{
+		GetWorld()->GetTimerManager().SetTimer(ReleaseTimerHandle, this, &APMGhost::ReleaseGhost, ReleaseTime, false);
+	}
 }
 
 // Called every frame
@@ -67,15 +81,18 @@ void APMGhost::Tick(float DeltaTime)
 
 	if (CurrentSpline == nullptr) return;
 
-	PositionOnSpline += DeltaTime * MovingDirection * Speed;
-
-	const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
-	SetActorLocation(NewLocation);
-
-	if (CheckIfAtPoint())
+	if (bIsMoving)
 	{
-		ChooseNewSpline();
-	}
+		PositionOnSpline += DeltaTime * MovingDirection * Speed;
+
+		const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
+		SetActorLocation(NewLocation);
+
+		if (CheckIfAtPoint())
+		{
+			ChooseNewSpline();
+		}
+	}	
 }
 
 bool APMGhost::CheckIfAtPoint()
@@ -173,7 +190,7 @@ void APMGhost::ChooseNewSpline()
 		{
 			int32 choosenSpline = FindPath();
 
-			UE_LOG(LogTemp, Warning, TEXT("sss: %s"), *FString::FromInt(choosenSpline));
+			//UE_LOG(LogTemp, Warning, TEXT("sss: %s"), *FString::FromInt(choosenSpline));
 			
 			switch (choosenSpline)
 			{
@@ -181,7 +198,7 @@ void APMGhost::ChooseNewSpline()
 				{
 					if (CurrentSpline->ActorHasTag(FName("markedSpline")))
 					{
-						UE_LOG(LogTemp, Warning, TEXT("TEN SAM"));
+						//UE_LOG(LogTemp, Warning, TEXT("TEN SAM"));
 					}
 					return;
 				}
@@ -191,7 +208,7 @@ void APMGhost::ChooseNewSpline()
 					PositionOnSpline = 1.f;
 					MovingDirection = 1.f;
 					SetActorRotation(FRotator(0, 0, 0));
-					UE_LOG(LogTemp, Warning, TEXT("UPWARD"));
+					//UE_LOG(LogTemp, Warning, TEXT("UPWARD"));
 					return;
 				}
 				case 1:
@@ -200,7 +217,7 @@ void APMGhost::ChooseNewSpline()
 					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 					MovingDirection = -1.f;
 					SetActorRotation(FRotator(0, 180, 0));
-					UE_LOG(LogTemp, Warning, TEXT("DOWN"));
+					//UE_LOG(LogTemp, Warning, TEXT("DOWN"));
 					return;
 				}
 				case 2:
@@ -209,7 +226,7 @@ void APMGhost::ChooseNewSpline()
 					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 					MovingDirection = -1.f;
 					SetActorRotation(FRotator(0, -90, 0));
-					UE_LOG(LogTemp, Warning, TEXT("LEFT"));
+					//UE_LOG(LogTemp, Warning, TEXT("LEFT"));
 					return;
 				}
 				case 3:
@@ -218,14 +235,43 @@ void APMGhost::ChooseNewSpline()
 					PositionOnSpline = 1.f;
 					MovingDirection = 1.f;
 					SetActorRotation(FRotator(0, 90, 0));
-					UE_LOG(LogTemp, Warning, TEXT("RIGHT"));
+					//UE_LOG(LogTemp, Warning, TEXT("RIGHT"));
 					return;
 				}
 			default: return;
 			}
 		}
+		case EGhostState::WAIT:
+		{
+			if (MovingDirection == 1.f)
+			{
+				if (CurrentSpline->Splines[1].UPWARD != nullptr && !CurrentSpline->Splines[1].UPWARD->ActorHasTag(TEXT("releaseGhost")))
+				{
+					CurrentSpline = CurrentSpline->Splines[1].UPWARD;
+					PositionOnSpline = 1.f;
+					SetActorRotation(FRotator(0, 0, 0));
+				}
+				else
+				{
+					MovingDirection = -1.f;
+				}
+			}
+			else if (MovingDirection == -1.f)
+			{
+				if (CurrentSpline->Splines[0].DOWN != nullptr)
+				{
+					CurrentSpline = CurrentSpline->Splines[0].DOWN;
+					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
+					SetActorRotation(FRotator(0, 180, 0));
+				}
+				else
+				{
+					MovingDirection = 1.f;
+				}
+			}
+		}
+		default: return;
 	}
-	
 }
 
 int32 APMGhost::FindPath()
@@ -282,14 +328,66 @@ int32 APMGhost::FindPath()
 
 void APMGhost::OnSeePawn(APawn* OtherPawn)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Saw actor"));
+
 	if (State == EGhostState::PASSIVE && OtherPawn == Player)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Saw actor"));
+	{		
 		State = EGhostState::ATTACK;
-		Player->MarkSpline();
+		Player->MarkSpline();		
+		GetWorld()->GetTimerManager().SetTimer(ChaseTimerHandle, this, &APMGhost::AttackTimer, 1.0f, true); //start timer
+	}
+	else if (State == EGhostState::ATTACK && OtherPawn == Player)
+	{	
+		ChaseTimeCounter = 0; //reset timer
 	}
 }
 
+void APMGhost::AttackTimer()
+{
+	ChaseTimeCounter++;
+	//UE_LOG(LogTemp, Warning, TEXT("Counter %s"), AttackTimeCounter);
+	if (ChaseTimeCounter > MaxChaseTime)
+	{
+		ChaseTimeCounter = 0;
+		if (ChaseTimerHandle.IsValid())
+		{
+			GetWorld()->GetTimerManager().ClearTimer(ChaseTimerHandle);
+		}		
+		State = EGhostState::PASSIVE;
+	}
+}
+
+int32 APMGhost::Interaction()
+{
+	//reset game
+	UE_LOG(LogTemp, Warning, TEXT("Ghost interaction"));
+	return 0;
+}
+
+void APMGhost::ReleaseGhost()
+{
+	Player->MarkSpline();
+	State = EGhostState::ATTACK;
+	GetWorld()->GetTimerManager().SetTimer(ChaseTimerHandle, this, &APMGhost::AttackTimer, 1.0f, true);
+}
+
+void APMGhost::ResetGhost()
+{
+	bIsMoving = false;
+
+	TArray<AActor*> OutActors;
+	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), GhostTag, OutActors);
+
+	for (AActor* item : OutActors)
+	{
+		CurrentSpline = Cast<APMSpline>(item);
+	}
+
+	if (CurrentSpline != nullptr)
+	{
+		PositionOnSpline = 1.f;
+	}
+}
 
 TMap<int32, APMSpline*> APMGhost::AvailableSplines(APMSpline* Spline, int32 index)
 {

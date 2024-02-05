@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Interfaces/PMInteractionInterface.h"
 #include "PMGhost.generated.h"
 
 class UStaticMeshComponent;
+class USphereComponent;
 class APMSpline;
 class UPawnSensingComponent;
 class APMPlayer;
@@ -15,7 +17,8 @@ UENUM()
 enum EGhostState : uint8
 {
 	PASSIVE	UMETA(DisplayName = "PASSIVE"),
-	ATTACK	UMETA(DisplayName = "ATTACK")
+	ATTACK	UMETA(DisplayName = "ATTACK"),
+	WAIT	UMETA(DisplayName = "WAIT")
 };
 
 USTRUCT()
@@ -37,7 +40,7 @@ struct FSplineQueueData
 };
 
 UCLASS()
-class PACMAN_API APMGhost : public APawn
+class PACMAN_API APMGhost : public APawn, public IPMInteractionInterface
 {
 	GENERATED_BODY()
 
@@ -54,19 +57,25 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	bool CheckIfAtPoint();
-
 	void ChooseNewSpline();
-
 	int32 FindPath();
-
-	UFUNCTION()
-	void OnSeePawn(APawn* OtherPawn);
-
 	TMap<int32, APMSpline*> AvailableSplines(APMSpline* Spline, int32 index);
 
+	UFUNCTION(BlueprintCallable)
+	void OnSeePawn(APawn* OtherPawn);
+	void AttackTimer();
+
+	virtual int32 Interaction() override;
+
+	void ReleaseGhost();
+	void ResetGhost();
+
 public:
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite)
 	UStaticMeshComponent* Mesh;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	USphereComponent* CollisionSphere;
 
 	UPROPERTY()
 	APMSpline* CurrentSpline;
@@ -76,16 +85,31 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	float Speed = 50.f;
-	
+
+	UPROPERTY(EditAnywhere)
+	float ReleaseTime = 2.f;
+
 private:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TEnumAsByte<EGhostState> State;
 
 	UPROPERTY()
 	TObjectPtr<APMPlayer> Player = nullptr;
 
+	UPROPERTY(EditDefaultsOnly)
+	int32 MaxChaseTime = 3;
+
+	UPROPERTY(EditAnywhere)
+	FName GhostTag;
+
 	float PositionOnSpline;
 	float MovingDirection;
 	bool bIsMoving;
 	int32 SplineIndex;
+
+	FTimerHandle ChaseTimerHandle;
+	int32 ChaseTimeCounter = 0;
+
+	FTimerHandle ReleaseTimerHandle;
+
 };

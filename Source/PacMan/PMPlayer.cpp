@@ -11,6 +11,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "PMSpline.h"
 #include "Components/SplineComponent.h"
+#include "PMGameModeBase.h"
+#include "Interfaces/PMInteractionInterface.h"
 
 // Sets default values
 APMPlayer::APMPlayer()
@@ -38,6 +40,12 @@ void APMPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (GameMode == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::BeginPlay | GameMode is nullptr"));
+	}
+
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (PC != nullptr)
 	{		
@@ -46,6 +54,8 @@ void APMPlayer::BeginPlay()
 			Subsystem->AddMappingContext(MappingContext, 0);
 		}
 	}
+
+	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
 
 	TArray<AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("Start")), OutActors);
@@ -57,8 +67,7 @@ void APMPlayer::BeginPlay()
 
 	if (CurrentSpline == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No valid CurrentSpline"));
-		return;
+		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::BeginPlay | CurrentSpline is nullptr"));
 	}
 
 	bIsMoving = true;
@@ -102,7 +111,7 @@ void APMPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void APMPlayer::RotatePacman(float Yaw, TEnumAsByte<EDirections> Direction)
+void APMPlayer::RotatePlayer(float Yaw, TEnumAsByte<EDirections> Direction)
 {
 	CurrentDirection = Direction;
 	SetActorRotation(FRotator(0, Yaw, 0));
@@ -128,7 +137,7 @@ void APMPlayer::MoveUp()
 
 	if (CurrentDirection == DOWN)
 	{
-		RotatePacman(0.f, EDirections::UPWARD);
+		RotatePlayer(0.f, EDirections::UPWARD);
 	}
 }
 
@@ -139,7 +148,7 @@ void APMPlayer::MoveDown()
 
 	if (CurrentDirection == UPWARD)
 	{
-		RotatePacman(-180.f, EDirections::DOWN);
+		RotatePlayer(-180.f, EDirections::DOWN);
 	}
 }
 
@@ -150,7 +159,7 @@ void APMPlayer::MoveLeft()
 
 	if (CurrentDirection == RIGHT)
 	{
-		RotatePacman(-90.f, EDirections::LEFT);
+		RotatePlayer(-90.f, EDirections::LEFT);
 	}
 }
 
@@ -161,18 +170,22 @@ void APMPlayer::MoveRight()
 
 	if (CurrentDirection == LEFT)
 	{
-		RotatePacman(90.f, EDirections::RIGHT);
+		RotatePlayer(90.f, EDirections::RIGHT);
 	}
 }
 
 void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	
-}
+	if (OtherActor == nullptr || OtherActor == this)
+	{
+		return;
+	}
 
-void APMPlayer::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	
+	IPMInteractionInterface* InteractionInterface = Cast<IPMInteractionInterface>(OtherActor);
+	if (InteractionInterface != nullptr)
+	{
+		GameMode->AddPoints(InteractionInterface->Interaction());
+	}
 }
 
 bool APMPlayer::CheckIfAtPoint()

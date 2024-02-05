@@ -24,7 +24,6 @@ void APMCoin::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APMCoin::OnOverlapBegin);
 }
 
 // Called every frame
@@ -34,13 +33,12 @@ void APMCoin::Tick(float DeltaTime)
 
 }
 
-void APMCoin::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+int32 APMCoin::Interaction()
 {
-	APMPlayer* Player = Cast<APMPlayer>(OtherActor);
-	if (Player != nullptr)
-	{
-		Destroy();
-		//TODO: add points
-	}
+	//add points
+	Destroy();
+	UE_LOG(LogTemp, Warning, TEXT("Coin Interaction"));
+	return 10;
 }
+
 
