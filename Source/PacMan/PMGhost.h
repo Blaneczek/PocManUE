@@ -69,6 +69,8 @@ public:
 
 	void ReleaseGhost();
 	void ResetGhost();
+	void ResetStartingSpline();
+	void StartGhost();
 
 public:
 	UPROPERTY(BlueprintReadWrite)

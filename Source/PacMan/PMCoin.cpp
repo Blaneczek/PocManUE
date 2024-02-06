@@ -35,9 +35,7 @@ void APMCoin::Tick(float DeltaTime)
 
 int32 APMCoin::Interaction()
 {
-	//add points
 	Destroy();
-	UE_LOG(LogTemp, Warning, TEXT("Coin Interaction"));
 	return 10;
 }
 

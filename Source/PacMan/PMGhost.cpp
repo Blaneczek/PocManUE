@@ -9,6 +9,7 @@
 #include "Components/SphereComponent.h"
 #include "Perception/PawnSensingComponent.h"
 #include "PMPlayer.h"
+#include "PMGameModeBase.h"
 #include <Queue>
 
 
@@ -84,15 +85,16 @@ void APMGhost::Tick(float DeltaTime)
 	if (bIsMoving)
 	{
 		PositionOnSpline += DeltaTime * MovingDirection * Speed;
+	}
+	
+	const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
+	SetActorLocation(NewLocation);
 
-		const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
-		SetActorLocation(NewLocation);
+	if (CheckIfAtPoint())
+	{
+		ChooseNewSpline();
+	}
 
-		if (CheckIfAtPoint())
-		{
-			ChooseNewSpline();
-		}
-	}	
 }
 
 bool APMGhost::CheckIfAtPoint()
@@ -328,8 +330,6 @@ int32 APMGhost::FindPath()
 
 void APMGhost::OnSeePawn(APawn* OtherPawn)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Saw actor"));
-
 	if (State == EGhostState::PASSIVE && OtherPawn == Player)
 	{		
 		State = EGhostState::ATTACK;
@@ -359,8 +359,16 @@ void APMGhost::AttackTimer()
 
 int32 APMGhost::Interaction()
 {
-	//reset game
-	UE_LOG(LogTemp, Warning, TEXT("Ghost interaction"));
+	APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (gameMode != nullptr)
+	{
+		gameMode->HandleGhostHit();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("APMGhost::Interaction | GameMode is nullptr"));
+	}
+	
 	return 0;
 }
 
@@ -374,6 +382,13 @@ void APMGhost::ReleaseGhost()
 void APMGhost::ResetGhost()
 {
 	bIsMoving = false;
+	FTimerHandle ResetTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMGhost::ResetStartingSpline, 2.f, false);
+}
+
+void APMGhost::ResetStartingSpline()
+{
+	this->SetActorHiddenInGame(true);
 
 	TArray<AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), GhostTag, OutActors);
@@ -384,9 +399,21 @@ void APMGhost::ResetGhost()
 	}
 
 	if (CurrentSpline != nullptr)
-	{
+	{						
 		PositionOnSpline = 1.f;
+		MovingDirection = 1.f;		
+		UE_LOG(LogTemp, Warning, TEXT("ghost znika"));
 	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("APMGhost::ResetStartingSpline | CurrentSpline is nullptr"));
+	}
+}
+
+void APMGhost::StartGhost()
+{
+	this->SetActorHiddenInGame(false);
+	bIsMoving = true;
 }
 
 TMap<int32, APMSpline*> APMGhost::AvailableSplines(APMSpline* Spline, int32 index)

@@ -77,9 +77,9 @@ void APMPlayer::BeginPlay()
 void APMPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	//UE_LOG(LogTemp, Warning, TEXT("Bool value is: %s"), bIsMoving ? "true" : "false");
 	
+	if (CurrentSpline == nullptr) return;
+
 	if (bIsMoving)
 	{
 		PositionOnSpline += DeltaTime * MovingDirection * Speed;
@@ -128,6 +128,42 @@ void APMPlayer::MarkSpline()
 void APMPlayer::UnmarkSpline()
 {
 	CurrentSpline->Tags.Remove(FName("markedSpline"));
+}
+
+void APMPlayer::ResetPlayer()
+{
+
+	bIsMoving = false;
+	FTimerHandle ResetTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMPlayer::ResetStartingSpline, 2.f, false);
+}
+
+void APMPlayer::ResetStartingSpline()
+{
+	SetActorHiddenInGame(true);
+
+	TArray<AActor*> OutActors;
+	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("Start")), OutActors);
+	for (AActor* item : OutActors)
+	{
+		CurrentSpline = Cast<APMSpline>(item);
+	}
+
+	if (CurrentSpline != nullptr)
+	{
+		PositionOnSpline = 1.f;
+		MovingDirection = 1.f;		
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::ResetStartingSpline | CurrentSpline is nullptr"));
+	}
+}
+
+void APMPlayer::StartPlayer()
+{
+	this->SetActorHiddenInGame(false);
+	bIsMoving = true;
 }
 
 void APMPlayer::MoveUp()

@@ -76,13 +76,16 @@ public:
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	bool CheckIfAtPoint();
-
 	void ChooseNewSpline();
 
 	void RotatePlayer(float Yaw, TEnumAsByte<EDirections> Direction);
 
 	void MarkSpline();
 	void UnmarkSpline();
+
+	void ResetPlayer();
+	void ResetStartingSpline();
+	void StartPlayer();
 
 public:
 	UPROPERTY(VisibleAnywhere)

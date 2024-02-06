@@ -8,6 +8,7 @@
 
 class USplineComponent;
 class USceneComponent;
+class APMCoin;
 
 USTRUCT(BlueprintType)
 struct FSplines
@@ -59,5 +60,5 @@ private:
 	float Distance = 120.f;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class APMCoin> CoinClass;
+	TSubclassOf<APMCoin> CoinClass;
 };
