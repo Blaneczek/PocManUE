@@ -45,6 +45,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+public:
+	void SpawnCoins();
+
 public:		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USplineComponent* SplineComponent;

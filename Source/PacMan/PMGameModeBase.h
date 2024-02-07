@@ -17,9 +17,12 @@ UCLASS()
 class PACMAN_API APMGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
-public:
 
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:
 	UFUNCTION(BlueprintNativeEvent)
 	void AddPoints(int32 points);
 
@@ -27,16 +30,29 @@ public:
 	void HandleGhostHit();
 
 	void StartGame();
-	void EndGame();
+	void StopGame();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void LostGame();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void WonGame();
+
+	UFUNCTION(BlueprintCallable)
+	void RestartGame();
+
+	void AddCoin();
+	void SubtractCoin();
 public:
 	UPROPERTY(BlueprintReadWrite)
 	int32 Score = 0;
 
 	UPROPERTY(BlueprintReadWrite)
-	int32 HealthPoints = 3;
+	int32 Lives = 3;
 
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<APMGhost> GhostClass;
+
+	int32 NumberOfCoins = 0;
 };

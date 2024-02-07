@@ -7,6 +7,8 @@
 #include "Interfaces/PMInteractionInterface.h"
 #include "PMGhost.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnGhostHit);
+
 class UStaticMeshComponent;
 class USphereComponent;
 class APMSpline;
@@ -69,11 +71,12 @@ public:
 
 	void ReleaseGhost();
 	void ResetGhost();
-	void ResetStartingSpline();
+	void HideGhost();
 	void StartGhost();
+	void StartMovement();
 
 public:
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* Mesh;
 
 	UPROPERTY(VisibleDefaultsOnly)
@@ -91,15 +94,29 @@ public:
 	UPROPERTY(EditAnywhere)
 	float ReleaseTime = 2.f;
 
+	FOnGhostHit OnGhostHitDelegate;
+
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	TEnumAsByte<EGhostState> State;
+
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<EGhostState> StartingState;
+
+	UPROPERTY(EditAnywhere)
+	FRotator StartingRotation;
+
+	UPROPERTY(EditAnywhere)
+	float StartingMovingDirection;
+
+	UPROPERTY(EditAnywhere)
+	APMSpline* StartingSpline;
 
 	UPROPERTY()
 	TObjectPtr<APMPlayer> Player = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
-	int32 MaxChaseTime = 3;
+	int32 MaxChaseTime = 2;
 
 	UPROPERTY(EditAnywhere)
 	FName GhostTag;
@@ -108,6 +125,7 @@ private:
 	float MovingDirection;
 	bool bIsMoving;
 	int32 SplineIndex;
+	bool bDoOnce;
 
 	FTimerHandle ChaseTimerHandle;
 	int32 ChaseTimeCounter = 0;

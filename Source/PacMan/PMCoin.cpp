@@ -4,6 +4,8 @@
 #include "PMCoin.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "PMGameModeBase.h"
+#include "Kismet/GameplayStatics.h"
 #include "PMPlayer.h"
 
 // Sets default values
@@ -35,6 +37,15 @@ void APMCoin::Tick(float DeltaTime)
 
 int32 APMCoin::Interaction()
 {
+	APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (gameMode != nullptr)
+	{
+		gameMode->SubtractCoin();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("APMCoin::Interaction | gameMode is nullptr"))
+	}
 	Destroy();
 	return 10;
 }

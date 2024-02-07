@@ -48,29 +48,21 @@ void APMPlayer::BeginPlay()
 
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (PC != nullptr)
-	{		
+	{	
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(MappingContext, 0);
 		}
+		DisableInput(PC);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::BeginPlay | PlayerController is nullptr"));
 	}
 
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
 
-	TArray<AActor*> OutActors;
-	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("Start")), OutActors);
-
-	for (AActor* item : OutActors)
-	{
-		CurrentSpline = Cast<APMSpline>(item);
-	}
-
-	if (CurrentSpline == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::BeginPlay | CurrentSpline is nullptr"));
-	}
-
-	bIsMoving = true;
+	StartPlayer();
 }
 
 // Called every frame
@@ -132,16 +124,24 @@ void APMPlayer::UnmarkSpline()
 
 void APMPlayer::ResetPlayer()
 {
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC != nullptr)
+	{
+		DisableInput(PC);
+	}
 
 	bIsMoving = false;
 	FTimerHandle ResetTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMPlayer::ResetStartingSpline, 2.f, false);
+	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMPlayer::HidePlayer, 2.f, false);
 }
 
-void APMPlayer::ResetStartingSpline()
+void APMPlayer::HidePlayer()
 {
 	SetActorHiddenInGame(true);
+}
 
+void APMPlayer::StartPlayer()
+{
 	TArray<AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("Start")), OutActors);
 	for (AActor* item : OutActors)
@@ -149,21 +149,42 @@ void APMPlayer::ResetStartingSpline()
 		CurrentSpline = Cast<APMSpline>(item);
 	}
 
-	if (CurrentSpline != nullptr)
+	if (CurrentSpline == nullptr)
+	{		
+		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::BeginPlay | CurrentSpline is nullptr"));
+		return;
+	}
+
+	SetActorRotation(FRotator(0, 90, 0));
+	MovingDirection = 1.f;
+	PositionOnSpline = 1.f;
+	SplineIndex = 0;
+	TempDirection = EDirections::NONE;
+	DesiredDirection = EDirections::RIGHT;
+	CurrentDirection = EDirections::RIGHT;
+	bChased = false;
+	this->SetActorHiddenInGame(false);
+
+	const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
+	SetActorLocation(NewLocation);
+
+	FTimerHandle StartMovementTimer;
+	GetWorld()->GetTimerManager().SetTimer(StartMovementTimer, this, &APMPlayer::StartMovement, 1, false);
+}
+
+void APMPlayer::StartMovement()
+{
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC != nullptr)
 	{
-		PositionOnSpline = 1.f;
-		MovingDirection = 1.f;		
+		EnableInput(PC);
+		bIsMoving = true;
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::ResetStartingSpline | CurrentSpline is nullptr"));
+		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::StartMovement | PlayerController is nullptr"));
 	}
-}
-
-void APMPlayer::StartPlayer()
-{
-	this->SetActorHiddenInGame(false);
-	bIsMoving = true;
+	
 }
 
 void APMPlayer::MoveUp()

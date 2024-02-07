@@ -84,8 +84,9 @@ public:
 	void UnmarkSpline();
 
 	void ResetPlayer();
-	void ResetStartingSpline();
+	void HidePlayer();
 	void StartPlayer();
+	void StartMovement();
 
 public:
 	UPROPERTY(VisibleAnywhere)
@@ -102,13 +103,20 @@ public:
 
 	UPROPERTY()
 	TEnumAsByte<EDirections> DesiredDirection;
-	//EDirections DesiredDirection = EDirections::NONE;
 
 	UPROPERTY()
-	TEnumAsByte<EDirections>  CurrentDirection;
-	//EDirections CurrentDirection = EDirections::RIGHT;
+	TEnumAsByte<EDirections> CurrentDirection;
 
 private:
+	UPROPERTY(EditAnywhere)
+	FRotator StartingRotation;
+
+	UPROPERTY(EditAnywhere)
+	float StartingMovingDirection;
+
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<EDirections> StartingDirection;
+
 	APMGameModeBase* GameMode = nullptr;
 	float PositionOnSpline;
 	float MovingDirection;

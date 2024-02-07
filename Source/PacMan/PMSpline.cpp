@@ -4,6 +4,8 @@
 #include "PMSpline.h"
 #include "Components/SplineComponent.h"
 #include "Components/SceneComponent.h"
+#include "PMGameModeBase.h"
+#include "Kismet/GameplayStatics.h"
 #include "PMCoin.h"
 
 
@@ -28,6 +30,18 @@ void APMSpline::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SpawnCoins();
+}
+
+void APMSpline::SpawnCoins()
+{
+	APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (gameMode == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AMPSpline::SpawnCoins | gameMode is nullptr"));
+		return;
+	}
+
 	if (this->ActorHasTag(FName(TEXT("withoutCoins"))))
 	{
 		return;
@@ -41,7 +55,12 @@ void APMSpline::BeginPlay()
 		const FRotator Rotation = FRotator(0, 0, 0);
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
-		GetWorld()->SpawnActor<APMCoin>(CoinClass, Location, Rotation, SpawnInfo);
+		if (GetWorld()->SpawnActor<APMCoin>(CoinClass, Location, Rotation, SpawnInfo) != nullptr)
+		{
+			gameMode->AddCoin();
+			UE_LOG(LogTemp, Warning, TEXT("coin spawned"));
+		}
+
 	}
 }
 

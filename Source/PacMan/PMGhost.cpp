@@ -27,18 +27,21 @@ APMGhost::APMGhost()
 	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensing"));
 
 	MovingDirection = 1.f;
-	PositionOnSpline = 0.f;
-	bIsMoving = true;
+	PositionOnSpline = 1.f;
+	bIsMoving = false;
+	bDoOnce = true;
 	SplineIndex = 0;
-	SetActorRotation(FRotator(0, 0, 0));
-	State = EGhostState::PASSIVE;
+	
+	StartingState = EGhostState::PASSIVE;
+	StartingMovingDirection = 1.f;
+	StartingRotation = FRotator(0, 0, 0);
 }
 
 // Called when the game starts or when spawned
 void APMGhost::BeginPlay()
 {
 	Super::BeginPlay();
-	
+		
 	if (PawnSensing != nullptr)
 	{
 		PawnSensing->OnSeePawn.AddDynamic(this, &APMGhost::OnSeePawn);
@@ -48,18 +51,13 @@ void APMGhost::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("PMGhost::BeginPlay | PawnSensing is nullptr"));
 	}
 
-	TArray<AActor*> OutActors;
-	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), GhostTag, OutActors);
-
-	for (AActor* item : OutActors)
+	if (StartingSpline != nullptr)
 	{
-		CurrentSpline = Cast<APMSpline>(item);
+		StartGhost();
 	}
-
-	if (CurrentSpline == nullptr)
+	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGhost::BeginPlay | CurrentSpline is nullptr"));
-		return;
+		UE_LOG(LogTemp, Warning, TEXT("PMGhost::BeginPlay | StartingSpline is nullptr"));
 	}
 
 	Player = Cast<APMPlayer>(UGameplayStatics::GetPlayerController(GetWorld(),0)->GetPawn());
@@ -68,11 +66,8 @@ void APMGhost::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("PMGhost::BeginPlay | Player is nullptr"));
 		return;
 	}
-	
-	if (State == EGhostState::WAIT)
-	{
-		GetWorld()->GetTimerManager().SetTimer(ReleaseTimerHandle, this, &APMGhost::ReleaseGhost, ReleaseTime, false);
-	}
+
+	OnGhostHitDelegate.AddUObject(this, &APMGhost::ResetGhost);
 }
 
 // Called every frame
@@ -345,7 +340,6 @@ void APMGhost::OnSeePawn(APawn* OtherPawn)
 void APMGhost::AttackTimer()
 {
 	ChaseTimeCounter++;
-	//UE_LOG(LogTemp, Warning, TEXT("Counter %s"), AttackTimeCounter);
 	if (ChaseTimeCounter > MaxChaseTime)
 	{
 		ChaseTimeCounter = 0;
@@ -359,21 +353,30 @@ void APMGhost::AttackTimer()
 
 int32 APMGhost::Interaction()
 {
-	APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
-	if (gameMode != nullptr)
+	if (bDoOnce)
 	{
-		gameMode->HandleGhostHit();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("APMGhost::Interaction | GameMode is nullptr"));
-	}
-	
+		APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
+		if (gameMode != nullptr)
+		{
+			gameMode->HandleGhostHit();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("APMGhost::Interaction | GameMode is nullptr"));
+		}
+
+		bDoOnce = false;
+	}	
 	return 0;
 }
 
 void APMGhost::ReleaseGhost()
 {
+	if (ReleaseTimerHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ReleaseTimerHandle);
+	}
+
 	Player->MarkSpline();
 	State = EGhostState::ATTACK;
 	GetWorld()->GetTimerManager().SetTimer(ChaseTimerHandle, this, &APMGhost::AttackTimer, 1.0f, true);
@@ -381,38 +384,51 @@ void APMGhost::ReleaseGhost()
 
 void APMGhost::ResetGhost()
 {
+	if (ReleaseTimerHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ReleaseTimerHandle);
+	}
+	if (ChaseTimerHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ChaseTimerHandle);
+	}
 	bIsMoving = false;
 	FTimerHandle ResetTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMGhost::ResetStartingSpline, 2.f, false);
+	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMGhost::HideGhost, 2.f, false);
 }
 
-void APMGhost::ResetStartingSpline()
+void APMGhost::HideGhost()
 {
 	this->SetActorHiddenInGame(true);
-
-	TArray<AActor*> OutActors;
-	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), GhostTag, OutActors);
-
-	for (AActor* item : OutActors)
-	{
-		CurrentSpline = Cast<APMSpline>(item);
-	}
-
-	if (CurrentSpline != nullptr)
-	{						
-		PositionOnSpline = 1.f;
-		MovingDirection = 1.f;		
-		UE_LOG(LogTemp, Warning, TEXT("ghost znika"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("APMGhost::ResetStartingSpline | CurrentSpline is nullptr"));
-	}
 }
 
 void APMGhost::StartGhost()
-{
+{	
+	bDoOnce = true;
+	CurrentSpline = StartingSpline;
+	MovingDirection = StartingMovingDirection;
+	SetActorRotation(StartingRotation);
+	PositionOnSpline = 1.f;
+	State = StartingState;	
+
+	if (CurrentSpline != nullptr)
+	{
+		const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
+		SetActorLocation(NewLocation);
+	}
+	if (State == EGhostState::WAIT)
+	{
+		GetWorld()->GetTimerManager().SetTimer(ReleaseTimerHandle, this, &APMGhost::ReleaseGhost, ReleaseTime, false);
+	}
+
+	FTimerHandle StartMovementTimer;
+	GetWorld()->GetTimerManager().SetTimer(StartMovementTimer, this, &APMGhost::StartMovement, 1, false);
+
 	this->SetActorHiddenInGame(false);
+}
+
+void APMGhost::StartMovement()
+{
 	bIsMoving = true;
 }
 
