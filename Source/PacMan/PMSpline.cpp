@@ -58,7 +58,6 @@ void APMSpline::SpawnCoins()
 		if (GetWorld()->SpawnActor<APMCoin>(CoinClass, Location, Rotation, SpawnInfo) != nullptr)
 		{
 			gameMode->AddCoin();
-			UE_LOG(LogTemp, Warning, TEXT("coin spawned"));
 		}
 
 	}

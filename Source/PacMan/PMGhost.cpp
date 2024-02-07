@@ -89,7 +89,6 @@ void APMGhost::Tick(float DeltaTime)
 	{
 		ChooseNewSpline();
 	}
-
 }
 
 bool APMGhost::CheckIfAtPoint()
@@ -140,6 +139,7 @@ void APMGhost::ChooseNewSpline()
 		return;
 	}
 
+	// 0 - UPWARD, 1 - DOWN, 2 - LEFT, 3 - RIGHT
 	switch (State)
 	{
 		case EGhostState::PASSIVE:
@@ -153,7 +153,7 @@ void APMGhost::ChooseNewSpline()
 					CurrentSpline = CurrentSpline->Splines[SplineIndex].UPWARD;
 					PositionOnSpline = 1.f;
 					MovingDirection = 1.f;
-					SetActorRotation(FRotator(0, 0, 0));
+					SetActorRotation(FRotator(0, -90, 0));
 					return;
 				}
 				case 1:
@@ -161,7 +161,7 @@ void APMGhost::ChooseNewSpline()
 					CurrentSpline = CurrentSpline->Splines[SplineIndex].DOWN;
 					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 					MovingDirection = -1.f;
-					SetActorRotation(FRotator(0, 180, 0));
+					SetActorRotation(FRotator(0, 90, 0));
 					return;
 				}
 				case 2:
@@ -169,7 +169,7 @@ void APMGhost::ChooseNewSpline()
 					CurrentSpline = CurrentSpline->Splines[SplineIndex].LEFT;
 					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 					MovingDirection = -1.f;
-					SetActorRotation(FRotator(0, -90, 0));
+					SetActorRotation(FRotator(0, 180, 0));
 					return;
 				}
 				case 3:
@@ -177,7 +177,7 @@ void APMGhost::ChooseNewSpline()
 					CurrentSpline = CurrentSpline->Splines[SplineIndex].RIGHT;
 					PositionOnSpline = 1.f;
 					MovingDirection = 1.f;
-					SetActorRotation(FRotator(0, 90, 0));
+					SetActorRotation(FRotator(0, 0, 0));
 					return;
 				}
 				default: return;
@@ -186,17 +186,11 @@ void APMGhost::ChooseNewSpline()
 		case EGhostState::ATTACK:
 		{
 			int32 choosenSpline = FindPath();
-
-			//UE_LOG(LogTemp, Warning, TEXT("sss: %s"), *FString::FromInt(choosenSpline));
 			
 			switch (choosenSpline)
 			{
 				case -1:
 				{
-					if (CurrentSpline->ActorHasTag(FName("markedSpline")))
-					{
-						//UE_LOG(LogTemp, Warning, TEXT("TEN SAM"));
-					}
 					return;
 				}
 				case 0:
@@ -204,8 +198,7 @@ void APMGhost::ChooseNewSpline()
 					CurrentSpline = CurrentSpline->Splines[SplineIndex].UPWARD;
 					PositionOnSpline = 1.f;
 					MovingDirection = 1.f;
-					SetActorRotation(FRotator(0, 0, 0));
-					//UE_LOG(LogTemp, Warning, TEXT("UPWARD"));
+					SetActorRotation(FRotator(0, -90, 0));
 					return;
 				}
 				case 1:
@@ -213,8 +206,7 @@ void APMGhost::ChooseNewSpline()
 					CurrentSpline = CurrentSpline->Splines[SplineIndex].DOWN;
 					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 					MovingDirection = -1.f;
-					SetActorRotation(FRotator(0, 180, 0));
-					//UE_LOG(LogTemp, Warning, TEXT("DOWN"));
+					SetActorRotation(FRotator(0, 90, 0));
 					return;
 				}
 				case 2:
@@ -222,8 +214,7 @@ void APMGhost::ChooseNewSpline()
 					CurrentSpline = CurrentSpline->Splines[SplineIndex].LEFT;
 					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 					MovingDirection = -1.f;
-					SetActorRotation(FRotator(0, -90, 0));
-					//UE_LOG(LogTemp, Warning, TEXT("LEFT"));
+					SetActorRotation(FRotator(0, 180, 0));
 					return;
 				}
 				case 3:
@@ -231,8 +222,7 @@ void APMGhost::ChooseNewSpline()
 					CurrentSpline = CurrentSpline->Splines[SplineIndex].RIGHT;
 					PositionOnSpline = 1.f;
 					MovingDirection = 1.f;
-					SetActorRotation(FRotator(0, 90, 0));
-					//UE_LOG(LogTemp, Warning, TEXT("RIGHT"));
+					SetActorRotation(FRotator(0, 0, 0));
 					return;
 				}
 			default: return;
@@ -246,7 +236,7 @@ void APMGhost::ChooseNewSpline()
 				{
 					CurrentSpline = CurrentSpline->Splines[1].UPWARD;
 					PositionOnSpline = 1.f;
-					SetActorRotation(FRotator(0, 0, 0));
+					SetActorRotation(FRotator(0, -90, 0));
 				}
 				else
 				{
@@ -259,7 +249,7 @@ void APMGhost::ChooseNewSpline()
 				{
 					CurrentSpline = CurrentSpline->Splines[0].DOWN;
 					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
-					SetActorRotation(FRotator(0, 180, 0));
+					SetActorRotation(FRotator(0, 90, 0));
 				}
 				else
 				{
@@ -430,6 +420,19 @@ void APMGhost::StartGhost()
 void APMGhost::StartMovement()
 {
 	bIsMoving = true;
+}
+
+void APMGhost::VulnerableState()
+{
+	if (State == EGhostState::ATTACK)
+	{
+		State = EGhostState::PASSIVE;
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("Duch ucieka"));
+	Speed -= 200;
+	//TODO: change color to blue
+	//TODO: released ghost has attack state so it stopped moving when vulnerableState is acctive 
 }
 
 TMap<int32, APMSpline*> APMGhost::AvailableSplines(APMSpline* Spline, int32 index)

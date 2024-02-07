@@ -43,6 +43,9 @@ public:
 
 	void AddCoin();
 	void SubtractCoin();
+
+	void PlayerAttackState();
+
 public:
 	UPROPERTY(BlueprintReadWrite)
 	int32 Score = 0;
@@ -55,4 +58,8 @@ private:
 	TSubclassOf<APMGhost> GhostClass;
 
 	int32 NumberOfCoins = 0;
+
+	APMPlayer* Player = nullptr;
+	TArray<APMGhost*> Ghosts;
+
 };

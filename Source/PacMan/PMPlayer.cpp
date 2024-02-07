@@ -107,7 +107,7 @@ void APMPlayer::RotatePlayer(float Yaw, TEnumAsByte<EDirections> Direction)
 {
 	CurrentDirection = Direction;
 	SetActorRotation(FRotator(0, Yaw, 0));
-	MovingDirection = Yaw >= 0 ? 1.f : -1.f;
+	MovingDirection = Yaw <= 0 ? 1.f : -1.f;
 	bIsMoving = true;
 }
 
@@ -128,6 +128,11 @@ void APMPlayer::ResetPlayer()
 	if (PC != nullptr)
 	{
 		DisableInput(PC);
+		UE_LOG(LogTemp, Warning, TEXT("jest controller"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("nie ma controllera"));
 	}
 
 	bIsMoving = false;
@@ -155,7 +160,7 @@ void APMPlayer::StartPlayer()
 		return;
 	}
 
-	SetActorRotation(FRotator(0, 90, 0));
+	SetActorRotation(FRotator(0, 0, 0));
 	MovingDirection = 1.f;
 	PositionOnSpline = 1.f;
 	SplineIndex = 0;
@@ -189,12 +194,12 @@ void APMPlayer::StartMovement()
 
 void APMPlayer::MoveUp()
 {
-	DesiredDirection = UPWARD;
 	TempDirection = NONE;
-
+	DesiredDirection = UPWARD;
+	
 	if (CurrentDirection == DOWN)
 	{
-		RotatePlayer(0.f, EDirections::UPWARD);
+		RotatePlayer(-90.f, EDirections::UPWARD);
 	}
 }
 
@@ -205,7 +210,7 @@ void APMPlayer::MoveDown()
 
 	if (CurrentDirection == UPWARD)
 	{
-		RotatePlayer(-180.f, EDirections::DOWN);
+		RotatePlayer(90.f, EDirections::DOWN);
 	}
 }
 
@@ -216,7 +221,7 @@ void APMPlayer::MoveLeft()
 
 	if (CurrentDirection == RIGHT)
 	{
-		RotatePlayer(-90.f, EDirections::LEFT);
+		RotatePlayer(180.f, EDirections::LEFT);
 	}
 }
 
@@ -227,7 +232,7 @@ void APMPlayer::MoveRight()
 
 	if (CurrentDirection == LEFT)
 	{
-		RotatePlayer(90.f, EDirections::RIGHT);
+		RotatePlayer(0.f, EDirections::RIGHT);
 	}
 }
 
@@ -273,7 +278,7 @@ void APMPlayer::ChooseNewSpline()
 				{
 					DesiredDirection = TempDirection;
 				}
-				SetActorRotation(FRotator(0, 0, 0));
+				SetActorRotation(FRotator(0, -90, 0));
 				CurrentSpline = newSpline;
 				PositionOnSpline = 1.f;
 				CurrentDirection = UPWARD;	
@@ -295,7 +300,7 @@ void APMPlayer::ChooseNewSpline()
 				{
 					DesiredDirection = TempDirection;
 				}
-				SetActorRotation(FRotator(0, 180, 0));
+				SetActorRotation(FRotator(0, 90, 0));
 				CurrentSpline = newSpline;
 				PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 				CurrentDirection = DOWN;
@@ -317,7 +322,7 @@ void APMPlayer::ChooseNewSpline()
 				{
 					DesiredDirection = TempDirection;
 				}
-				SetActorRotation(FRotator(0, 90, 0));
+				SetActorRotation(FRotator(0, 0, 0));
 				CurrentSpline = newSpline;
 				PositionOnSpline = 1.f;
 				CurrentDirection = RIGHT;
@@ -339,7 +344,7 @@ void APMPlayer::ChooseNewSpline()
 				{
 					DesiredDirection = TempDirection;
 				}
-				SetActorRotation(FRotator(0, -90, 0));
+				SetActorRotation(FRotator(0, 180, 0));
 				CurrentSpline = newSpline;
 				PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 				CurrentDirection = LEFT;				

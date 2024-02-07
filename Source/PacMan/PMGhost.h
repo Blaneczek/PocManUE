@@ -75,6 +75,7 @@ public:
 	void StartGhost();
 	void StartMovement();
 
+	void VulnerableState();
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* Mesh;
@@ -92,8 +93,12 @@ public:
 	float Speed = 50.f;
 
 	UPROPERTY(EditAnywhere)
+	float VulnerableSpeed = 20.f;
+
+	UPROPERTY(EditAnywhere)
 	float ReleaseTime = 2.f;
 
+	//maybe use delegate 
 	FOnGhostHit OnGhostHitDelegate;
 
 private:

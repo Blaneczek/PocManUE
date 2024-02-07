@@ -98,7 +98,7 @@ void APMGameModeBase::RestartGame()
 	if (PC != nullptr)
 	{
 		PC->RestartLevel();
-		//open level: menu
+		//TODO: open level menu
 	}	
 }
 
@@ -110,4 +110,22 @@ void APMGameModeBase::AddCoin()
 void APMGameModeBase::SubtractCoin()
 {
 	NumberOfCoins--;
+}
+
+void APMGameModeBase::PlayerAttackState()
+{
+	TArray<AActor*> ghosts;
+	UGameplayStatics::GetAllActorsOfClass(this, GhostClass, ghosts);
+	for (AActor* item : ghosts)
+	{
+		APMGhost* ghost = Cast<APMGhost>(item);
+		if (ghost != nullptr)
+		{
+			ghost->VulnerableState();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::StopGame | Ghost is nullptr"));
+		}
+	}
 }
