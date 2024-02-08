@@ -82,13 +82,6 @@ void APMGhost::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//if (showdebug)
-	//{
-		//UE_LOG(LogTemp, Warning, TEXT("%s"), *UEnum::GetValueAsString(State));
-		//UE_LOG(LogTemp, Warning, TEXT("%f"), MovingDirection);
-	//	UE_LOG(LogTemp, Warning, TEXT("%f"), PositionOnSpline);
-	//}
-
 	if (CurrentSpline == nullptr) return;
 
 	if (bIsMoving)
@@ -124,7 +117,6 @@ bool APMGhost::CheckIfAtPoint()
 
 void APMGhost::ChooseNewSpline()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *UEnum::GetValueAsString(State));
 	TArray<int32> validSplines;
 	int32 counter = 0;
 
@@ -320,10 +312,8 @@ int32 APMGhost::FindPath()
 		}
 		else if (bGhostHitted && item.Value->ActorHasTag(FName("base")))
 		{	
-			UE_LOG(LogTemp, Warning, TEXT("doszed³"));
 			EndVulnerableState();
-			ChaseTimeCounter = 0;
-			GetWorld()->GetTimerManager().SetTimer(ChaseTimerHandle, this, &APMGhost::AttackTimer, 1.0f, true);
+			ReleaseGhost();
 			return item.Key;		
 		}
 
