@@ -37,18 +37,12 @@ void APMGameModeBase::BeginPlay()
 	Super::BeginPlay();
 
 	UE_LOG(LogTemp, Warning, TEXT("game mode begin play"));
-}
 
-void APMGameModeBase::StartGame()
-{	
-	APMPlayer* player = Cast<APMPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
-	if (player == nullptr)
+	Player = Cast<APMPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
+	if (Player == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::StartGame | Player is nullptr"));
-		return;
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | Player is nullptr"));
 	}
-
-	player->StartPlayer();
 
 	TArray<AActor*> ghosts;
 	UGameplayStatics::GetAllActorsOfClass(this, GhostClass, ghosts);
@@ -57,37 +51,78 @@ void APMGameModeBase::StartGame()
 		APMGhost* ghost = Cast<APMGhost>(item);
 		if (ghost != nullptr)
 		{
-			ghost->StartGhost();
+			Ghosts.Add(ghost);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::StartGame | Ghost is nullptr"));
+			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | Ghost is nullptr"));
+		}
+	}
+}
+
+void APMGameModeBase::StartGame()
+{	
+	if (Player != nullptr)
+	{
+		Player->StartPlayer();
+	}
+
+	for (APMGhost* ghost : Ghosts)
+	{
+		if (ghost != nullptr)
+		{
+			ghost->StartGhost();
 		}
 	}
 }
 
 void APMGameModeBase::StopGame()
 {
-	APMPlayer* player = Cast<APMPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
-	if (player == nullptr)
+	if (Player != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::StopGame| Player is nullptr"));
-		return;
+		Player->ResetPlayer();
 	}
-	player->ResetPlayer();
 
-	TArray<AActor*> ghosts;
-	UGameplayStatics::GetAllActorsOfClass(this, GhostClass, ghosts);
-	for (AActor* item : ghosts)
+	for (APMGhost* ghost : Ghosts)
 	{
-		APMGhost* ghost = Cast<APMGhost>(item);
 		if (ghost != nullptr)
 		{
 			ghost->ResetGhost();
 		}
-		else
+	}
+}
+
+void APMGameModeBase::StopAllMovement()
+{
+	if (Player != nullptr)
+	{
+		Player->StopMovement();
+	}
+
+	for (APMGhost* ghost : Ghosts)
+	{
+		if (ghost != nullptr)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::StopGame | Ghost is nullptr"));
+			ghost->StopMovement();
+		}
+	}
+
+	FTimerHandle StartMovementTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(StartMovementTimerHandle, this, &APMGameModeBase::StartAllMovement, 0.5, false);
+}
+
+void APMGameModeBase::StartAllMovement()
+{
+	if (Player != nullptr)
+	{
+		Player->StartMovement();
+	}
+
+	for (APMGhost* ghost : Ghosts)
+	{
+		if (ghost != nullptr)
+		{
+			ghost->StartMovement();
 		}
 	}
 }
@@ -114,18 +149,11 @@ void APMGameModeBase::SubtractCoin()
 
 void APMGameModeBase::PlayerAttackState()
 {
-	TArray<AActor*> ghosts;
-	UGameplayStatics::GetAllActorsOfClass(this, GhostClass, ghosts);
-	for (AActor* item : ghosts)
+	for (APMGhost* ghost : Ghosts)
 	{
-		APMGhost* ghost = Cast<APMGhost>(item);
 		if (ghost != nullptr)
 		{
 			ghost->VulnerableState();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::StopGame | Ghost is nullptr"));
 		}
 	}
 }

@@ -179,17 +179,31 @@ void APMPlayer::StartPlayer()
 
 void APMPlayer::StartMovement()
 {
+	bIsMoving = true;
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (PC != nullptr)
 	{
-		EnableInput(PC);
-		bIsMoving = true;
+		this->EnableInput(PC);		
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::StartMovement | PlayerController is nullptr"));
 	}
 	
+}
+
+void APMPlayer::StopMovement()
+{
+	bIsMoving = false;
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC != nullptr)
+	{
+		this->DisableInput(PC);	
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::StopMovement | PlayerController is nullptr"));
+	}
 }
 
 void APMPlayer::MoveUp()
@@ -252,12 +266,12 @@ void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Othe
 
 bool APMPlayer::CheckIfAtPoint()
 {
-	if (GetActorLocation().Equals(CurrentSpline->SplineComponent->GetLocationAtSplinePoint(1, ESplineCoordinateSpace::World), 0.5f))
+	if (PositionOnSpline >= CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1))
 	{
 		SplineIndex = 1;
 		return true;
 	}
-	else if (GetActorLocation().Equals(CurrentSpline->SplineComponent->GetLocationAtSplinePoint(0, ESplineCoordinateSpace::World), 0.5f))
+	else if (PositionOnSpline <= CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(0))
 	{
 		SplineIndex = 0;
 		return true;

@@ -31,6 +31,8 @@ public:
 
 	void StartGame();
 	void StopGame();
+	void StopAllMovement();
+	void StartAllMovement();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void LostGame();

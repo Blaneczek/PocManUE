@@ -14,13 +14,15 @@ class USphereComponent;
 class APMSpline;
 class UPawnSensingComponent;
 class APMPlayer;
+class UMaterialInstanceDynamic;
 
 UENUM()
 enum EGhostState : uint8
 {
 	PASSIVE	UMETA(DisplayName = "PASSIVE"),
 	ATTACK	UMETA(DisplayName = "ATTACK"),
-	WAIT	UMETA(DisplayName = "WAIT")
+	WAIT	UMETA(DisplayName = "WAIT"),
+	RELEASE UMETA(DisplayName = "RELEASE")
 };
 
 USTRUCT()
@@ -74,8 +76,13 @@ public:
 	void HideGhost();
 	void StartGhost();
 	void StartMovement();
+	void StopMovement();
 
 	void VulnerableState();
+	void EndVulnerableState();
+	void VulnerableFlickering();
+	void BackToBase();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* Mesh;
@@ -90,10 +97,13 @@ public:
 	TObjectPtr<UPawnSensingComponent> PawnSensing;	
 
 	UPROPERTY(EditAnywhere)
-	float Speed = 50.f;
+	float NormalSpeed = 800.f;
 
 	UPROPERTY(EditAnywhere)
-	float VulnerableSpeed = 20.f;
+	float VulnerableSpeed = 600.f;
+
+	UPROPERTY(EditAnywhere)
+	float ReturnSpeed = 1200.f;
 
 	UPROPERTY(EditAnywhere)
 	float ReleaseTime = 2.f;
@@ -101,6 +111,8 @@ public:
 	//maybe use delegate 
 	FOnGhostHit OnGhostHitDelegate;
 
+	
+	
 private:
 	UPROPERTY()
 	TEnumAsByte<EGhostState> State;
@@ -126,15 +138,26 @@ private:
 	UPROPERTY(EditAnywhere)
 	FName GhostTag;
 
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynMaterial;
+
+	UPROPERTY(EditAnywhere)
+	FLinearColor StartingColor;
+
+	float Speed = 50.f;
 	float PositionOnSpline;
 	float MovingDirection;
 	bool bIsMoving;
 	int32 SplineIndex;
 	bool bDoOnce;
+	bool bVulnerable;
+	bool bGhostHitted;
+	bool bFlickering;
 
 	FTimerHandle ChaseTimerHandle;
 	int32 ChaseTimeCounter = 0;
 
 	FTimerHandle ReleaseTimerHandle;
-
+	FTimerHandle VulnerableTimerHandle;
+	FTimerHandle FlickeringTimerHandle;
 };

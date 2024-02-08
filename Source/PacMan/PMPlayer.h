@@ -87,6 +87,7 @@ public:
 	void HidePlayer();
 	void StartPlayer();
 	void StartMovement();
+	void StopMovement();
 
 public:
 	UPROPERTY(VisibleAnywhere)
