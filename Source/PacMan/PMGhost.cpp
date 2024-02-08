@@ -124,6 +124,7 @@ bool APMGhost::CheckIfAtPoint()
 
 void APMGhost::ChooseNewSpline()
 {
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *UEnum::GetValueAsString(State));
 	TArray<int32> validSplines;
 	int32 counter = 0;
 
@@ -367,7 +368,7 @@ int32 APMGhost::FindPath()
 
 void APMGhost::OnSeePawn(APawn* OtherPawn)
 {
-	if (bVulnerable)
+	if (bVulnerable || bGhostHitted)
 	{
 		return;
 	}
@@ -467,6 +468,9 @@ void APMGhost::HideGhost()
 void APMGhost::StartGhost()
 {	
 	bDoOnce = true;
+	Speed = NormalSpeed;
+	bVulnerable = false;
+	bGhostHitted = false;
 	CurrentSpline = StartingSpline;
 	MovingDirection = StartingMovingDirection;
 	SetActorRotation(StartingRotation);
@@ -478,6 +482,7 @@ void APMGhost::StartGhost()
 		const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
 		SetActorLocation(NewLocation);
 	}
+
 	if (State == EGhostState::WAIT)
 	{
 		GetWorld()->GetTimerManager().SetTimer(ReleaseTimerHandle, this, &APMGhost::ReleaseGhost, ReleaseTime, false);
