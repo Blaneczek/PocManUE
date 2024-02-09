@@ -208,6 +208,8 @@ void APMPlayer::StopMovement()
 
 void APMPlayer::MoveUp()
 {
+	if (CurrentDirection == UPWARD) return;
+
 	TempDirection = NONE;
 	DesiredDirection = UPWARD;
 	
@@ -219,6 +221,8 @@ void APMPlayer::MoveUp()
 
 void APMPlayer::MoveDown()
 {
+	if (CurrentDirection == DOWN) return;
+
 	TempDirection = NONE;
 	DesiredDirection = DOWN;
 
@@ -230,9 +234,11 @@ void APMPlayer::MoveDown()
 
 void APMPlayer::MoveLeft()
 {	
-	DesiredDirection = LEFT;
-	TempDirection = NONE;
+	if (CurrentDirection == LEFT) return;
 
+	TempDirection = NONE;
+	DesiredDirection = LEFT;
+	
 	if (CurrentDirection == RIGHT)
 	{
 		RotatePlayer(180.f, EDirections::LEFT);
@@ -241,9 +247,11 @@ void APMPlayer::MoveLeft()
 
 void APMPlayer::MoveRight()
 {
-	DesiredDirection = RIGHT;
-	TempDirection = NONE;
+	if (CurrentDirection == RIGHT) return;
 
+	TempDirection = NONE;
+	DesiredDirection = RIGHT;
+	
 	if (CurrentDirection == LEFT)
 	{
 		RotatePlayer(0.f, EDirections::RIGHT);
@@ -282,6 +290,7 @@ bool APMPlayer::CheckIfAtPoint()
 
 void APMPlayer::ChooseNewSpline()
 {
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *UEnum::GetValueAsString(DesiredDirection));
 	switch (DesiredDirection)
 	{
 		case UPWARD:

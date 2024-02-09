@@ -82,81 +82,78 @@ public:
 	void EndVulnerableState();
 	void VulnerableFlickering();
 	void BackToBase();
+	void CanSee();
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* Mesh;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleAnywhere)
 	USphereComponent* CollisionSphere;
 
 	UPROPERTY()
 	APMSpline* CurrentSpline;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UPawnSensingComponent> PawnSensing;	
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	float NormalSpeed = 800.f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	float VulnerableSpeed = 600.f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	float ReturnSpeed = 1200.f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditInstanceOnly)
 	float ReleaseTime = 2.f;
 
 	//maybe use delegate 
 	FOnGhostHit OnGhostHitDelegate;
 
-	
-	
 private:
 	UPROPERTY()
 	TEnumAsByte<EGhostState> State;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditInstanceOnly)
 	TEnumAsByte<EGhostState> StartingState;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditInstanceOnly)
 	FRotator StartingRotation;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditInstanceOnly)
 	float StartingMovingDirection;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditInstanceOnly)
 	APMSpline* StartingSpline;
 
 	UPROPERTY()
 	TObjectPtr<APMPlayer> Player = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
-	int32 MaxChaseTime = 3;
-
-	UPROPERTY(EditAnywhere)
-	FName GhostTag;
+	int32 MaxChaseTime = 4;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynMaterial;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditInstanceOnly)
 	FLinearColor StartingColor;
 
 	float Speed = 50.f;
 	float PositionOnSpline;
 	float MovingDirection;
-	bool bIsMoving;
 	int32 SplineIndex;
+	bool bIsMoving;
 	bool bDoOnce;
 	bool bVulnerable;
 	bool bGhostHitted;
 	bool bFlickering;
-
-	FTimerHandle ChaseTimerHandle;
+	bool bCanSee;
 	int32 ChaseTimeCounter = 0;
 
+	FTimerHandle ChaseTimerHandle;
+	FTimerHandle CanSeeTimerHandle;
 	FTimerHandle ReleaseTimerHandle;
 	FTimerHandle VulnerableTimerHandle;
 	FTimerHandle FlickeringTimerHandle;

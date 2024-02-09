@@ -358,7 +358,7 @@ int32 APMGhost::FindPath()
 
 void APMGhost::OnSeePawn(APawn* OtherPawn)
 {
-	if (bVulnerable || bGhostHitted)
+	if (bVulnerable || bGhostHitted || !bCanSee)
 	{
 		return;
 	}
@@ -381,6 +381,8 @@ void APMGhost::AttackTimer()
 		{
 			GetWorld()->GetTimerManager().ClearTimer(ChaseTimerHandle);
 		}		
+		bCanSee = false;
+		GetWorld()->GetTimerManager().SetTimer(CanSeeTimerHandle, this, &APMGhost::CanSee, 2.0f, false);
 		State = EGhostState::PASSIVE;
 	}
 }
@@ -514,6 +516,9 @@ void APMGhost::VulnerableState()
 	if (State == EGhostState::ATTACK)
 	{
 		State = EGhostState::PASSIVE;
+		MovingDirection *= -1.f;
+		const float yaw = GetActorRotation().Yaw;
+		SetActorRotation(FRotator(0, yaw + 180, 0));
 	}
 
 	GetWorld()->GetTimerManager().SetTimer(VulnerableTimerHandle, this, &APMGhost::EndVulnerableState, 7.f, false);
@@ -578,6 +583,11 @@ void APMGhost::BackToBase()
 	bIsMoving = true;
 	bGhostHitted = true;
 	State = EGhostState::ATTACK;
+}
+
+void APMGhost::CanSee()
+{
+	bCanSee = true;
 }
 
 TMap<int32, APMSpline*> APMGhost::AvailableSplines(APMSpline* Spline, int32 index)
