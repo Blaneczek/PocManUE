@@ -369,10 +369,6 @@ void APMGhost::OnSeePawn(APawn* OtherPawn)
 		Player->MarkSpline();		
 		GetWorld()->GetTimerManager().SetTimer(ChaseTimerHandle, this, &APMGhost::AttackTimer, 1.0f, true); //start timer
 	}
-	else if (State == EGhostState::ATTACK && OtherPawn == Player)
-	{	
-		ChaseTimeCounter = 0; //reset timer
-	}
 }
 
 void APMGhost::AttackTimer()
@@ -416,7 +412,10 @@ int32 APMGhost::Interaction()
 			{
 				UE_LOG(LogTemp, Warning, TEXT("APMGhost::Interaction | GameMode is nullptr"));
 			}
-		}		
+
+			bDoOnce = false;
+			return 200;
+		}	
 
 		bDoOnce = false;
 	}	

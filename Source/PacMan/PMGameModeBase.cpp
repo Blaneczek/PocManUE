@@ -58,6 +58,12 @@ void APMGameModeBase::BeginPlay()
 			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | Ghost is nullptr"));
 		}
 	}
+
+	APMPlayerController* PC = Cast<APMPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (PC != nullptr)
+	{
+		PC->SetInputMode(FInputModeGameOnly());
+	}
 }
 
 void APMGameModeBase::StartGame()

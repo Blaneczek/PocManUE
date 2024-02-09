@@ -133,7 +133,7 @@ private:
 	TObjectPtr<APMPlayer> Player = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
-	int32 MaxChaseTime = 2;
+	int32 MaxChaseTime = 3;
 
 	UPROPERTY(EditAnywhere)
 	FName GhostTag;
