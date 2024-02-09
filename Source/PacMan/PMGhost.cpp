@@ -33,9 +33,9 @@ APMGhost::APMGhost()
 	bDoOnce = true;
 	bFlickering = false;
 	bGhostHitted = false;
+	bCanSee = true;
 	SplineIndex = 0;
 	Speed = NormalSpeed;
-	StartingState = EGhostState::PASSIVE;
 	StartingMovingDirection = 1.f;
 	StartingRotation = FRotator(0, 0, 0);
 }
@@ -74,7 +74,7 @@ void APMGhost::BeginPlay()
 		return;
 	}
 
-	OnGhostHitDelegate.AddUObject(this, &APMGhost::ResetGhost);
+	//OnGhostHitDelegate.AddUObject(this, &APMGhost::ResetGhost);
 }
 
 // Called every frame
@@ -155,7 +155,7 @@ void APMGhost::ChooseNewSpline()
 	{
 		case EGhostState::PASSIVE:
 		{
-			int32 randomIndex = FMath::RandRange(0, counter - 1);
+			const int32 randomIndex = FMath::RandRange(0, counter - 1);
 
 			switch (validSplines[randomIndex])
 			{
@@ -267,13 +267,14 @@ void APMGhost::ChooseNewSpline()
 				if (CurrentSpline->Splines[1].UPWARD != nullptr && !CurrentSpline->Splines[1].UPWARD->ActorHasTag(TEXT("releaseGhost")))
 				{
 					CurrentSpline = CurrentSpline->Splines[1].UPWARD;
-					PositionOnSpline = 1.f;
-					SetActorRotation(FRotator(0, -90, 0));
+					PositionOnSpline = 1.f;					
 					bIsMoving = true;
 				}
 				else
 				{
 					MovingDirection = -1.f;
+					SetActorRotation(FRotator(0, 90, 0));
+					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 					bIsMoving = true;
 				}
 			}
@@ -282,13 +283,14 @@ void APMGhost::ChooseNewSpline()
 				if (CurrentSpline->Splines[0].DOWN != nullptr)
 				{
 					CurrentSpline = CurrentSpline->Splines[0].DOWN;
-					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
-					SetActorRotation(FRotator(0, 90, 0));
+					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;					
 					bIsMoving = true;
 				}
 				else
 				{
 					MovingDirection = 1.f;
+					SetActorRotation(FRotator(0, 90, 0));
+					PositionOnSpline = 1.f;
 					bIsMoving = true;
 				}
 			}
@@ -373,6 +375,12 @@ void APMGhost::OnSeePawn(APawn* OtherPawn)
 
 void APMGhost::AttackTimer()
 {
+	if (ChaseTimerHandle.IsValid() && bGhostHitted)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ChaseTimerHandle);
+		return;
+	}
+
 	ChaseTimeCounter++;
 	if (ChaseTimeCounter > MaxChaseTime)
 	{
@@ -392,33 +400,23 @@ int32 APMGhost::Interaction()
 	if (bDoOnce)
 	{
 		APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
+		if (gameMode == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("APMGhost::Interaction | GameMode is nullptr"));
+			return 0;
+		}
+
 		if (!bVulnerable)
-		{			
-			if (gameMode != nullptr)
-			{
-				gameMode->HandleGhostHit();
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("APMGhost::Interaction | GameMode is nullptr"));
-			}
+		{	
+			gameMode->HandleGhostHit();		
 		}
 		else
 		{
-			if (gameMode != nullptr)
-			{
-				gameMode->StopAllMovement();
-				BackToBase();
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("APMGhost::Interaction | GameMode is nullptr"));
-			}
-
+			gameMode->StopAllMovement();
+			BackToBase();
 			bDoOnce = false;
 			return 200;
 		}	
-
 		bDoOnce = false;
 	}	
 	return 0;
@@ -431,6 +429,7 @@ void APMGhost::ReleaseGhost()
 		GetWorld()->GetTimerManager().ClearTimer(ReleaseTimerHandle);
 	}
 
+	Speed = NormalSpeed;
 	Player->MarkSpline();
 	State = EGhostState::RELEASE;
 	GetWorld()->GetTimerManager().SetTimer(ChaseTimerHandle, this, &APMGhost::AttackTimer, 1.0f, true);
@@ -448,7 +447,7 @@ void APMGhost::ResetGhost()
 	}
 	bIsMoving = false;
 	FTimerHandle ResetTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMGhost::HideGhost, 2.f, false);
+	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMGhost::HideGhost, 1.f, false);
 }
 
 void APMGhost::HideGhost()
@@ -459,7 +458,6 @@ void APMGhost::HideGhost()
 void APMGhost::StartGhost()
 {	
 	bDoOnce = true;
-	Speed = NormalSpeed;
 	bVulnerable = false;
 	bGhostHitted = false;
 	CurrentSpline = StartingSpline;
@@ -468,19 +466,13 @@ void APMGhost::StartGhost()
 	PositionOnSpline = 1.f;
 	State = StartingState;	
 
+	Speed = State == EGhostState::WAIT ? VulnerableSpeed : NormalSpeed;
+
 	if (CurrentSpline != nullptr)
 	{
 		const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
 		SetActorLocation(NewLocation);
 	}
-
-	if (State == EGhostState::WAIT)
-	{
-		GetWorld()->GetTimerManager().SetTimer(ReleaseTimerHandle, this, &APMGhost::ReleaseGhost, ReleaseTime, false);
-	}
-
-	FTimerHandle StartMovementTimer;
-	GetWorld()->GetTimerManager().SetTimer(StartMovementTimer, this, &APMGhost::StartMovement, 1, false);
 
 	this->SetActorHiddenInGame(false);
 }
@@ -488,6 +480,11 @@ void APMGhost::StartGhost()
 void APMGhost::StartMovement()
 {
 	bIsMoving = true;
+	if (State == EGhostState::WAIT)
+	{
+		Speed = VulnerableSpeed;
+		GetWorld()->GetTimerManager().SetTimer(ReleaseTimerHandle, this, &APMGhost::ReleaseGhost, ReleaseTime, false);
+	}
 }
 
 void APMGhost::StopMovement()
@@ -506,11 +503,13 @@ void APMGhost::VulnerableState()
 	{
 		GetWorld()->GetTimerManager().ClearTimer(VulnerableTimerHandle);
 	}
+
 	bVulnerable = true;
 	Speed = VulnerableSpeed;
+
 	if (DynMaterial != nullptr)
 	{
-		DynMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.f, 0.f, 1.f, 1));
+		DynMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.f, 0.f, 0.5f, 1));
 	}
 	
 	if (State == EGhostState::ATTACK)
@@ -527,6 +526,12 @@ void APMGhost::VulnerableState()
 
 void APMGhost::EndVulnerableState()
 {
+	bGhostHitted = false;
+	bVulnerable = false;
+	Speed = NormalSpeed;
+	bDoOnce = true;
+	bFlickering = false;
+
 	if (VulnerableTimerHandle.IsValid())
 	{
 		GetWorld()->GetTimerManager().ClearTimer(VulnerableTimerHandle);
@@ -535,11 +540,6 @@ void APMGhost::EndVulnerableState()
 	{
 		GetWorld()->GetTimerManager().ClearTimer(FlickeringTimerHandle);
 	}
-	bGhostHitted = false;
-	bVulnerable = false;
-	Speed = NormalSpeed;
-	bDoOnce = true;
-	bFlickering = false;
 
 	if (DynMaterial != nullptr)
 	{
@@ -549,22 +549,19 @@ void APMGhost::EndVulnerableState()
 
 void APMGhost::VulnerableFlickering()
 {
+	if (DynMaterial == nullptr)
+	{
+		return;
+	}
+
 	if (!bFlickering )
 	{
-		if (DynMaterial != nullptr)
-		{
-			DynMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.f, 0.f, 1.f, 1));
-		}
-
+		DynMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.f, 0.f, 1.f, 1));
 		bFlickering = true;
 	}
 	else
 	{
-		if (DynMaterial != nullptr)
-		{
-			DynMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, 1.f, 1.f, 1));
-		}
-
+		DynMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, 1.f, 1.f, 1));
 		bFlickering = false;
 	}
 }
@@ -579,6 +576,7 @@ void APMGhost::BackToBase()
 	{
 		GetWorld()->GetTimerManager().ClearTimer(FlickeringTimerHandle);
 	}
+
 	Speed = ReturnSpeed;
 	bIsMoving = true;
 	bGhostHitted = true;

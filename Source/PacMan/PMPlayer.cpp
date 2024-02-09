@@ -61,8 +61,6 @@ void APMPlayer::BeginPlay()
 	}
 
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
-
-	StartPlayer();
 }
 
 // Called every frame
@@ -137,7 +135,7 @@ void APMPlayer::ResetPlayer()
 
 	bIsMoving = false;
 	FTimerHandle ResetTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMPlayer::HidePlayer, 2.f, false);
+	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMPlayer::HidePlayer, 1.f, false);
 }
 
 void APMPlayer::HidePlayer()
@@ -147,6 +145,16 @@ void APMPlayer::HidePlayer()
 
 void APMPlayer::StartPlayer()
 {
+	SetActorRotation(FRotator(0, 0, 0));
+	MovingDirection = 1.f;
+	PositionOnSpline = 1.f;
+	SplineIndex = 0;
+	TempDirection = EDirections::NONE;
+	DesiredDirection = EDirections::RIGHT;
+	CurrentDirection = EDirections::RIGHT;
+	bChased = false;
+	this->SetActorHiddenInGame(false);
+
 	TArray<AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("Start")), OutActors);
 	for (AActor* item : OutActors)
@@ -160,21 +168,8 @@ void APMPlayer::StartPlayer()
 		return;
 	}
 
-	SetActorRotation(FRotator(0, 0, 0));
-	MovingDirection = 1.f;
-	PositionOnSpline = 1.f;
-	SplineIndex = 0;
-	TempDirection = EDirections::NONE;
-	DesiredDirection = EDirections::RIGHT;
-	CurrentDirection = EDirections::RIGHT;
-	bChased = false;
-	this->SetActorHiddenInGame(false);
-
 	const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
 	SetActorLocation(NewLocation);
-
-	FTimerHandle StartMovementTimer;
-	GetWorld()->GetTimerManager().SetTimer(StartMovementTimer, this, &APMPlayer::StartMovement, 1, false);
 }
 
 void APMPlayer::StartMovement()
@@ -290,13 +285,19 @@ bool APMPlayer::CheckIfAtPoint()
 
 void APMPlayer::ChooseNewSpline()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *UEnum::GetValueAsString(DesiredDirection));
 	switch (DesiredDirection)
 	{
 		case UPWARD:
 		{
 			if (APMSpline* newSpline = CurrentSpline->Splines[SplineIndex].UPWARD)
 			{
+				if (CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName("releaseGhost")))
+				{
+					TempDirection = DesiredDirection;
+					DesiredDirection = CurrentDirection;
+					return;
+				}
+
 				if (TempDirection != NONE)
 				{
 					DesiredDirection = TempDirection;
@@ -319,6 +320,13 @@ void APMPlayer::ChooseNewSpline()
 		{
 			if (APMSpline* newSpline = CurrentSpline->Splines[SplineIndex].DOWN)
 			{	
+				if (CurrentSpline->Splines[SplineIndex].DOWN->ActorHasTag(FName("releaseGhost")))
+				{
+					TempDirection = DesiredDirection;
+					DesiredDirection = CurrentDirection;
+					return;
+				}
+
 				if (TempDirection != NONE)
 				{
 					DesiredDirection = TempDirection;
@@ -341,6 +349,13 @@ void APMPlayer::ChooseNewSpline()
 		{
 			if (APMSpline* newSpline = CurrentSpline->Splines[SplineIndex].RIGHT)
 			{
+				if (CurrentSpline->Splines[SplineIndex].RIGHT->ActorHasTag(FName("releaseGhost")))
+				{
+					TempDirection = DesiredDirection;
+					DesiredDirection = CurrentDirection;
+					return;
+				}
+
 				if (TempDirection != NONE)
 				{
 					DesiredDirection = TempDirection;
@@ -363,6 +378,13 @@ void APMPlayer::ChooseNewSpline()
 		{
 			if (APMSpline* newSpline = CurrentSpline->Splines[SplineIndex].LEFT)
 			{
+				if (CurrentSpline->Splines[SplineIndex].LEFT->ActorHasTag(FName("releaseGhost")))
+				{
+					TempDirection = DesiredDirection;
+					DesiredDirection = CurrentDirection;
+					return;
+				}
+
 				if (TempDirection != NONE)
 				{
 					DesiredDirection = TempDirection;

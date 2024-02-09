@@ -9,6 +9,8 @@
 
 class APMPlayer;
 class APMGhost;
+class APMSpline;
+class APMCherryCoin;
 
 /**
  * 
@@ -40,11 +42,16 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void WonGame();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartingTimer(float time);
+
 	UFUNCTION(BlueprintCallable)
 	void RestartGame();
 
 	void AddCoin();
 	void SubtractCoin();
+	void SpawnCherryCoin();
+	void AddCherryCoin();
 
 	void PlayerAttackState();
 
@@ -55,6 +62,9 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	int32 Lives = 3;
 
+	UPROPERTY(BlueprintReadWrite)
+	int32 NumberOfCherryCoins = 0;
+
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<APMGhost> GhostClass;
@@ -63,5 +73,10 @@ private:
 
 	APMPlayer* Player = nullptr;
 	TArray<APMGhost*> Ghosts;
+	TArray<APMSpline*> CherrySplines;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<APMCherryCoin> CherryCoinClass;
+
+	FTimerHandle CherryTimerHandle;
 };

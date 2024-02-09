@@ -5,6 +5,63 @@
 #include "PMPlayerController.h"
 #include "PMPlayer.h"
 #include "PMGhost.h"
+#include "PMCherryCoin.h"
+#include "PMSpline.h"
+#include "Components/SplineComponent.h"
+
+
+void APMGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UE_LOG(LogTemp, Warning, TEXT("game mode begin play"));
+
+	Player = Cast<APMPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
+	if (Player == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | Player is nullptr"));
+	}
+
+	TArray<AActor*> ghosts;
+	UGameplayStatics::GetAllActorsOfClass(this, GhostClass, ghosts);
+	for (auto& item : ghosts)
+	{
+		APMGhost* ghost = Cast<APMGhost>(item);
+		if (ghost != nullptr)
+		{
+			Ghosts.Add(ghost);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | Ghost is nullptr"));
+		}
+	}
+
+	TArray<AActor*> cherrySplines;
+	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("cherry")), cherrySplines);
+	for (auto& item : cherrySplines)
+	{
+		APMSpline* spline = Cast<APMSpline>(item);
+		if (spline != nullptr)
+		{
+			CherrySplines.Add(spline);
+		}
+	}
+
+	APMPlayerController* PC = Cast<APMPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (PC != nullptr)
+	{
+		PC->SetInputMode(FInputModeGameOnly());
+	}
+
+	StartGame();
+	StartingTimer(3.f);
+
+	FTimerHandle StartTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(StartTimerHandle, this, &APMGameModeBase::StartAllMovement, 3.f, false);
+
+	GetWorld()->GetTimerManager().SetTimer(CherryTimerHandle, this, &APMGameModeBase::SpawnCherryCoin, 15.f, false);
+}
 
 void APMGameModeBase::AddPoints_Implementation(int32 points)
 {
@@ -29,41 +86,9 @@ void APMGameModeBase::HandleGhostHit_Implementation()
 	}
 
 	FTimerHandle ResetTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMGameModeBase::StartGame, 3.f, false);
-}
-
-void APMGameModeBase::BeginPlay()
-{
-	Super::BeginPlay();
-
-	UE_LOG(LogTemp, Warning, TEXT("game mode begin play"));
-
-	Player = Cast<APMPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
-	if (Player == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | Player is nullptr"));
-	}
-
-	TArray<AActor*> ghosts;
-	UGameplayStatics::GetAllActorsOfClass(this, GhostClass, ghosts);
-	for (AActor* item : ghosts)
-	{
-		APMGhost* ghost = Cast<APMGhost>(item);
-		if (ghost != nullptr)
-		{
-			Ghosts.Add(ghost);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | Ghost is nullptr"));
-		}
-	}
-
-	APMPlayerController* PC = Cast<APMPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	if (PC != nullptr)
-	{
-		PC->SetInputMode(FInputModeGameOnly());
-	}
+	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMGameModeBase::StartGame, 2.f, false);
+	FTimerHandle StartTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(StartTimerHandle, this, &APMGameModeBase::StartAllMovement, 3.f, false);
 }
 
 void APMGameModeBase::StartGame()
@@ -139,7 +164,6 @@ void APMGameModeBase::RestartGame()
 	if (PC != nullptr)
 	{
 		PC->RestartLevel();
-		//TODO: open level menu
 	}	
 }
 
@@ -151,6 +175,28 @@ void APMGameModeBase::AddCoin()
 void APMGameModeBase::SubtractCoin()
 {
 	NumberOfCoins--;
+}
+
+void APMGameModeBase::SpawnCherryCoin()
+{
+	const int32 randomIndex = FMath::RandRange(0, CherrySplines.Num() - 1);
+
+	if (CherrySplines[randomIndex] != nullptr)
+	{
+		const float splineLength = CherrySplines[randomIndex]->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
+		const FVector location = CherrySplines[randomIndex]->SplineComponent->GetLocationAtDistanceAlongSpline(splineLength / 2, ESplineCoordinateSpace::World);
+		const FRotator rotation = FRotator(0, 0, 0);
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		GetWorld()->SpawnActor<APMCoin>(CherryCoinClass, location, rotation, SpawnInfo);
+	}
+}
+
+void APMGameModeBase::AddCherryCoin()
+{
+	GetWorld()->GetTimerManager().SetTimer(CherryTimerHandle, this, &APMGameModeBase::SpawnCherryCoin, 10.f, false);
+
+	NumberOfCherryCoins++;
 }
 
 void APMGameModeBase::PlayerAttackState()
