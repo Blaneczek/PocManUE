@@ -10,6 +10,7 @@
 #include "Components/SplineComponent.h"
 #include "UI/HUD/PMClassicHUD.h"
 #include "UI/HUD/PMEndGameWidget.h"
+#include "UI/HUD/PMStarterWidget.h"
 
 
 APMGameModeBase::APMGameModeBase()
@@ -17,7 +18,7 @@ APMGameModeBase::APMGameModeBase()
 	Score = 0;
 	NumberOfCoins = 0;
 	Lives = 3;
-	NumberOfCherryCoins = 0;
+	CherryNumber = 0;
 }
 
 void APMGameModeBase::BeginPlay()
@@ -30,7 +31,6 @@ void APMGameModeBase::BeginPlay()
 	
 	StartGame();
 	InitializeWidgets();
-	StartingTimer(3.f);
 
 	FTimerHandle StartTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(StartTimerHandle, this, &APMGameModeBase::StartAllMovement, 3.f, false);
@@ -141,7 +141,7 @@ void APMGameModeBase::StartAllMovement()
 	}
 }
 
-void APMGameModeBase::HandleEndGame(TObjectPtr<UPMEndGameWidget> EndGameWidget)
+void APMGameModeBase::HandleEndGame(UPMEndGameWidget* EndGameWidget)
 {
 	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 	if (PC == nullptr) return;
@@ -198,10 +198,10 @@ void APMGameModeBase::AddCherryCoin()
 {
 	GetWorld()->GetTimerManager().SetTimer(CherryTimerHandle, this, &APMGameModeBase::SpawnCherryCoin, 10.f, false);
 
-	NumberOfCherryCoins++;
+	CherryNumber++;
 	if (ClassicHUD != nullptr)
 	{
-		ClassicHUD->UpdateCherry(NumberOfCherryCoins);
+		ClassicHUD->UpdateCherry(CherryNumber);
 	}
 }
 
@@ -233,6 +233,16 @@ void APMGameModeBase::InitializeWidgets()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | ClassicHUDClass is nullptr"));
+	}
+
+	if (StarterWidgetClass != nullptr)
+	{
+		StarterWidget = CreateWidget<UPMStarterWidget>(PC, StarterWidgetClass);
+		StarterWidget->AddToViewport();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | StarterWidgetClass is nullptr"));
 	}
 
 	if (LoseGameWidgetClass != nullptr)

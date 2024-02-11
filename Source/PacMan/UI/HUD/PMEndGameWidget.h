@@ -20,7 +20,7 @@ class PACMAN_API UPMEndGameWidget : public UUserWidget
 	GENERATED_BODY()
 
 protected:
-	void NativeConstruct() override;
+	virtual void NativeConstruct() override;
 
 	UFUNCTION()
 	void OnMenuButtonClicked();

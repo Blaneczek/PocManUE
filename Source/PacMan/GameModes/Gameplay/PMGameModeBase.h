@@ -12,7 +12,7 @@ class APMSpline;
 class APMCherryCoin;
 class UPMClassicHUD;
 class UPMEndGameWidget;
-
+class UPMStarterWidget;
 
 /**
  * 
@@ -38,10 +38,7 @@ public:
 	void StopGame();
 	void StopAllMovement();
 	void StartAllMovement();
-	void HandleEndGame(TObjectPtr<UPMEndGameWidget> EndGameWidget);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void StartingTimer(float time);
+	void HandleEndGame(UPMEndGameWidget* EndGameWidget);
 
 	UFUNCTION()
 	void RestartGameType();
@@ -66,17 +63,19 @@ public:
 	// Gameplay variables
 	UPROPERTY(BlueprintReadWrite)
 	int32 Score;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	int32 Lives;
-
 	UPROPERTY(BlueprintReadWrite)
-	int32 NumberOfCherryCoins;
+	int32 CherryNumber;
+
 	//
 	
 	// Widgets
 	UPROPERTY(BlueprintReadWrite, Category ="PocMan|Widgets")
 	TObjectPtr<UPMClassicHUD> ClassicHUD;
+
+	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
+	TObjectPtr<UPMStarterWidget> StarterWidget;
 
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
 	TObjectPtr<UPMEndGameWidget> LoseGameWidget;
@@ -95,6 +94,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMEndGameWidget> WinGameWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
+	TSubclassOf<UPMStarterWidget> StarterWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMGhost> GhostClass;

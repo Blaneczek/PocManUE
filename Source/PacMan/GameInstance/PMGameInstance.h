@@ -8,7 +8,6 @@
 
 class APMCamera;
 
-
 UENUM(BlueprintType)
 enum class ELevelType : uint8
 {
@@ -41,4 +40,12 @@ private:
 
 	UPROPERTY()
 	ELevelType CurrentLevel;
+
+	//Classic gameplay data
+	int32 ClassicScore;
+	int32 ClssicLives;
+	int32 ClassicCherryNumber;
+
+	//Maze gameplay data
+
 };

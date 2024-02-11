@@ -18,7 +18,7 @@ class PACMAN_API UPMClassicHUD : public UUserWidget
 	GENERATED_BODY()
 	
 protected:
-	void NativeConstruct() override;
+	virtual void NativeConstruct() override;
 
 public:
 	void UpdateScore(int32 newScore);
