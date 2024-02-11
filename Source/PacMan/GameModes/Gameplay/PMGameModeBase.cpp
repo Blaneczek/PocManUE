@@ -8,53 +8,19 @@
 #include "Gameplay/Coins/PMCherryCoin.h"
 #include "Gameplay/Splines/PMSpline.h"
 #include "Components/SplineComponent.h"
+#include "UI/HUD/PMClassicHUD.h"
 
 
 void APMGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp, Warning, TEXT("game mode begin play"));
-
-	Player = Cast<APMPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
-	if (Player == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | Player is nullptr"));
-	}
-
-	TArray<AActor*> ghosts;
-	UGameplayStatics::GetAllActorsOfClass(this, GhostClass, ghosts);
-	for (auto& item : ghosts)
-	{
-		APMGhost* ghost = Cast<APMGhost>(item);
-		if (ghost != nullptr)
-		{
-			Ghosts.Add(ghost);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | Ghost is nullptr"));
-		}
-	}
-
-	TArray<AActor*> cherrySplines;
-	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("cherry")), cherrySplines);
-	for (auto& item : cherrySplines)
-	{
-		APMSpline* spline = Cast<APMSpline>(item);
-		if (spline != nullptr)
-		{
-			CherrySplines.Add(spline);
-		}
-	}
-
-	APMPlayerController* PC = Cast<APMPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	if (PC != nullptr)
-	{
-		PC->SetInputMode(FInputModeGameOnly());
-	}
-
+	SetPlayer();
+	SetGhosts();
+	SetCherrySplines();
+	
 	StartGame();
+	InitializeWidgets();
 	StartingTimer(3.f);
 
 	FTimerHandle StartTimerHandle;
@@ -66,6 +32,10 @@ void APMGameModeBase::BeginPlay()
 void APMGameModeBase::AddPoints_Implementation(int32 points)
 {
 	Score += points;
+	if (ClassicHUD != nullptr)
+	{
+		ClassicHUD->UpdateScore(Score);
+	}
 
 	if (NumberOfCoins == 0)
 	{
@@ -77,8 +47,12 @@ void APMGameModeBase::AddPoints_Implementation(int32 points)
 void APMGameModeBase::HandleGhostHit_Implementation()
 {
 	StopGame();
-
 	Lives--;
+	if (ClassicHUD != nullptr)
+	{
+		ClassicHUD->UpdateLife(Lives);
+	}
+
 	if (Lives == 0)
 	{
 		LostGame();
@@ -158,7 +132,7 @@ void APMGameModeBase::StartAllMovement()
 	}
 }
 
-void APMGameModeBase::RestartGame()
+void APMGameModeBase::RestartGameType()
 {
 	APMPlayerController* PC = Cast<APMPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	if (PC != nullptr)
@@ -197,6 +171,10 @@ void APMGameModeBase::AddCherryCoin()
 	GetWorld()->GetTimerManager().SetTimer(CherryTimerHandle, this, &APMGameModeBase::SpawnCherryCoin, 10.f, false);
 
 	NumberOfCherryCoins++;
+	if (ClassicHUD != nullptr)
+	{
+		ClassicHUD->UpdateCherry(NumberOfCherryCoins);
+	}
 }
 
 void APMGameModeBase::PlayerAttackState()
@@ -206,6 +184,71 @@ void APMGameModeBase::PlayerAttackState()
 		if (ghost != nullptr)
 		{
 			ghost->VulnerableState();
+		}
+	}
+}
+
+void APMGameModeBase::InitializeWidgets()
+{
+	APMPlayerController* PC = Cast<APMPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (PC == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | PlayerController is nullptr"));
+		return;
+	}
+
+	if (ClassicHUDClass != nullptr)
+	{
+		ClassicHUD = CreateWidget<UPMClassicHUD>(PC, ClassicHUDClass);
+		ClassicHUD->AddToViewport();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | ClassicHUDClass is nullptr"));
+	}
+}
+
+void APMGameModeBase::SetPlayer()
+{
+	Player = Cast<APMPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
+	if (Player == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::SetPlayer | Player is nullptr"));
+	}
+}
+
+void APMGameModeBase::SetGhosts()
+{
+	TArray<AActor*> ghosts;
+	UGameplayStatics::GetAllActorsOfClass(this, GhostClass, ghosts);
+	for (auto& item : ghosts)
+	{
+		APMGhost* ghost = Cast<APMGhost>(item);
+		if (ghost != nullptr)
+		{
+			Ghosts.Add(ghost);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::SetGhosts | Ghost is nullptr"));
+		}
+	}
+}
+
+void APMGameModeBase::SetCherrySplines()
+{
+	TArray<AActor*> cherrySplines;
+	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("cherry")), cherrySplines);
+	for (auto& item : cherrySplines)
+	{
+		APMSpline* spline = Cast<APMSpline>(item);
+		if (spline != nullptr)
+		{
+			CherrySplines.Add(spline);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::SetCherrySplines | Spline is nullptr"));
 		}
 	}
 }

@@ -9,7 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Kismet/GameplayStatics.h"
-#include "PacMan/Gameplay/Splines/PMSpline.h"
+#include "Gameplay/Splines/PMSpline.h"
 #include "Components/SplineComponent.h"
 #include "GameModes/Gameplay/PMGameModeBase.h"
 #include "Interfaces/PMInteractionInterface.h"
@@ -254,6 +254,7 @@ void APMPlayer::MoveRight()
 
 void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Warning, TEXT("overlap player"));
 	if (OtherActor == nullptr || OtherActor == this)
 	{
 		return;

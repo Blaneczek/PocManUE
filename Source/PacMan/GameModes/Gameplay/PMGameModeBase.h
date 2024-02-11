@@ -11,6 +11,7 @@ class APMPlayer;
 class APMGhost;
 class APMSpline;
 class APMCherryCoin;
+class UPMClassicHUD;
 
 /**
  * 
@@ -46,7 +47,7 @@ public:
 	void StartingTimer(float time);
 
 	UFUNCTION(BlueprintCallable)
-	void RestartGame();
+	void RestartGameType();
 
 	void AddCoin();
 	void SubtractCoin();
@@ -54,6 +55,12 @@ public:
 	void AddCherryCoin();
 
 	void PlayerAttackState();
+
+private:
+	void InitializeWidgets();
+	void SetPlayer();
+	void SetGhosts();
+	void SetCherrySplines();
 
 public:
 	UPROPERTY(BlueprintReadWrite)
@@ -65,7 +72,13 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	int32 NumberOfCherryCoins = 0;
 
+	UPROPERTY(BlueprintReadWrite, Category ="PocMan|Widgets")
+	UPMClassicHUD* ClassicHUD;
+
 private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UPMClassicHUD> ClassicHUDClass;
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<APMGhost> GhostClass;
 

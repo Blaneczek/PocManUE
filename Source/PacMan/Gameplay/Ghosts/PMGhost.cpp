@@ -397,6 +397,7 @@ void APMGhost::AttackTimer()
 
 int32 APMGhost::Interaction()
 {
+	UE_LOG(LogTemp, Warning, TEXT("ghost interaction"));
 	if (bDoOnce)
 	{
 		APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
@@ -429,7 +430,7 @@ void APMGhost::ReleaseGhost()
 		GetWorld()->GetTimerManager().ClearTimer(ReleaseTimerHandle);
 	}
 
-	Speed = NormalSpeed;
+	Speed = bVulnerable ? VulnerableSpeed : NormalSpeed;
 	Player->MarkSpline();
 	State = EGhostState::RELEASE;
 	GetWorld()->GetTimerManager().SetTimer(ChaseTimerHandle, this, &APMGhost::AttackTimer, 1.0f, true);
@@ -528,7 +529,7 @@ void APMGhost::EndVulnerableState()
 {
 	bGhostHitted = false;
 	bVulnerable = false;
-	Speed = NormalSpeed;
+	Speed = State == EGhostState::WAIT ? VulnerableSpeed : NormalSpeed;
 	bDoOnce = true;
 	bFlickering = false;
 
