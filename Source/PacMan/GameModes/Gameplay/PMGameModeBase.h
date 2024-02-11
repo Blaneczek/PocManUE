@@ -6,13 +6,13 @@
 #include "GameFramework/GameModeBase.h"
 #include "PMGameModeBase.generated.h"
 
-
 class APMPlayer;
 class APMGhost;
 class APMSpline;
 class APMCherryCoin;
 class UPMClassicHUD;
-class UPMLoseGameWidget;
+class UPMEndGameWidget;
+
 
 /**
  * 
@@ -38,12 +38,7 @@ public:
 	void StopGame();
 	void StopAllMovement();
 	void StartAllMovement();
-
-	UFUNCTION()
-	void LostGame();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void WonGame();
+	void HandleEndGame(TObjectPtr<UPMEndGameWidget> EndGameWidget);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void StartingTimer(float time);
@@ -84,7 +79,10 @@ public:
 	TObjectPtr<UPMClassicHUD> ClassicHUD;
 
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
-	TObjectPtr<UPMLoseGameWidget> LoseGameWidget;
+	TObjectPtr<UPMEndGameWidget> LoseGameWidget;
+
+	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
+	TObjectPtr<UPMEndGameWidget> WinGameWidget;
 	//
 
 private:
@@ -93,7 +91,10 @@ private:
 	TSubclassOf<UPMClassicHUD> ClassicHUDClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
-	TSubclassOf<UPMLoseGameWidget> LoseGameWidgetClass;
+	TSubclassOf<UPMEndGameWidget> LoseGameWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
+	TSubclassOf<UPMEndGameWidget> WinGameWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMGhost> GhostClass;

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "PMLoseGameWidget.generated.h"
+#include "PMEndGameWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBackToMenu);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRestartCurrentGame);
@@ -15,7 +15,7 @@ class UButton;
  * 
  */
 UCLASS()
-class PACMAN_API UPMLoseGameWidget : public UUserWidget
+class PACMAN_API UPMEndGameWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

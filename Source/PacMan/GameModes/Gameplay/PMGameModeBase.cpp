@@ -9,7 +9,7 @@
 #include "Gameplay/Splines/PMSpline.h"
 #include "Components/SplineComponent.h"
 #include "UI/HUD/PMClassicHUD.h"
-#include "UI/HUD/PMLoseGameWidget.h"
+#include "UI/HUD/PMEndGameWidget.h"
 
 
 APMGameModeBase::APMGameModeBase()
@@ -49,7 +49,7 @@ void APMGameModeBase::AddPoints(int32 points)
 	if (NumberOfCoins == 0)
 	{
 		StopGame();
-		WonGame();
+		HandleEndGame(WinGameWidget);
 	}
 }
 
@@ -64,7 +64,7 @@ void APMGameModeBase::HandleGhostHit()
 
 	if (Lives == 0)
 	{
-		LostGame();
+		HandleEndGame(LoseGameWidget);
 		return;
 	}
 
@@ -141,26 +141,23 @@ void APMGameModeBase::StartAllMovement()
 	}
 }
 
-void APMGameModeBase::LostGame()
+void APMGameModeBase::HandleEndGame(TObjectPtr<UPMEndGameWidget> EndGameWidget)
 {
-	if (LoseGameWidget == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::LostGame | LoseGameWidget is nullptr"));
-		return;
-	}
+	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+	if (PC == nullptr) return;
 
-	APMPlayerController* PC = Cast<APMPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	if (PC != nullptr)
+	PC->SetShowMouseCursor(true);
+	PC->SetInputMode(FInputModeUIOnly());
+
+	if (EndGameWidget != nullptr)
 	{
-		PC->SetShowMouseCursor(true);
-		PC->SetInputMode(FInputModeUIOnly());
+		EndGameWidget->AddToViewport();
 	}
-	LoseGameWidget->AddToViewport();
 }
 
 void APMGameModeBase::RestartGameType()
 {
-	APMPlayerController* PC = Cast<APMPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 	if (PC != nullptr)
 	{
 		PC->RestartLevel();
@@ -240,13 +237,24 @@ void APMGameModeBase::InitializeWidgets()
 
 	if (LoseGameWidgetClass != nullptr)
 	{
-		LoseGameWidget = CreateWidget<UPMLoseGameWidget>(PC, LoseGameWidgetClass);
+		LoseGameWidget = CreateWidget<UPMEndGameWidget>(PC, LoseGameWidgetClass);
 		LoseGameWidget->OnBackToMenu.AddDynamic(this, &APMGameModeBase::GoToMenu);
 		LoseGameWidget->OnRestartGame.AddDynamic(this, &APMGameModeBase::RestartGameType);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | LoseGameWidgetClass is nullptr"));
+	}
+
+	if (WinGameWidgetClass != nullptr)
+	{
+		WinGameWidget = CreateWidget<UPMEndGameWidget>(PC, WinGameWidgetClass);
+		WinGameWidget->OnBackToMenu.AddDynamic(this, &APMGameModeBase::GoToMenu);
+		WinGameWidget->OnRestartGame.AddDynamic(this, &APMGameModeBase::RestartGameType);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | WindGameWidgetClass is nullptr"));
 	}
 }
 
