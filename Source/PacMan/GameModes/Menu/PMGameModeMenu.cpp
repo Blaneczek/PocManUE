@@ -24,7 +24,6 @@ void APMGameModeMenu::BeginPlay()
 
 void APMGameModeMenu::ChooseGameType(ELevelType GameType)
 {
-	UE_LOG(LogTemp, Warning, TEXT("nie ma yupu"));
 	GameInstance->SetLevel(GameType);
 
 	switch (GameType)
@@ -32,7 +31,6 @@ void APMGameModeMenu::ChooseGameType(ELevelType GameType)
 		case ELevelType::CLASSIC:
 		{
 			UGameplayStatics::OpenLevel(this, "Classic");
-			UE_LOG(LogTemp, Warning, TEXT("halo gdzie level"));
 			return;
 		}
 		case ELevelType::LABIRYNTH :

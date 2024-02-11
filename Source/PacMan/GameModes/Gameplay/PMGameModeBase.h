@@ -12,6 +12,7 @@ class APMGhost;
 class APMSpline;
 class APMCherryCoin;
 class UPMClassicHUD;
+class UPMLoseGameWidget;
 
 /**
  * 
@@ -21,15 +22,16 @@ class PACMAN_API APMGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
+public:
+	//Default constructor
+	APMGameModeBase();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintNativeEvent)
 	void AddPoints(int32 points);
-
-	UFUNCTION(BlueprintNativeEvent)
 	void HandleGhostHit();
 
 	void StartGame();
@@ -37,7 +39,7 @@ public:
 	void StopAllMovement();
 	void StartAllMovement();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION()
 	void LostGame();
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -46,8 +48,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void StartingTimer(float time);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	void RestartGameType();
+
+	UFUNCTION()
+	void GoToMenu();
 
 	void AddCoin();
 	void SubtractCoin();
@@ -63,33 +68,50 @@ private:
 	void SetCherrySplines();
 
 public:
+	// Gameplay variables
 	UPROPERTY(BlueprintReadWrite)
-	int32 Score = 0;
+	int32 Score;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
+	int32 Lives;
 
 	UPROPERTY(BlueprintReadWrite)
-	int32 Lives = 3;
-
-	UPROPERTY(BlueprintReadWrite)
-	int32 NumberOfCherryCoins = 0;
-
+	int32 NumberOfCherryCoins;
+	//
+	
+	// Widgets
 	UPROPERTY(BlueprintReadWrite, Category ="PocMan|Widgets")
-	UPMClassicHUD* ClassicHUD;
+	TObjectPtr<UPMClassicHUD> ClassicHUD;
+
+	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
+	TObjectPtr<UPMLoseGameWidget> LoseGameWidget;
+	//
 
 private:
-	UPROPERTY(EditDefaultsOnly)
+	// Classes
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMClassicHUD> ClassicHUDClass;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
+	TSubclassOf<UPMLoseGameWidget> LoseGameWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMGhost> GhostClass;
 
-	int32 NumberOfCoins = 0;
-
-	APMPlayer* Player = nullptr;
-	TArray<APMGhost*> Ghosts;
-	TArray<APMSpline*> CherrySplines;
-
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMCherryCoin> CherryCoinClass;
+	//
 
+	UPROPERTY()
+	TObjectPtr<APMPlayer> Player;
+	UPROPERTY()
+	TArray<TObjectPtr<APMGhost>> Ghosts;
+	UPROPERTY()
+	TArray<TObjectPtr<APMSpline>> CherrySplines;
+	
+	// Timers
 	FTimerHandle CherryTimerHandle;
+	//
+
+	int32 NumberOfCoins;
 };
