@@ -12,9 +12,9 @@ class APMCamera;
 UENUM(BlueprintType)
 enum class ELevelType : uint8
 {
-	MENU		UMETA(DisplayName = "Menu"),
-	CLASSIC		UMETA(DisplayName = "Classic"),
-	LABIRYNTH	UMETA(DisplayName = "Labirynth"),
+	MENU	UMETA(DisplayName = "Menu"),
+	CLASSIC	UMETA(DisplayName = "Classic"),
+	MAZE	UMETA(DisplayName = "Maze"),
 };
 
 /**
@@ -37,7 +37,7 @@ private:
 	TSubclassOf<APMCamera> ClassicCameraClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan | Camera")
-	TSubclassOf<APMCamera> LabirynthCameraClass;
+	TSubclassOf<APMCamera> MazeCameraClass;
 
 	UPROPERTY()
 	ELevelType CurrentLevel;

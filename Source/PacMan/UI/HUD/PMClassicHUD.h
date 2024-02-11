@@ -27,16 +27,16 @@ public:
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* Score;
+	TObjectPtr<UTextBlock> Score;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* CherryNumber;
+	TObjectPtr<UTextBlock> CherryNumber;
 
 	UPROPERTY(meta = (BindWidget))
-	UImage* Life1;
+	TObjectPtr<UImage> Life1;
 
 	UPROPERTY(meta = (BindWidget))
-	UImage* Life2;
+	TObjectPtr<UImage> Life2;
 };
 
 

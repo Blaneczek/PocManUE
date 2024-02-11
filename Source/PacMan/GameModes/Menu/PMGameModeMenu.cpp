@@ -22,7 +22,7 @@ void APMGameModeMenu::BeginPlay()
 
 }
 
-void APMGameModeMenu::ChooseGameType(ELevelType GameType)
+void APMGameModeMenu::ChooseGame(ELevelType GameType)
 {
 	GameInstance->SetLevel(GameType);
 
@@ -33,13 +33,23 @@ void APMGameModeMenu::ChooseGameType(ELevelType GameType)
 			UGameplayStatics::OpenLevel(this, "Classic");
 			return;
 		}
-		case ELevelType::LABIRYNTH :
+		case ELevelType::MAZE:
 		{
-			UGameplayStatics::OpenLevel(this, "Labirynth");
+			UGameplayStatics::OpenLevel(this, "Maze");
 			return;
 		}
 		default: return;
 	}
+}
+
+void APMGameModeMenu::ContinueGame(ELevelType GameType)
+{
+
+}
+
+void APMGameModeMenu::ExitGame()
+{
+	UKismetSystemLibrary::QuitGame(this, UGameplayStatics::GetPlayerController(this, 0), EQuitPreference::Quit, true);
 }
 
 void APMGameModeMenu::InitializeMenu()
@@ -50,14 +60,17 @@ void APMGameModeMenu::InitializeMenu()
 		return;
 	}
 
-	APMPlayerControllerMenu* PCM = Cast<APMPlayerControllerMenu>(UGameplayStatics::GetPlayerController(this, 0));
-	if (PCM == nullptr)
+	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+	if (PC != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("APMGameModeMenu::InitializeMenu | PCM is nullptr"));
-		return;
+		MenuWidget = CreateWidget<UPMMenuWidget>(PC, MenuWidgetClass);
+		MenuWidget->OnStartNewClassic.AddDynamic(this, &APMGameModeMenu::ChooseGame);
+		MenuWidget->OnStartNewMaze.AddDynamic(this, &APMGameModeMenu::ChooseGame);
+		MenuWidget->OnContinueClassic.AddDynamic(this, &APMGameModeMenu::ContinueGame);
+		MenuWidget->OnContinueMaze.AddDynamic(this, &APMGameModeMenu::ContinueGame);
+		MenuWidget->OnExitGame.AddDynamic(this, &APMGameModeMenu::ExitGame);
+		MenuWidget->AddToViewport();
 	}
-	MenuWidget = CreateWidget<UPMMenuWidget>(PCM, MenuWidgetClass);
-	MenuWidget->AddToViewport();
 }
 
 

@@ -6,10 +6,10 @@
 #include "Blueprint/UserWidget.h"
 #include "PMEndGameWidget.generated.h"
 
+class UButton;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBackToMenu);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRestartCurrentGame);
-
-class UButton;
 
 /**
  * 
@@ -29,10 +29,10 @@ protected:
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	UButton* MenuButton;
+	TObjectPtr<UButton> MenuButton;
 
 	UPROPERTY(meta = (BindWidget))
-	UButton* RestartButton;
+	TObjectPtr<UButton> RestartButton;
 
 public:
 	UPROPERTY()

@@ -22,22 +22,26 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintCallable)
-	void ChooseGameType(ELevelType GameType);
+	UFUNCTION()
+	void ChooseGame(ELevelType GameType);
+	UFUNCTION()
+	void ContinueGame(ELevelType GameType);
+	UFUNCTION()
+	void ExitGame();
 
 private:
 	void InitializeMenu();
 
 public:
 	UPROPERTY(BlueprintReadWrite)
-	UPMMenuWidget* MenuWidget{nullptr};
+	TObjectPtr<UPMMenuWidget> MenuWidget;
 
 private:
 	UPROPERTY()
-	UPMGameInstance* GameInstance{nullptr};
+	TObjectPtr<UPMGameInstance> GameInstance;
 
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan | Widgets");
-	TSubclassOf<UPMMenuWidget> MenuWidgetClass{nullptr};
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets");
+	TSubclassOf<UPMMenuWidget> MenuWidgetClass;
 
 	
 };
