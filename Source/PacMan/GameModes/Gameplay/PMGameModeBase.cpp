@@ -8,9 +8,10 @@
 #include "Gameplay/Coins/PMCherryCoin.h"
 #include "Gameplay/Splines/PMSpline.h"
 #include "Components/SplineComponent.h"
-#include "UI/HUD/PMClassicHUD.h"
+#include "UI/HUD/PMHUDWidget.h"
 #include "UI/HUD/PMEndGameWidget.h"
 #include "UI/HUD/PMStarterWidget.h"
+#include "GameInstance/PMGameInstance.h"
 
 
 APMGameModeBase::APMGameModeBase()
@@ -25,12 +26,21 @@ void APMGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	GameInstance = Cast<UPMGameInstance>(GetGameInstance());
+	if (GameInstance == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | GameInstance is nullptr"));
+		return;
+	}
+	
+	CurrentLevel = GameInstance->GetCurrentLevel();
+
 	SetPlayer();
 	SetGhosts();
 	SetCherrySplines();
 	
 	StartGame();
-	InitializeWidgets();
+	InitializeWidgets(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
 	FTimerHandle StartTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(StartTimerHandle, this, &APMGameModeBase::StartAllMovement, 3.f, false);
@@ -41,9 +51,9 @@ void APMGameModeBase::BeginPlay()
 void APMGameModeBase::AddPoints(int32 points)
 {
 	Score += points;
-	if (ClassicHUD != nullptr)
+	if (HUDWidget != nullptr)
 	{
-		ClassicHUD->UpdateScore(Score);
+		HUDWidget->UpdateScore(Score);
 	}
 
 	if (NumberOfCoins == 0)
@@ -57,9 +67,9 @@ void APMGameModeBase::HandleGhostHit()
 {
 	StopGame();
 	Lives--;
-	if (ClassicHUD != nullptr)
+	if (HUDWidget != nullptr)
 	{
-		ClassicHUD->UpdateLife(Lives);
+		HUDWidget->UpdateLife(Lives);
 	}
 
 	if (Lives == 0)
@@ -199,9 +209,9 @@ void APMGameModeBase::AddCherryCoin()
 	GetWorld()->GetTimerManager().SetTimer(CherryTimerHandle, this, &APMGameModeBase::SpawnCherryCoin, 10.f, false);
 
 	CherryNumber++;
-	if (ClassicHUD != nullptr)
+	if (HUDWidget != nullptr)
 	{
-		ClassicHUD->UpdateCherry(CherryNumber);
+		HUDWidget->UpdateCherry(CherryNumber);
 	}
 }
 
@@ -216,28 +226,11 @@ void APMGameModeBase::PlayerAttackState()
 	}
 }
 
-void APMGameModeBase::InitializeWidgets()
+void APMGameModeBase::InitializeWidgets(APlayerController* PlayerController)
 {
-	APMPlayerController* PC = Cast<APMPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	if (PC == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | PlayerController is nullptr"));
-		return;
-	}
-
-	if (ClassicHUDClass != nullptr)
-	{
-		ClassicHUD = CreateWidget<UPMClassicHUD>(PC, ClassicHUDClass);
-		ClassicHUD->AddToViewport();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | ClassicHUDClass is nullptr"));
-	}
-
 	if (StarterWidgetClass != nullptr)
 	{
-		StarterWidget = CreateWidget<UPMStarterWidget>(PC, StarterWidgetClass);
+		StarterWidget = CreateWidget<UPMStarterWidget>(PlayerController, StarterWidgetClass);
 		StarterWidget->AddToViewport();
 	}
 	else
@@ -247,7 +240,7 @@ void APMGameModeBase::InitializeWidgets()
 
 	if (LoseGameWidgetClass != nullptr)
 	{
-		LoseGameWidget = CreateWidget<UPMEndGameWidget>(PC, LoseGameWidgetClass);
+		LoseGameWidget = CreateWidget<UPMEndGameWidget>(PlayerController, LoseGameWidgetClass);
 		LoseGameWidget->OnBackToMenu.AddDynamic(this, &APMGameModeBase::GoToMenu);
 		LoseGameWidget->OnRestartGame.AddDynamic(this, &APMGameModeBase::RestartGameType);
 	}
@@ -258,7 +251,7 @@ void APMGameModeBase::InitializeWidgets()
 
 	if (WinGameWidgetClass != nullptr)
 	{
-		WinGameWidget = CreateWidget<UPMEndGameWidget>(PC, WinGameWidgetClass);
+		WinGameWidget = CreateWidget<UPMEndGameWidget>(PlayerController, WinGameWidgetClass);
 		WinGameWidget->OnBackToMenu.AddDynamic(this, &APMGameModeBase::GoToMenu);
 		WinGameWidget->OnRestartGame.AddDynamic(this, &APMGameModeBase::RestartGameType);
 	}

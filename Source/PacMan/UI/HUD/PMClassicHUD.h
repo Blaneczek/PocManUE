@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UI/HUD/PMHUDWidget.h"
 #include "PMClassicHUD.generated.h"
 
 class UTextBlock;
@@ -13,30 +13,10 @@ class UImage;
  * 
  */
 UCLASS()
-class PACMAN_API UPMClassicHUD : public UUserWidget
+class PACMAN_API UPMClassicHUD : public UPMHUDWidget
 {
 	GENERATED_BODY()
 	
-protected:
-	virtual void NativeConstruct() override;
-
-public:
-	void UpdateScore(int32 newScore);
-	void UpdateCherry(int32 newCherryNumber);
-	void UpdateLife(int32 Lives);
-
-protected:
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> Score;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> CherryNumber;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> Life1;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> Life2;
 };
 
 

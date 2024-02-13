@@ -30,13 +30,11 @@ public:
 	TSubclassOf<APMCamera> GetCameraClass() const;
 
 	void SetLevel(ELevelType Level) { CurrentLevel = Level; };
+	ELevelType GetCurrentLevel() const { return CurrentLevel; }
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan | Camera")
 	TSubclassOf<APMCamera> ClassicCameraClass;
-
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan | Camera")
-	TSubclassOf<APMCamera> MazeCameraClass;
 
 	UPROPERTY()
 	ELevelType CurrentLevel;

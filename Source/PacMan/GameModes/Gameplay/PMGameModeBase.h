@@ -10,9 +10,11 @@ class APMPlayer;
 class APMGhost;
 class APMSpline;
 class APMCherryCoin;
-class UPMClassicHUD;
+class UPMHUDWidget;
 class UPMEndGameWidget;
 class UPMStarterWidget;
+class UPMGameInstance;
+enum class ELevelType : uint8;
 
 /**
  * 
@@ -29,6 +31,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual void InitializeWidgets(APlayerController* PlayerController);
 
 public:
 	void AddPoints(int32 points);
@@ -54,7 +58,7 @@ public:
 	void PlayerAttackState();
 
 private:
-	void InitializeWidgets();
+	
 	void SetPlayer();
 	void SetGhosts();
 	void SetCherrySplines();
@@ -72,7 +76,7 @@ public:
 	
 	// Widgets
 	UPROPERTY(BlueprintReadWrite, Category ="PocMan|Widgets")
-	TObjectPtr<UPMClassicHUD> ClassicHUD;
+	TObjectPtr<UPMHUDWidget> HUDWidget;
 
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
 	TObjectPtr<UPMStarterWidget> StarterWidget;
@@ -86,9 +90,6 @@ public:
 
 private:
 	// Classes
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
-	TSubclassOf<UPMClassicHUD> ClassicHUDClass;
-
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMEndGameWidget> LoseGameWidgetClass;
 
@@ -104,6 +105,10 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMCherryCoin> CherryCoinClass;
 	//
+	
+	// Timers
+	FTimerHandle CherryTimerHandle;
+	//
 
 	UPROPERTY()
 	TObjectPtr<APMPlayer> Player;
@@ -111,10 +116,9 @@ private:
 	TArray<TObjectPtr<APMGhost>> Ghosts;
 	UPROPERTY()
 	TArray<TObjectPtr<APMSpline>> CherrySplines;
+	UPROPERTY()
+	TObjectPtr<UPMGameInstance> GameInstance;
 	
-	// Timers
-	FTimerHandle CherryTimerHandle;
-	//
-
+	ELevelType CurrentLevel;
 	int32 NumberOfCoins;
 };

@@ -37,7 +37,6 @@ void APMCoin::Tick(float DeltaTime)
 
 int32 APMCoin::Interaction()
 {
-	UE_LOG(LogTemp, Warning, TEXT("overlap coin"));
 	APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
 	if (gameMode != nullptr)
 	{

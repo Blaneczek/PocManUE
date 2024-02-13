@@ -2,6 +2,8 @@
 
 
 #include "PMPlayerControllerMenu.h"
+#include "Gameplay/Player/PMClassicPlayer.h"
+#include "Gameplay/Player/PMMazePlayer.h"
 
 void APMPlayerControllerMenu::BeginPlay()
 {
@@ -9,4 +11,5 @@ void APMPlayerControllerMenu::BeginPlay()
 
 	bShowMouseCursor = true;
 	SetInputMode(FInputModeUIOnly());
+	
 }

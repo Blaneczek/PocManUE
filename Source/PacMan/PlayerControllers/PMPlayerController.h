@@ -7,6 +7,8 @@
 #include "PMPlayerController.generated.h"
 
 class APMCamera;
+class APMClassicPlayer;
+class APMMazePlayer;
 
 /**
  * 
@@ -24,4 +26,10 @@ public:
 	TSubclassOf<APMCamera> GetCameraClass() const;
 	void SetCamera(TSubclassOf<APMCamera> CameraClass);
 
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
+	TSubclassOf<APMClassicPlayer> ClassicPlayerClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
+	TSubclassOf<APMMazePlayer> MazePlayerClass;
 };

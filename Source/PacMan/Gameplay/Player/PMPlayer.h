@@ -9,13 +9,12 @@
 class USphereComponent;
 class UInputMappingContext;
 class UInputAction;
-class UInputAction;
 class UStaticMeshComponent;
 class APMSpline;
 class APMGameModeBase;
 
 UENUM()
-enum EDirection : uint8
+enum class EDirection : uint8
 {
 	NONE	UMETA(DisplayName = "None"),
 	UPWARD	UMETA(DisplayName = "UP"),
@@ -41,19 +40,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 protected:
 	//MappingContext
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
 	UInputMappingContext* MappingContext;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
-	UInputAction* MoveUpAction;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
-	UInputAction* MoveDownAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
 	UInputAction* MoveLeftAction;
@@ -64,13 +54,9 @@ protected:
 	
 public:
 	UFUNCTION()
-	void MoveUp();
+	virtual void MoveLeft() {};
 	UFUNCTION()
-	void MoveDown();
-	UFUNCTION()
-	void MoveLeft();
-	UFUNCTION()
-	void MoveRight();
+	virtual void MoveRight() {};
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -78,7 +64,7 @@ public:
 	bool CheckIfAtPoint();
 	void ChooseNewSpline();
 
-	void RotatePlayer(float Yaw, TEnumAsByte<EDirection> Direction);
+	void RotatePlayer(float Yaw, EDirection Direction);
 
 	void MarkSpline();
 	void UnmarkSpline();
@@ -96,17 +82,16 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* Mesh;
 
+protected:
 	UPROPERTY()
 	APMSpline* CurrentSpline;
 
 	UPROPERTY(EditAnywhere)
 	float Speed = 50.f;
 
-	UPROPERTY()
-	TEnumAsByte<EDirection> DesiredDirection;
-
-	UPROPERTY()
-	TEnumAsByte<EDirection> CurrentDirection;
+	EDirection DesiredDirection;
+	EDirection CurrentDirection;
+	EDirection TempDirection;
 
 private:
 	UPROPERTY(EditAnywhere)
@@ -116,13 +101,15 @@ private:
 	float StartingMovingDirection;
 
 	UPROPERTY(EditAnywhere)
-	TEnumAsByte<EDirection> StartingDirection;
+	EDirection StartingDirection;
 
-	APMGameModeBase* GameMode = nullptr;
+	UPROPERTY()
+	TObjectPtr<APMGameModeBase> GameMode;
+
 	float PositionOnSpline;
 	float MovingDirection;
 	bool bIsMoving;
 	int32 SplineIndex;
-	EDirection TempDirection;
+	
 	bool bChased;
 };

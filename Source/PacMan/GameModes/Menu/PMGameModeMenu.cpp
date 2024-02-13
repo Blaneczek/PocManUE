@@ -16,6 +16,7 @@ void APMGameModeMenu::BeginPlay()
 	if (GameInstance == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("APMGameModeMenu::BeginPlay | GameInstance is nullptr"));
+		return;
 	}
 
 	InitializeMenu();

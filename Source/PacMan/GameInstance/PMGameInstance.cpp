@@ -14,7 +14,7 @@ TSubclassOf<APMCamera> UPMGameInstance::GetCameraClass() const
 	switch (CurrentLevel)
 	{
 		case ELevelType::CLASSIC: return ClassicCameraClass;
-		case ELevelType::MAZE: return MazeCameraClass;
+		case ELevelType::MAZE: return nullptr;
 	}
 	return nullptr;
 }

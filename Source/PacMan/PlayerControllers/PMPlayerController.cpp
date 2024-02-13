@@ -32,7 +32,7 @@ void APMPlayerController::SetCamera(TSubclassOf<APMCamera> CameraClass)
 {
 	if (CameraClass == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("APMPlayerController::SetCamera | CameraClass is nullptr"));
+		return;
 	}
 
 	AActor* camera = Cast<APMCamera>(UGameplayStatics::GetActorOfClass(GetWorld(), CameraClass));
