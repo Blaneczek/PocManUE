@@ -7,6 +7,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameModes/Gameplay/PMGameModeMaze.h"
+#include "Kismet/GameplayStatics.h"
 
 APMMazePlayer::APMMazePlayer()
 {
@@ -27,6 +29,7 @@ void APMMazePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(MoveLeftAction, ETriggerEvent::Started, this, &APMMazePlayer::MoveLeft);
 		EnhancedInputComponent->BindAction(MoveRightAction, ETriggerEvent::Started, this, &APMMazePlayer::MoveRight);
 		EnhancedInputComponent->BindAction(TurnAroundAction, ETriggerEvent::Started, this, &APMMazePlayer::TurnAround);
+		EnhancedInputComponent->BindAction(OpenMapAction, ETriggerEvent::Started, this, &APMMazePlayer::OpenMap);
 	}
 }
 
@@ -111,13 +114,44 @@ void APMMazePlayer::MoveRight()
 
 void APMMazePlayer::TurnAround()
 {
-	if (CurrentDirection == EDirection::LEFT) return;
-
-	TempDirection = EDirection::NONE;
-	DesiredDirection = EDirection::LEFT;
-
-	if (CurrentDirection == EDirection::RIGHT)
+	switch (CurrentDirection)
 	{
-		RotatePlayer(180.f, EDirection::LEFT);
+		case EDirection::UPWARD:
+		{
+			TempDirection = EDirection::NONE;
+			DesiredDirection = EDirection::DOWN;
+			RotatePlayer(90.f, EDirection::DOWN);
+			return;
+		}
+		case EDirection::DOWN:
+		{
+			TempDirection = EDirection::NONE;
+			DesiredDirection = EDirection::UPWARD;
+			RotatePlayer(-90.f, EDirection::UPWARD);
+			return;
+		}
+		case EDirection::LEFT:
+		{
+			TempDirection = EDirection::NONE;
+			DesiredDirection = EDirection::RIGHT;
+			RotatePlayer(0.f, EDirection::RIGHT);
+			return;
+		}
+		case EDirection::RIGHT:
+		{
+			TempDirection = EDirection::NONE;
+			DesiredDirection = EDirection::LEFT;
+			RotatePlayer(180.f, EDirection::LEFT);
+			return;
+		}
+		default: return;
+	}
+}
+
+void APMMazePlayer::OpenMap()
+{
+	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(this)))
+	{
+		GM->UpdateMaps();
 	}
 }

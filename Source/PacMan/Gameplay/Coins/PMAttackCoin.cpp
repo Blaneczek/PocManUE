@@ -7,8 +7,7 @@
 
 int32 APMAttackCoin::Interaction()
 {
-	APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
-	if (gameMode != nullptr)
+	if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
 	{
 		gameMode->PlayerAttackState();
 		UE_LOG(LogTemp, Warning, TEXT("AttackCoin"))

@@ -26,8 +26,13 @@ protected:
 
 	virtual void InitializeWidgets(APlayerController* PlayerController) override;
 
+public:
+	void HideMap();
+	void UpdateMaps();
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMMazeHUD> MazeHUDClass;
 
+	int32 MapsNumber;
+	bool bIsMapOpen;
 };

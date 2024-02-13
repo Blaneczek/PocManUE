@@ -28,14 +28,18 @@ public:
 
 	UFUNCTION()
 	void TurnAround();
+	UFUNCTION()
+	void OpenMap();
 
 	virtual void MoveLeft() override;
 	virtual void MoveRight() override;
 
 protected:
-	//MappingContext
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
 	UInputAction* TurnAroundAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enhanced Input")
+	UInputAction* OpenMapAction;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

@@ -5,6 +5,7 @@
 #include "PlayerControllers/PMPlayerController.h"
 #include "Gameplay/Player/PMPlayer.h"
 #include "Gameplay/Ghosts/PMGhost.h"
+#include "Gameplay/Coins/PMCoin.h"
 #include "Gameplay/Coins/PMCherryCoin.h"
 #include "Gameplay/Splines/PMSpline.h"
 #include "Components/SplineComponent.h"
@@ -37,15 +38,16 @@ void APMGameModeBase::BeginPlay()
 
 	SetPlayer();
 	SetGhosts();
-	SetCherrySplines();
+	SetSplines();
 	
 	StartGame();
 	InitializeWidgets(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	FTimerHandle StartTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(StartTimerHandle, this, &APMGameModeBase::StartAllMovement, 3.f, false);
+	FTimerHandle StartTimer;
+	GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &APMGameModeBase::StartAllMovement, 3.f, false);
 
-	GetWorld()->GetTimerManager().SetTimer(CherryTimerHandle, this, &APMGameModeBase::SpawnCherryCoin, 15.f, false);
+	CherryCoinDel.BindUFunction(this, FName("SpawnSpecialCoin"), CherryCoinClass);
+	GetWorld()->GetTimerManager().SetTimer(CherryCoinTimer, CherryCoinDel, 10.f, false);
 }
 
 void APMGameModeBase::AddPoints(int32 points)
@@ -189,24 +191,24 @@ void APMGameModeBase::SubtractCoin()
 	NumberOfCoins--;
 }
 
-void APMGameModeBase::SpawnCherryCoin()
+void APMGameModeBase::SpawnSpecialCoin(TSubclassOf<APMCoin> CoinClass)
 {
-	const int32 randomIndex = FMath::RandRange(0, CherrySplines.Num() - 1);
+	const int32 randomIndex = FMath::RandRange(0, Splines.Num() - 1);
 
-	if (CherrySplines[randomIndex] != nullptr)
+	if (Splines[randomIndex] != nullptr)
 	{
-		const float splineLength = CherrySplines[randomIndex]->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
-		const FVector location = CherrySplines[randomIndex]->SplineComponent->GetLocationAtDistanceAlongSpline(splineLength / 2, ESplineCoordinateSpace::World);
+		const float splineLength = Splines[randomIndex]->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
+		const FVector location = Splines[randomIndex]->SplineComponent->GetLocationAtDistanceAlongSpline(splineLength / 2, ESplineCoordinateSpace::World);
 		const FRotator rotation = FRotator(0, 0, 0);
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		GetWorld()->SpawnActor<APMCoin>(CherryCoinClass, location, rotation, SpawnInfo);
+		GetWorld()->SpawnActor<APMCoin>(CoinClass, location, rotation, SpawnInfo);
 	}
 }
 
 void APMGameModeBase::AddCherryCoin()
 {
-	GetWorld()->GetTimerManager().SetTimer(CherryTimerHandle, this, &APMGameModeBase::SpawnCherryCoin, 10.f, false);
+	GetWorld()->GetTimerManager().SetTimer(CherryCoinTimer, CherryCoinDel, 10.f, false);
 
 	CherryNumber++;
 	if (HUDWidget != nullptr)
@@ -288,20 +290,16 @@ void APMGameModeBase::SetGhosts()
 	}
 }
 
-void APMGameModeBase::SetCherrySplines()
+void APMGameModeBase::SetSplines()
 {
 	TArray<AActor*> cherrySplines;
-	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("cherry")), cherrySplines);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APMSpline::StaticClass(), cherrySplines);
 	for (auto& item : cherrySplines)
 	{
 		APMSpline* spline = Cast<APMSpline>(item);
-		if (spline != nullptr)
+		if (spline != nullptr && !spline->ActorHasTag(TEXT("withoutCoins")))
 		{
-			CherrySplines.Add(spline);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::SetCherrySplines | Spline is nullptr"));
+			Splines.Add(spline);
 		}
 	}
 }

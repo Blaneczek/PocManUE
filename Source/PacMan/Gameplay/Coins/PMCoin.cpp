@@ -37,8 +37,7 @@ void APMCoin::Tick(float DeltaTime)
 
 int32 APMCoin::Interaction()
 {
-	APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
-	if (gameMode != nullptr)
+	if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
 	{
 		gameMode->SubtractCoin();
 	}

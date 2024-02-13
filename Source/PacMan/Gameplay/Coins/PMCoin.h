@@ -33,7 +33,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	USphereComponent* CollisionSphere;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* Mesh;
 
 };

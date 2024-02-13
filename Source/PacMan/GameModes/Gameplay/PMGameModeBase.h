@@ -9,6 +9,7 @@
 class APMPlayer;
 class APMGhost;
 class APMSpline;
+class APMCoin;
 class APMCherryCoin;
 class UPMHUDWidget;
 class UPMEndGameWidget;
@@ -52,7 +53,10 @@ public:
 
 	void AddCoin();
 	void SubtractCoin();
-	void SpawnCherryCoin();
+
+	UFUNCTION()
+	void SpawnSpecialCoin(TSubclassOf<APMCoin> CoinClass);
+
 	void AddCherryCoin();
 
 	void PlayerAttackState();
@@ -61,7 +65,7 @@ private:
 	
 	void SetPlayer();
 	void SetGhosts();
-	void SetCherrySplines();
+	void SetSplines();
 
 public:
 	// Gameplay variables
@@ -88,6 +92,9 @@ public:
 	TObjectPtr<UPMEndGameWidget> WinGameWidget;
 	//
 
+	UPROPERTY()
+	TArray<TObjectPtr<APMSpline>> Splines;
+
 private:
 	// Classes
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
@@ -107,15 +114,15 @@ private:
 	//
 	
 	// Timers
-	FTimerHandle CherryTimerHandle;
+	FTimerHandle CherryCoinTimer;
+	FTimerDelegate CherryCoinDel;
 	//
 
 	UPROPERTY()
 	TObjectPtr<APMPlayer> Player;
 	UPROPERTY()
 	TArray<TObjectPtr<APMGhost>> Ghosts;
-	UPROPERTY()
-	TArray<TObjectPtr<APMSpline>> CherrySplines;
+	
 	UPROPERTY()
 	TObjectPtr<UPMGameInstance> GameInstance;
 	
