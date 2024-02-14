@@ -153,6 +153,11 @@ void APMGameModeBase::StartAllMovement()
 	}
 }
 
+void APMGameModeBase::OpenPauseMenu()
+{
+
+}
+
 void APMGameModeBase::HandleEndGame(UPMEndGameWidget* EndGameWidget)
 {
 	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
@@ -228,6 +233,11 @@ void APMGameModeBase::PlayerAttackState()
 	}
 }
 
+void APMGameModeBase::SetPlayerChased(bool IsPlayerChased)
+{
+	PlayerChasedHandle(IsPlayerChased);
+}
+
 void APMGameModeBase::InitializeWidgets(APlayerController* PlayerController)
 {
 	if (StarterWidgetClass != nullptr)
@@ -261,6 +271,10 @@ void APMGameModeBase::InitializeWidgets(APlayerController* PlayerController)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | WindGameWidgetClass is nullptr"));
 	}
+}
+
+void APMGameModeBase::PlayerChasedHandle(bool IsPlayerChased)
+{
 }
 
 void APMGameModeBase::SetPlayer()

@@ -34,16 +34,18 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void InitializeWidgets(APlayerController* PlayerController);
+	virtual void PlayerChasedHandle(bool IsPlayerChased);
+	virtual void HandleEndGame(UPMEndGameWidget* EndGameWidget);
 
 public:
+	virtual void HandleGhostHit();
 	void AddPoints(int32 points);
-	void HandleGhostHit();
-
 	void StartGame();
 	void StopGame();
 	void StopAllMovement();
 	void StartAllMovement();
-	void HandleEndGame(UPMEndGameWidget* EndGameWidget);
+	
+	void OpenPauseMenu();
 
 	UFUNCTION()
 	void RestartGameType();
@@ -59,7 +61,8 @@ public:
 
 	void AddCherryCoin();
 
-	void PlayerAttackState();
+	virtual void PlayerAttackState();
+	void SetPlayerChased(bool IsPlayerChased);
 
 private:
 	

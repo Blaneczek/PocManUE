@@ -25,14 +25,35 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void InitializeWidgets(APlayerController* PlayerController) override;
-
+	virtual void PlayerChasedHandle(bool IsPlayerChased) override;
+	virtual void HandleEndGame(UPMEndGameWidget* EndGameWidget) override;
+	
 public:
+	virtual void HandleGhostHit() override;
+	virtual void PlayerAttackState() override;
+
 	void HideMap();
-	void UpdateMaps();
+	void ShowMap();
+	void AddMap();
+	int32 GetMapsNumber() { return MapsNumber; }
+
+private:
+	void ClearChasedState();
+	void HideVulnerableScreen();
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMMazeHUD> MazeHUDClass;
 
+	UPROPERTY()
+	TObjectPtr<UPMMazeHUD> MazeHUD;
+
 	int32 MapsNumber;
 	bool bIsMapOpen;
+	bool bIsPlayerAlreadyChased;
+	bool bIsStillVulnerable;
+
+	TArray<bool> ChasingGhosts;
+
+	FTimerHandle VulnerableScreenTimer;
 };

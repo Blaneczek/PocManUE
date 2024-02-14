@@ -152,6 +152,10 @@ void APMMazePlayer::OpenMap()
 {
 	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(this)))
 	{
-		GM->UpdateMaps();
+		GM->ShowMap();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("APMMazePlayer::OpenMap | GameMode is nullptr"));
 	}
 }

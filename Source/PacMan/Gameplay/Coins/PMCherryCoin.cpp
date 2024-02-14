@@ -9,8 +9,7 @@
 
 int32 APMCherryCoin::Interaction()
 {
-	APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
-	if (gameMode != nullptr)
+	if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
 	{
 		gameMode->AddCherryCoin();
 	}

@@ -32,7 +32,6 @@ APMPlayer::APMPlayer()
 	TempDirection = EDirection::NONE;
 	DesiredDirection = EDirection::RIGHT;
 	CurrentDirection = EDirection::RIGHT;
-	bChased = false;
 }
 
 // Called when the game starts or when spawned
@@ -97,7 +96,6 @@ void APMPlayer::RotatePlayer(float Yaw, EDirection Direction)
 void APMPlayer::MarkSpline()
 {
 	CurrentSpline->Tags.Add(FName("markedSpline"));
-	bChased = true;
 }
 
 void APMPlayer::UnmarkSpline()
@@ -137,7 +135,6 @@ void APMPlayer::StartPlayer()
 	TempDirection = EDirection::NONE;
 	DesiredDirection = EDirection::RIGHT;
 	CurrentDirection = EDirection::RIGHT;
-	bChased = false;
 	this->SetActorHiddenInGame(false);
 
 	TArray<AActor*> OutActors;
@@ -186,6 +183,11 @@ void APMPlayer::StopMovement()
 	}
 }
 
+
+void APMPlayer::OpenPauseMenu()
+{
+	GameMode->OpenPauseMenu();
+}
 
 void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {

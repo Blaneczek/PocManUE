@@ -368,6 +368,12 @@ void APMGhost::OnSeePawn(APawn* OtherPawn)
 	if (State == EGhostState::PASSIVE && OtherPawn == Player)
 	{		
 		State = EGhostState::ATTACK;
+
+		if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
+		{
+			gameMode->SetPlayerChased(true);
+		}
+
 		Player->MarkSpline();		
 		GetWorld()->GetTimerManager().SetTimer(ChaseTimerHandle, this, &APMGhost::AttackTimer, 1.0f, true); //start timer
 	}
@@ -388,7 +394,13 @@ void APMGhost::AttackTimer()
 		if (ChaseTimerHandle.IsValid())
 		{
 			GetWorld()->GetTimerManager().ClearTimer(ChaseTimerHandle);
-		}		
+		}	
+
+		if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
+		{
+			if (State != EGhostState::RELEASE) gameMode->SetPlayerChased(false);
+		}
+
 		bCanSee = false;
 		GetWorld()->GetTimerManager().SetTimer(CanSeeTimerHandle, this, &APMGhost::CanSee, 2.0f, false);
 		State = EGhostState::PASSIVE;
@@ -397,7 +409,6 @@ void APMGhost::AttackTimer()
 
 int32 APMGhost::Interaction()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ghost interaction"));
 	if (bDoOnce)
 	{
 		APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
@@ -495,10 +506,7 @@ void APMGhost::StopMovement()
 
 void APMGhost::VulnerableState()
 {
-	if (bGhostHitted)
-	{
-		return;
-	}
+	if (bGhostHitted) return;
 
 	if (VulnerableTimerHandle.IsValid())
 	{

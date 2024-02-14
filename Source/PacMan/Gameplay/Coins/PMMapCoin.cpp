@@ -5,4 +5,19 @@
 #include "GameModes/Gameplay/PMGameModeMaze.h"
 #include "Kismet/GameplayStatics.h"
 
-
+int32 APMMapCoin::Interaction()
+{
+	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(this)))
+	{
+		if (GM->GetMapsNumber() < 2)
+		{
+			GM->AddMap();
+			Destroy();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("APMMapCoin::Interaction | gameMode is nullptr"))
+		}
+	}
+	return 0;
+}

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Gameplay/Coins/PMCoin.h"
+#include "PMCoin.h"
 #include "PMMapCoin.generated.h"
 
 /**
@@ -14,4 +14,6 @@ class PACMAN_API APMMapCoin : public APMCoin
 {
 	GENERATED_BODY()
 
+public:
+	virtual int32 Interaction() override;
 };
