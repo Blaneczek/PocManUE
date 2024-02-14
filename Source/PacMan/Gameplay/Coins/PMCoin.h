@@ -30,10 +30,10 @@ public:
 	virtual int32 Interaction() override;
 
 public:
-	UPROPERTY(EditAnywhere)
-	USphereComponent* CollisionSphere;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<USphereComponent> CollisionSphere;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* Mesh;
+	TObjectPtr<UStaticMeshComponent> Mesh;
 
 };

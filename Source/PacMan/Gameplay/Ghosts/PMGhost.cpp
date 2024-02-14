@@ -12,7 +12,8 @@
 #include "GameModes/Gameplay/PMGameModeBase.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include <Queue>
-
+#include "Sound/SoundWave.h"
+#include "GameInstance/PMGameInstance.h"
 
 // Sets default values
 APMGhost::APMGhost()
@@ -74,7 +75,6 @@ void APMGhost::BeginPlay()
 		return;
 	}
 
-	//OnGhostHitDelegate.AddUObject(this, &APMGhost::ResetGhost);
 }
 
 // Called every frame
@@ -541,6 +541,11 @@ void APMGhost::EndVulnerableState()
 	bDoOnce = true;
 	bFlickering = false;
 
+	if (APMGameModeBase* GM = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
+	{
+		GM->EndPlayerAttackState();
+	}
+	
 	if (VulnerableTimerHandle.IsValid())
 	{
 		GetWorld()->GetTimerManager().ClearTimer(VulnerableTimerHandle);
@@ -584,6 +589,17 @@ void APMGhost::BackToBase()
 	if (FlickeringTimerHandle.IsValid())
 	{
 		GetWorld()->GetTimerManager().ClearTimer(FlickeringTimerHandle);
+	}
+
+	if (UPMGameInstance* gameInstance = Cast<UPMGameInstance>(GetGameInstance()))
+	{
+		switch (gameInstance->GetCurrentLevel())
+		{
+			case ELevelType::CLASSIC:
+			{
+				if (HitSoundClassic != nullptr) UGameplayStatics::PlaySound2D(this, HitSoundClassic);
+			}
+		}
 	}
 
 	Speed = ReturnSpeed;

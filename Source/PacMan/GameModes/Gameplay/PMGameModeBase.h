@@ -15,7 +15,9 @@ class UPMHUDWidget;
 class UPMEndGameWidget;
 class UPMStarterWidget;
 class UPMGameInstance;
+class USoundWave;
 enum class ELevelType : uint8;
+
 
 /**
  * 
@@ -41,9 +43,9 @@ public:
 	virtual void HandleGhostHit();
 	void AddPoints(int32 points);
 	void StartGame();
-	void StopGame();
+	virtual void StopGame();
 	void StopAllMovement();
-	void StartAllMovement();
+	virtual void StartAllMovement();
 	
 	void OpenPauseMenu();
 
@@ -62,6 +64,7 @@ public:
 	void AddCherryCoin();
 
 	virtual void PlayerAttackState();
+	virtual void EndPlayerAttackState();
 	void SetPlayerChased(bool IsPlayerChased);
 
 private:
@@ -98,6 +101,9 @@ public:
 	UPROPERTY()
 	TArray<TObjectPtr<APMSpline>> Splines;
 
+	UPROPERTY()
+	TArray<TObjectPtr<APMGhost>> Ghosts;
+
 private:
 	// Classes
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
@@ -123,12 +129,17 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<APMPlayer> Player;
-	UPROPERTY()
-	TArray<TObjectPtr<APMGhost>> Ghosts;
+	
+
+	// Sounds
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
+	TObjectPtr<USoundWave> CoinSound;
 	
 	UPROPERTY()
 	TObjectPtr<UPMGameInstance> GameInstance;
 	
 	ELevelType CurrentLevel;
 	int32 NumberOfCoins;
+
+	bool bCoinSound;
 };

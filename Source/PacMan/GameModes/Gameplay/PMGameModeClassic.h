@@ -8,6 +8,8 @@
 
 
 class UPMClassicHUD;
+class USoundWave;
+class UAudioComponent;
 
 /**
  * 
@@ -26,9 +28,23 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void InitializeWidgets(APlayerController* PlayerController) override;
+	virtual void StartAllMovement() override;
+	virtual void StopGame() override;
+
+public:
+	virtual void PlayerAttackState() override;
+	virtual void EndPlayerAttackState() override;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMClassicHUD> ClassicHUDClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
+	TObjectPtr<USoundWave> GhostSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
+	TObjectPtr<USoundWave> VulnerableGhostSound;
+
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> GhostAudio;
 };

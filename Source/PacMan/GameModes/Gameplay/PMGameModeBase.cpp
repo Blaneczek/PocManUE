@@ -13,6 +13,7 @@
 #include "UI/HUD/PMEndGameWidget.h"
 #include "UI/HUD/PMStarterWidget.h"
 #include "GameInstance/PMGameInstance.h"
+#include "Sound/SoundWave.h"
 
 
 APMGameModeBase::APMGameModeBase()
@@ -21,6 +22,7 @@ APMGameModeBase::APMGameModeBase()
 	NumberOfCoins = 0;
 	Lives = 3;
 	CherryNumber = 0;
+	bCoinSound = true;
 }
 
 void APMGameModeBase::BeginPlay()
@@ -53,6 +55,17 @@ void APMGameModeBase::BeginPlay()
 void APMGameModeBase::AddPoints(int32 points)
 {
 	Score += points;
+
+	if (bCoinSound && CoinSound != nullptr)
+	{
+		bCoinSound = false;
+		UGameplayStatics::PlaySound2D(this, CoinSound);
+	}
+	else
+	{
+		bCoinSound = true;
+	}
+
 	if (HUDWidget != nullptr)
 	{
 		HUDWidget->UpdateScore(Score);
@@ -88,17 +101,11 @@ void APMGameModeBase::HandleGhostHit()
 
 void APMGameModeBase::StartGame()
 {	
-	if (Player != nullptr)
-	{
-		Player->StartPlayer();
-	}
+	Player->StartPlayer();
 
-	for (APMGhost* ghost : Ghosts)
+	for (auto& ghost : Ghosts)
 	{
-		if (ghost != nullptr)
-		{
-			ghost->StartGhost();
-		}
+		ghost->StartGhost();
 	}
 }
 
@@ -109,12 +116,9 @@ void APMGameModeBase::StopGame()
 		Player->ResetPlayer();
 	}
 
-	for (APMGhost* ghost : Ghosts)
+	for (auto& ghost : Ghosts)
 	{
-		if (ghost != nullptr)
-		{
-			ghost->ResetGhost();
-		}
+		ghost->ResetGhost();
 	}
 }
 
@@ -125,12 +129,9 @@ void APMGameModeBase::StopAllMovement()
 		Player->StopMovement();
 	}
 
-	for (APMGhost* ghost : Ghosts)
+	for (auto& ghost : Ghosts)
 	{
-		if (ghost != nullptr)
-		{
-			ghost->StopMovement();
-		}
+		ghost->StopMovement();
 	}
 
 	FTimerHandle StartMovementTimerHandle;
@@ -144,12 +145,9 @@ void APMGameModeBase::StartAllMovement()
 		Player->StartMovement();
 	}
 
-	for (APMGhost* ghost : Ghosts)
+	for (auto& ghost : Ghosts)
 	{
-		if (ghost != nullptr)
-		{
-			ghost->StartMovement();
-		}
+		ghost->StartMovement();
 	}
 }
 
@@ -224,13 +222,14 @@ void APMGameModeBase::AddCherryCoin()
 
 void APMGameModeBase::PlayerAttackState()
 {
-	for (APMGhost* ghost : Ghosts)
+	for (auto& ghost : Ghosts)
 	{
-		if (ghost != nullptr)
-		{
-			ghost->VulnerableState();
-		}
+		ghost->VulnerableState();
 	}
+}
+
+void APMGameModeBase::EndPlayerAttackState()
+{
 }
 
 void APMGameModeBase::SetPlayerChased(bool IsPlayerChased)

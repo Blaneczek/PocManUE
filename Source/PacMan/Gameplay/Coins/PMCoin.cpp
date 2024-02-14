@@ -7,6 +7,7 @@
 #include "GameModes/Gameplay/PMGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Gameplay/Player/PMPlayer.h"
+#include "Sound/SoundWave.h"
 
 // Sets default values
 APMCoin::APMCoin()
@@ -18,7 +19,6 @@ APMCoin::APMCoin()
 	RootComponent = CollisionSphere;
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(CollisionSphere);
-
 }
 
 // Called when the game starts or when spawned
@@ -39,7 +39,7 @@ int32 APMCoin::Interaction()
 {
 	if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
 	{
-		gameMode->SubtractCoin();
+		gameMode->SubtractCoin();	
 	}
 	else
 	{

@@ -17,7 +17,7 @@ class APMPlayer;
 class UMaterialInstanceDynamic;
 
 UENUM()
-enum EGhostState : uint8
+enum class EGhostState : uint8
 {
 	PASSIVE	UMETA(DisplayName = "PASSIVE"),
 	ATTACK	UMETA(DisplayName = "ATTACK"),
@@ -84,15 +84,17 @@ public:
 	void BackToBase();
 	void CanSee();
 
+	bool IsVulnerable() { return bVulnerable; }
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* Mesh;
+	TObjectPtr<UStaticMeshComponent> Mesh;
 
 	UPROPERTY(VisibleAnywhere)
-	USphereComponent* CollisionSphere;
+	TObjectPtr<USphereComponent> CollisionSphere;
 
 	UPROPERTY()
-	APMSpline* CurrentSpline;
+	TObjectPtr<APMSpline> CurrentSpline;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UPawnSensingComponent> PawnSensing;	
@@ -114,31 +116,38 @@ public:
 
 private:
 	UPROPERTY()
-	TEnumAsByte<EGhostState> State;
+	EGhostState State;
 
-	UPROPERTY(EditInstanceOnly)
-	TEnumAsByte<EGhostState> StartingState;
+	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
+	EGhostState StartingState;
 
-	UPROPERTY(EditInstanceOnly)
+	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
 	FRotator StartingRotation;
 
-	UPROPERTY(EditInstanceOnly)
+	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
 	float StartingMovingDirection;
 
-	UPROPERTY(EditInstanceOnly)
-	APMSpline* StartingSpline;
+	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
+	TObjectPtr<APMSpline> StartingSpline;
+
+	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
+	FLinearColor StartingColor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
+	int32 MaxChaseTime = 4;
 
 	UPROPERTY()
 	TObjectPtr<APMPlayer> Player = nullptr;
 
-	UPROPERTY(EditDefaultsOnly)
-	int32 MaxChaseTime = 4;
-
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynMaterial;
 
-	UPROPERTY(EditInstanceOnly)
-	FLinearColor StartingColor;
+	// Sounds
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
+	TObjectPtr<USoundWave> HitSoundClassic;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
+	TObjectPtr<USoundWave> HitSoundMaze;
 
 	float Speed = 50.f;
 	float PositionOnSpline;
