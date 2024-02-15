@@ -11,6 +11,8 @@ int32 APMMapCoin::Interaction()
 	{
 		if (GM->GetMapsNumber() < 2)
 		{
+			if (PickUpSound != nullptr) UGameplayStatics::PlaySound2D(this, PickUpSound);
+
 			GM->AddMap();
 			Destroy();
 		}

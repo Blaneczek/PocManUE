@@ -6,6 +6,7 @@
 #include "PMCoin.h"
 #include "PMMapCoin.generated.h"
 
+class USoundWave;
 /**
  * 
  */
@@ -16,4 +17,8 @@ class PACMAN_API APMMapCoin : public APMCoin
 
 public:
 	virtual int32 Interaction() override;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
+	TObjectPtr<USoundWave> PickUpSound;
 };

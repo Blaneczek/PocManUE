@@ -4,7 +4,6 @@
 #include "PMCherryCoin.h"
 #include "GameModes/Gameplay/PMGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "Gameplay/Splines/PMSpline.h"
 
 
 int32 APMCherryCoin::Interaction()

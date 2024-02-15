@@ -99,16 +99,16 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UPawnSensingComponent> PawnSensing;	
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	float NormalSpeed = 800.f;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	float VulnerableSpeed = 600.f;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	float ReturnSpeed = 1200.f;
 
-	UPROPERTY(EditInstanceOnly)
+	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
 	float ReleaseTime = 2.f;
 
 	//maybe use delegate 

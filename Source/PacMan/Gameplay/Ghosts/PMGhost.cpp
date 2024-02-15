@@ -591,16 +591,7 @@ void APMGhost::BackToBase()
 		GetWorld()->GetTimerManager().ClearTimer(FlickeringTimerHandle);
 	}
 
-	if (UPMGameInstance* gameInstance = Cast<UPMGameInstance>(GetGameInstance()))
-	{
-		switch (gameInstance->GetCurrentLevel())
-		{
-			case ELevelType::CLASSIC:
-			{
-				if (HitSoundClassic != nullptr) UGameplayStatics::PlaySound2D(this, HitSoundClassic);
-			}
-		}
-	}
+	if (HitSoundClassic != nullptr) UGameplayStatics::PlaySound2D(this, HitSoundClassic);
 
 	Speed = ReturnSpeed;
 	bIsMoving = true;

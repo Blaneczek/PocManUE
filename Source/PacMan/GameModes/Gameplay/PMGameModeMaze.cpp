@@ -6,6 +6,8 @@
 #include "Gameplay/Splines/PMSpline.h"
 #include "Components/SplineComponent.h"
 #include "Gameplay/Coins/PMMapCoin.h"
+#include "Kismet/GameplayStatics.h"
+#include "Gameplay/Ghosts/PMGhost.h"
 
 APMGameModeMaze::APMGameModeMaze()
 {
@@ -19,6 +21,8 @@ void APMGameModeMaze::BeginPlay()
 {
 	Super::BeginPlay();
 
+	MapCoinDel.BindUFunction(this, FName("SpawnSpecialCoin"), MapCoinClass);
+	GetWorld()->GetTimerManager().SetTimer(MapCoinTimer, MapCoinDel, 10.f, false);
 }
 
 void APMGameModeMaze::InitializeWidgets(APlayerController* PlayerController)
@@ -87,15 +91,19 @@ void APMGameModeMaze::PlayerAttackState()
 	if (bIsStillVulnerable && VulnerableScreenTimer.IsValid())
 	{
 		GetWorld()->GetTimerManager().ClearTimer(VulnerableScreenTimer);
-		MazeHUD->ShowVulnerableScreen();
 		GetWorld()->GetTimerManager().SetTimer(VulnerableScreenTimer, this, &APMGameModeMaze::HideVulnerableScreen, 7.f, false);
 		bIsStillVulnerable = true;
 		return;
 	}
 
+	PlayerAttackAC = UGameplayStatics::SpawnSound2D(this, VulnerableSound);
 	MazeHUD->ShowVulnerableScreen();	
 	GetWorld()->GetTimerManager().SetTimer(VulnerableScreenTimer, this, &APMGameModeMaze::HideVulnerableScreen, 7.f, false);
 	bIsStillVulnerable = true;
+}
+
+void APMGameModeMaze::EndPlayerAttackState()
+{
 }
 
 void APMGameModeMaze::HideMap()
@@ -119,7 +127,12 @@ void APMGameModeMaze::ShowMap()
 
 void APMGameModeMaze::AddMap()
 {
-	if (MapsNumber == 2) return;
+	if (MapsNumber == 2)
+	{
+		//TODO: mazeHud-> add text "can't add more maps"
+		return;
+	}
+		
 
 	if (MapsNumber == 1)
 	{
@@ -131,6 +144,8 @@ void APMGameModeMaze::AddMap()
 		MazeHUD->UpdateMapIcon(1, ESlateVisibility::Visible);
 		MapsNumber++;
 	}
+
+	GetWorld()->GetTimerManager().SetTimer(MapCoinTimer, MapCoinDel, 15.f, false);
 }
 
 void APMGameModeMaze::ClearChasedState()
@@ -149,4 +164,3 @@ void APMGameModeMaze::HideVulnerableScreen()
 	bIsStillVulnerable = false;
 	MazeHUD->HideVulnerableScreen();
 }
-
