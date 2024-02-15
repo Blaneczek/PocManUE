@@ -14,6 +14,7 @@ class APMCherryCoin;
 class UPMHUDWidget;
 class UPMEndGameWidget;
 class UPMStarterWidget;
+class UPMPauseWidget;
 class UPMGameInstance;
 class USoundWave;
 enum class ELevelType : uint8;
@@ -48,6 +49,8 @@ public:
 	virtual void StartAllMovement();
 	
 	void OpenPauseMenu();
+	UFUNCTION()
+	void ClosePauseMenu();
 
 	UFUNCTION()
 	void RestartGameType();
@@ -94,6 +97,8 @@ protected:
 	TObjectPtr<UPMEndGameWidget> LoseGameWidget;
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
 	TObjectPtr<UPMEndGameWidget> WinGameWidget;
+	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
+	TObjectPtr<UPMPauseWidget> PauseWidget;
 	//
 
 	UPROPERTY()
@@ -117,16 +122,14 @@ private:
 	// Classes
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMEndGameWidget> LoseGameWidgetClass;
-
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMEndGameWidget> WinGameWidgetClass;
-
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMStarterWidget> StarterWidgetClass;
-
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
+	TSubclassOf<UPMPauseWidget> PauseWidgetClass;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMGhost> GhostClass;
-
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMCherryCoin> CherryCoinClass;
 	//

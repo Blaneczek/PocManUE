@@ -43,7 +43,6 @@ public:
 
 private:
 	void ClearChasedState();
-	void HideVulnerableScreen();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
@@ -62,9 +61,9 @@ private:
 	TObjectPtr<USoundWave> VulnerableSound;
 
 	int32 MapsNumber;
-	bool bIsMapOpen;
-	bool bIsPlayerAlreadyChased;
-	bool bIsStillVulnerable;
+	bool bMapOpen;
+	bool bPlayerAlreadyChased;
+	bool bStillVulnerable;
 
 	TArray<bool> ChasingGhosts;
 

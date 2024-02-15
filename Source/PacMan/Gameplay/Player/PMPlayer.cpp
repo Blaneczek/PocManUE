@@ -85,11 +85,22 @@ void APMPlayer::Tick(float DeltaTime)
 	}
 }
 
+void APMPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		EnhancedInputComponent->BindAction(OpenPauseMenuAction, ETriggerEvent::Started, this, &APMPlayer::OpenPauseMenu);
+	}
+}
+
 void APMPlayer::RotatePlayer(float Yaw, EDirection Direction)
 {
 	CurrentDirection = Direction;
 	SetActorRotation(FRotator(0, Yaw, 0));
 	MovingDirection = Yaw <= 0 ? 1.f : -1.f;
+	PositionOnSpline += MovingDirection; //to be sure that player won't stuck when PositionOnSpline == DistanceAtSplinePoint
 	bIsMoving = true;
 }
 
@@ -182,7 +193,6 @@ void APMPlayer::StopMovement()
 		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::StopMovement | PlayerController is nullptr"));
 	}
 }
-
 
 void APMPlayer::OpenPauseMenu()
 {

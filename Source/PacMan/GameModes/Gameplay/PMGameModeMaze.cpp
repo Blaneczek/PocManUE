@@ -8,13 +8,14 @@
 #include "Gameplay/Coins/PMMapCoin.h"
 #include "Kismet/GameplayStatics.h"
 #include "Gameplay/Ghosts/PMGhost.h"
+#include "Components/AudioComponent.h"
 
 APMGameModeMaze::APMGameModeMaze()
 {
 	MapsNumber = 2;
-	bIsMapOpen = false;
-	bIsPlayerAlreadyChased = false;
-	bIsStillVulnerable = false;
+	bMapOpen = false;
+	bPlayerAlreadyChased = false;
+	bStillVulnerable = false;
 }
 
 void APMGameModeMaze::BeginPlay()
@@ -88,36 +89,51 @@ void APMGameModeMaze::PlayerAttackState()
 
 	ClearChasedState();
 
-	if (bIsStillVulnerable && VulnerableScreenTimer.IsValid())
+	if (bStillVulnerable && VulnerableScreenTimer.IsValid())
 	{
+		if (IsValid(PlayerAttackAC))
+		{
+			PlayerAttackAC->Stop();
+			PlayerAttackAC = UGameplayStatics::SpawnSound2D(this, VulnerableSound);
+		}
 		GetWorld()->GetTimerManager().ClearTimer(VulnerableScreenTimer);
-		GetWorld()->GetTimerManager().SetTimer(VulnerableScreenTimer, this, &APMGameModeMaze::HideVulnerableScreen, 7.f, false);
-		bIsStillVulnerable = true;
+		GetWorld()->GetTimerManager().SetTimer(VulnerableScreenTimer, this, &APMGameModeMaze::EndPlayerAttackState, 7.f, false);
+		bStillVulnerable = true;
 		return;
 	}
 
 	PlayerAttackAC = UGameplayStatics::SpawnSound2D(this, VulnerableSound);
 	MazeHUD->ShowVulnerableScreen();	
-	GetWorld()->GetTimerManager().SetTimer(VulnerableScreenTimer, this, &APMGameModeMaze::HideVulnerableScreen, 7.f, false);
-	bIsStillVulnerable = true;
+	GetWorld()->GetTimerManager().SetTimer(VulnerableScreenTimer, this, &APMGameModeMaze::EndPlayerAttackState, 7.f, false);
+	bStillVulnerable = true;
 }
 
 void APMGameModeMaze::EndPlayerAttackState()
 {
+	if (VulnerableScreenTimer.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(VulnerableScreenTimer);
+	}
+	if (IsValid(PlayerAttackAC))
+	{
+		PlayerAttackAC->Stop();
+	}
+	bStillVulnerable = false;
+	MazeHUD->HideVulnerableScreen();
 }
 
 void APMGameModeMaze::HideMap()
 {
 	MazeHUD->HideMap();
-	bIsMapOpen = false;
+	bMapOpen = false;
 }
 
 void APMGameModeMaze::ShowMap()
 {
-	if (bIsMapOpen || MapsNumber == 0) return;
+	if (bMapOpen || MapsNumber == 0) return;
 
 	MazeHUD->ShowMap();
-	bIsMapOpen = true;
+	bMapOpen = true;
 	MazeHUD->UpdateMapIcon(MapsNumber, ESlateVisibility::Hidden);
 	MapsNumber--;
 
@@ -150,17 +166,7 @@ void APMGameModeMaze::AddMap()
 
 void APMGameModeMaze::ClearChasedState()
 {
-	bIsStillVulnerable = false;
 	ChasingGhosts.Empty();
 	MazeHUD->HideChaseScreen();
 }
 
-void APMGameModeMaze::HideVulnerableScreen()
-{
-	if (VulnerableScreenTimer.IsValid())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(VulnerableScreenTimer);
-	}
-	bIsStillVulnerable = false;
-	MazeHUD->HideVulnerableScreen();
-}

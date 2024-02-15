@@ -6,6 +6,8 @@
 
 void UPMEndGameWidget::NativeConstruct()
 {
+	Super::NativeConstruct();
+
 	MenuButton->OnClicked.AddDynamic(this, &UPMEndGameWidget::OnMenuButtonClicked);
 	RestartButton->OnClicked.AddDynamic(this, &UPMEndGameWidget::OnRestartButtonClicked);
 }

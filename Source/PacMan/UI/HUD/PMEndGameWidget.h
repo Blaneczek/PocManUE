@@ -37,7 +37,6 @@ protected:
 public:
 	UPROPERTY()
 	FBackToMenu OnBackToMenu;
-	
 	UPROPERTY()
 	FRestartCurrentGame OnRestartGame;
 };

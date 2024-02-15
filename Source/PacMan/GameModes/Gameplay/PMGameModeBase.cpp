@@ -12,6 +12,7 @@
 #include "UI/HUD/PMHUDWidget.h"
 #include "UI/HUD/PMEndGameWidget.h"
 #include "UI/HUD/PMStarterWidget.h"
+#include "UI/HUD/PMPauseWidget.h"
 #include "GameInstance/PMGameInstance.h"
 #include "Sound/SoundWave.h"
 
@@ -156,18 +157,36 @@ void APMGameModeBase::StartAllMovement()
 
 void APMGameModeBase::OpenPauseMenu()
 {
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+	{
+		PC->SetShowMouseCursor(true);
+		PC->SetInputMode(FInputModeUIOnly());
+		PC->SetPause(true);
+	}
+	if (IsValid(PauseWidget)) PauseWidget->AddToViewport();
+}
 
+void APMGameModeBase::ClosePauseMenu()
+{
+	UE_LOG(LogTemp, Warning, TEXT("clsoe pause"));
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+	{
+		PC->SetShowMouseCursor(false);
+		PC->SetInputMode(FInputModeGameOnly());
+		PC->SetPause(false);
+	}
+	PauseWidget->RemoveFromParent();
 }
 
 void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound)
 {
 	if (EndGameSound != nullptr) UGameplayStatics::PlaySound2D(this, EndGameSound);
 
-	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-	if (PC == nullptr) return;
-
-	PC->SetShowMouseCursor(true);
-	PC->SetInputMode(FInputModeUIOnly());
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+	{
+		PC->SetShowMouseCursor(true);
+		PC->SetInputMode(FInputModeUIOnly());
+	}
 
 	if (EndGameWidget != nullptr)
 	{
@@ -186,6 +205,7 @@ void APMGameModeBase::RestartGameType()
 
 void APMGameModeBase::GoToMenu()
 {
+	UE_LOG(LogTemp, Warning, TEXT("menu"));
 	UGameplayStatics::OpenLevel(this, "Menu");
 }
 
@@ -270,6 +290,17 @@ void APMGameModeBase::InitializeWidgets(APlayerController* PlayerController)
 		WinGameWidget = CreateWidget<UPMEndGameWidget>(PlayerController, WinGameWidgetClass);
 		WinGameWidget->OnBackToMenu.AddDynamic(this, &APMGameModeBase::GoToMenu);
 		WinGameWidget->OnRestartGame.AddDynamic(this, &APMGameModeBase::RestartGameType);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | WindGameWidgetClass is nullptr"));
+	}
+
+	if (PauseWidgetClass != nullptr)
+	{
+		PauseWidget = CreateWidget<UPMPauseWidget>(PlayerController, PauseWidgetClass);
+		PauseWidget->OnBackToMenu.AddDynamic(this, &APMGameModeBase::GoToMenu);
+		PauseWidget->OnContinue.AddDynamic(this, &APMGameModeBase::ClosePauseMenu);
 	}
 	else
 	{

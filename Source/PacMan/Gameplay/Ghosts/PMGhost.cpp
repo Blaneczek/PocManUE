@@ -218,6 +218,7 @@ void APMGhost::ChooseNewSpline()
 					MovingDirection *= -1.f;
 					const float yaw = GetActorRotation().Yaw;
 					SetActorRotation(FRotator(0, yaw + 180, 0));
+					PositionOnSpline += MovingDirection;
 					bIsMoving = true;
 					return;
 				}
