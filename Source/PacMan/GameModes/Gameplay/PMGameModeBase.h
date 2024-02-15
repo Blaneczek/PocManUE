@@ -37,7 +37,7 @@ protected:
 
 	virtual void InitializeWidgets(APlayerController* PlayerController);
 	virtual void PlayerChasedHandle(bool IsPlayerChased);
-	virtual void HandleEndGame(UPMEndGameWidget* EndGameWidget);
+	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound);
 
 public:
 	virtual void HandleGhostHit();
@@ -83,26 +83,33 @@ public:
 	int32 CherryNumber;
 
 	//
-	
+
+protected:
 	// Widgets
 	UPROPERTY(BlueprintReadWrite, Category ="PocMan|Widgets")
 	TObjectPtr<UPMHUDWidget> HUDWidget;
-
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
 	TObjectPtr<UPMStarterWidget> StarterWidget;
-
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
 	TObjectPtr<UPMEndGameWidget> LoseGameWidget;
-
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
 	TObjectPtr<UPMEndGameWidget> WinGameWidget;
 	//
 
 	UPROPERTY()
 	TArray<TObjectPtr<APMSpline>> Splines;
-
 	UPROPERTY()
 	TArray<TObjectPtr<APMGhost>> Ghosts;
+
+	// Sounds
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
+	TObjectPtr<USoundWave> WinGameSound;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
+	TObjectPtr<USoundWave> LoseGameSound;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
+	TObjectPtr<USoundWave> PlayerHittedSound;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
+	TObjectPtr<USoundWave> CoinSound;
 
 private:
 	// Classes
@@ -132,8 +139,7 @@ private:
 	
 
 	// Sounds
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
-	TObjectPtr<USoundWave> CoinSound;
+	
 	
 	UPROPERTY()
 	TObjectPtr<UPMGameInstance> GameInstance;

@@ -74,7 +74,7 @@ void APMGameModeBase::AddPoints(int32 points)
 	if (NumberOfCoins == 0)
 	{
 		StopGame();
-		HandleEndGame(WinGameWidget);
+		EndGameHandle(WinGameWidget, WinGameSound);
 	}
 }
 
@@ -89,14 +89,16 @@ void APMGameModeBase::HandleGhostHit()
 
 	if (Lives == 0)
 	{
-		HandleEndGame(LoseGameWidget);
+		EndGameHandle(LoseGameWidget, LoseGameSound);
 		return;
 	}
 
-	FTimerHandle ResetTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMGameModeBase::StartGame, 2.f, false);
-	FTimerHandle StartTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(StartTimerHandle, this, &APMGameModeBase::StartAllMovement, 3.f, false);
+	if (PlayerHittedSound != nullptr) UGameplayStatics::PlaySound2D(this, PlayerHittedSound);
+
+	FTimerHandle ResetTimer;
+	GetWorld()->GetTimerManager().SetTimer(ResetTimer, this, &APMGameModeBase::StartGame, 2.f, false);
+	FTimerHandle StartTimer;
+	GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &APMGameModeBase::StartAllMovement, 3.f, false);
 }
 
 void APMGameModeBase::StartGame()
@@ -156,8 +158,10 @@ void APMGameModeBase::OpenPauseMenu()
 
 }
 
-void APMGameModeBase::HandleEndGame(UPMEndGameWidget* EndGameWidget)
+void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound)
 {
+	if (EndGameSound != nullptr) UGameplayStatics::PlaySound2D(this, EndGameSound);
+
 	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 	if (PC == nullptr) return;
 

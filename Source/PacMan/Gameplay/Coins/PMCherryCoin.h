@@ -7,6 +7,8 @@
 #include "PMCherryCoin.generated.h"
 
 class APMSpline;
+class USoundWave;
+
 /**
  * 
  */
@@ -18,4 +20,7 @@ class PACMAN_API APMCherryCoin : public APMCoin
 public:
 	virtual int32 Interaction() override;
 
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
+	TObjectPtr<USoundWave> PickUpSound;
 };

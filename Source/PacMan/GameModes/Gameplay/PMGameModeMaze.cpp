@@ -64,9 +64,9 @@ void APMGameModeMaze::PlayerChasedHandle(bool IsPlayerChased)
 	}
 }
 
-void APMGameModeMaze::HandleEndGame(UPMEndGameWidget* EndGameWidget)
+void APMGameModeMaze::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound)
 {
-	Super::HandleEndGame(EndGameWidget);
+	Super::EndGameHandle(EndGameWidget, EndGameSound);
 
 	ClearChasedState();
 }
