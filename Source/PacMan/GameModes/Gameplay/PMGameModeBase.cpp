@@ -37,6 +37,7 @@ void APMGameModeBase::BeginPlay()
 	}
 	
 	CurrentLevel = GameInstance->GetCurrentLevel();
+	if (GameMusic != nullptr) UGameplayStatics::PlaySound2D(this, GameMusic);
 
 	SetPlayer();
 	SetGhosts();
