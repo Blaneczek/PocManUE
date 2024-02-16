@@ -39,6 +39,7 @@ APMGhost::APMGhost()
 	Speed = NormalSpeed;
 	StartingMovingDirection = 1.f;
 	StartingRotation = FRotator(0, 0, 0);
+	SetEyesPosition(0);
 }
 
 // Called when the game starts or when spawned
@@ -143,9 +144,10 @@ void APMGhost::ChooseNewSpline()
 
 	if (counter == 0)
 	{
-  		MovingDirection *= -1.f;
-		const float& yaw = GetActorRotation().Yaw;
-		SetActorRotation(FRotator(0, yaw + 180, 0));
+  		MovingDirection *= -1;
+		const float yawRotation = GetActorRotation().Yaw + (-180 * MovingDirection);
+		SetActorRotation(FRotator(0, yawRotation, 0));
+		SetEyesPosition(yawRotation);
 		bIsMoving = true;
 		return;
 	}
@@ -167,6 +169,7 @@ void APMGhost::ChooseNewSpline()
 					PositionOnSpline = 1.f;
 					MovingDirection = 1.f;
 					SetActorRotation(FRotator(0, -90, 0));
+					SetEyesPosition(-90);
 					bIsMoving = true;
 					return;
 				}
@@ -178,6 +181,7 @@ void APMGhost::ChooseNewSpline()
 					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 					MovingDirection = -1.f;
 					SetActorRotation(FRotator(0, 90, 0));
+					SetEyesPosition(90);
 					bIsMoving = true;
 					return;
 				}
@@ -189,6 +193,7 @@ void APMGhost::ChooseNewSpline()
 					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 					MovingDirection = -1.f;
 					SetActorRotation(FRotator(0, 180, 0));
+					SetEyesPosition(180);
 					bIsMoving = true;
 					return;
 				}
@@ -200,6 +205,7 @@ void APMGhost::ChooseNewSpline()
 					PositionOnSpline = 1.f;
 					MovingDirection = 1.f;
 					SetActorRotation(FRotator(0, 0, 0));
+					SetEyesPosition(0);
 					bIsMoving = true;
 					return;
 				}
@@ -216,9 +222,10 @@ void APMGhost::ChooseNewSpline()
 				case -1:
 				{
 					MovingDirection *= -1.f;
-					const float yaw = GetActorRotation().Yaw;
-					SetActorRotation(FRotator(0, yaw + 180, 0));
+					const float yawRotation = GetActorRotation().Yaw + (-180 * MovingDirection);
+					SetActorRotation(FRotator(0, yawRotation, 0));
 					PositionOnSpline += MovingDirection;
+					SetEyesPosition(yawRotation);
 					bIsMoving = true;
 					return;
 				}
@@ -228,6 +235,7 @@ void APMGhost::ChooseNewSpline()
 					PositionOnSpline = 1.f;
 					MovingDirection = 1.f;
 					SetActorRotation(FRotator(0, -90, 0));
+					SetEyesPosition(-90);
 					bIsMoving = true;
 					return;
 				}
@@ -237,6 +245,7 @@ void APMGhost::ChooseNewSpline()
 					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 					MovingDirection = -1.f;
 					SetActorRotation(FRotator(0, 90, 0));
+					SetEyesPosition(90);
 					bIsMoving = true;
 					return;
 				}
@@ -246,6 +255,7 @@ void APMGhost::ChooseNewSpline()
 					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 					MovingDirection = -1.f;
 					SetActorRotation(FRotator(0, 180, 0));
+					SetEyesPosition(180);
 					bIsMoving = true;
 					return;
 				}
@@ -255,6 +265,7 @@ void APMGhost::ChooseNewSpline()
 					PositionOnSpline = 1.f;
 					MovingDirection = 1.f;
 					SetActorRotation(FRotator(0, 0, 0));
+					SetEyesPosition(0);
 					bIsMoving = true;
 					return;
 				}
@@ -263,41 +274,41 @@ void APMGhost::ChooseNewSpline()
 		}
 		case EGhostState::WAIT:
 		{
-			if (MovingDirection == 1.f)
+			if (CurrentSpline->Splines[SplineIndex].UPWARD != nullptr && CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(TEXT("releaseGhost")))
 			{
-				if (CurrentSpline->Splines[1].UPWARD != nullptr && !CurrentSpline->Splines[1].UPWARD->ActorHasTag(TEXT("releaseGhost")))
-				{
-					CurrentSpline = CurrentSpline->Splines[1].UPWARD;
-					PositionOnSpline = 1.f;					
-					bIsMoving = true;
-				}
-				else
-				{
-					MovingDirection = -1.f;
-					SetActorRotation(FRotator(0, 90, 0));
-					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
-					bIsMoving = true;
-				}
+				MovingDirection *= -1;
+				PositionOnSpline += 5 * MovingDirection;
+				const float yawRotation = GetActorRotation().Yaw + (-180 * MovingDirection);
+				SetActorRotation(FRotator(0, yawRotation, 0));
+				SetEyesPosition(yawRotation);
+				UE_LOG(LogTemp, Warning, TEXT("%f"), yawRotation);
+				bIsMoving = true;
+				return;
 			}
-			else if (MovingDirection == -1.f)
+
+			if (CurrentSpline->Splines[SplineIndex].UPWARD != nullptr)
 			{
-				if (CurrentSpline->Splines[0].DOWN != nullptr)
-				{
-					CurrentSpline = CurrentSpline->Splines[0].DOWN;
-					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;					
-					bIsMoving = true;
-				}
-				else
-				{
-					MovingDirection = 1.f;
-					SetActorRotation(FRotator(0, 90, 0));
-					PositionOnSpline = 1.f;
-					bIsMoving = true;
-				}
+				CurrentSpline = CurrentSpline->Splines[SplineIndex].UPWARD;
+				MovingDirection = 1;
+				PositionOnSpline = 1.f;
+				bIsMoving = true;
+				return;
 			}
+
+			if (CurrentSpline->Splines[SplineIndex].DOWN != nullptr)
+			{
+				CurrentSpline = CurrentSpline->Splines[SplineIndex].DOWN;
+				MovingDirection = -1;
+				PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
+				bIsMoving = true;
+				return;
+			}
+
+			return;
 		}
 		default: return;
 	}
+
 }
 
 int32 APMGhost::FindPath()
@@ -476,6 +487,7 @@ void APMGhost::StartGhost()
 	CurrentSpline = StartingSpline;
 	MovingDirection = StartingMovingDirection;
 	SetActorRotation(StartingRotation);
+	SetEyesPosition(StartingRotation.Yaw);
 	PositionOnSpline = 1.f;
 	State = StartingState;	
 
@@ -527,7 +539,8 @@ void APMGhost::VulnerableState()
 		State = EGhostState::PASSIVE;
 		MovingDirection *= -1.f;
 		const float yaw = GetActorRotation().Yaw;
-		SetActorRotation(FRotator(0, yaw + 180, 0));
+		SetActorRotation(FRotator(0, yaw + (180 * MovingDirection), 0));
+		SetEyesPosition(yaw + (180 * MovingDirection));
 	}
 
 	GetWorld()->GetTimerManager().SetTimer(VulnerableTimerHandle, this, &APMGhost::EndVulnerableState, 7.f, false);
@@ -597,7 +610,7 @@ void APMGhost::BackToBase()
 	Speed = ReturnSpeed;
 	bIsMoving = true;
 	bGhostHitted = true;
-	State = EGhostState::ATTACK;
+	State = EGhostState::RELEASE;
 }
 
 void APMGhost::CanSee()

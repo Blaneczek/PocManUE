@@ -25,6 +25,16 @@ enum class EGhostState : uint8
 	RELEASE UMETA(DisplayName = "RELEASE")
 };
 
+UENUM()
+enum class EGhostDirection : uint8
+{
+	NONE	UMETA(DisplayName = "None"),
+	UPWARD	UMETA(DisplayName = "UP"),
+	DOWN	UMETA(DisplayName = "DOWN"),
+	LEFT	UMETA(DisplayName = "LEFT"),
+	RIGHT	UMETA(DisplayName = "RIGHT")
+};
+
 USTRUCT()
 struct FSplineQueueData
 {
@@ -86,6 +96,9 @@ public:
 
 	bool IsVulnerable() { return bVulnerable; }
 
+protected:
+	virtual void SetEyesPosition(const int32 YawRotation) {};
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UStaticMeshComponent> Mesh;
@@ -111,8 +124,9 @@ public:
 	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
 	float ReleaseTime = 2.f;
 
-	//maybe use delegate 
-	FOnGhostHit OnGhostHitDelegate;
+
+	UPROPERTY()
+	EGhostDirection CurrentDirection;
 
 private:
 	UPROPERTY()
@@ -151,7 +165,7 @@ private:
 
 	float Speed = 50.f;
 	float PositionOnSpline;
-	float MovingDirection;
+	int32 MovingDirection;
 	int32 SplineIndex;
 	bool bIsMoving;
 	bool bDoOnce;
