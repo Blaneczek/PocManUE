@@ -147,6 +147,9 @@ private:
 	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
 	FLinearColor StartingColor;
 
+	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
+	FLinearColor VulnerableColor;
+
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	int32 MaxChaseTime = 4;
 

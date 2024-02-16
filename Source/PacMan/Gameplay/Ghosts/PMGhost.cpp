@@ -531,16 +531,16 @@ void APMGhost::VulnerableState()
 
 	if (DynMaterial != nullptr)
 	{
-		DynMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.f, 0.f, 0.5f, 1));
+		DynMaterial->SetVectorParameterValue(TEXT("Color"), VulnerableColor);
 	}
 	
 	if (State == EGhostState::ATTACK)
 	{
 		State = EGhostState::PASSIVE;
 		MovingDirection *= -1.f;
-		const float yaw = GetActorRotation().Yaw;
-		SetActorRotation(FRotator(0, yaw + (180 * MovingDirection), 0));
-		SetEyesPosition(yaw + (180 * MovingDirection));
+		const float yawRotation = GetActorRotation().Yaw + (-180 * MovingDirection);
+		SetActorRotation(FRotator(0, yawRotation, 0));
+		SetEyesPosition(yawRotation);
 	}
 
 	GetWorld()->GetTimerManager().SetTimer(VulnerableTimerHandle, this, &APMGhost::EndVulnerableState, 7.f, false);
