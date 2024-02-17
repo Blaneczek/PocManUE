@@ -5,6 +5,10 @@
 #include "Kismet/GameplayStatics.h"
 
 
+void APMAttackCoin::SetMaterial()
+{
+}
+
 int32 APMAttackCoin::Interaction()
 {
 	if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))

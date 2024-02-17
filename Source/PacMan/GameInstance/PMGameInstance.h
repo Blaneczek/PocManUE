@@ -89,8 +89,8 @@ public:
 
 	TSubclassOf<APMCamera> GetCameraClass() const;
 
-	void SetLevel(ELevelType LevelType) { CurrentLevelType = LevelType; };
-	ELevelType GetCurrentLevel() const { return CurrentLevelType; }
+	void SetLevelType(ELevelType LevelType) { CurrentLevelType = LevelType; };
+	ELevelType GetCurrentLevelType() const { return CurrentLevelType; }
 
 	void SetClassicData(const FGameData& Data) { ClassicGameData = Data; }
 

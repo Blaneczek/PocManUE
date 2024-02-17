@@ -87,8 +87,11 @@ public:
 	int32 Lives;
 	UPROPERTY(BlueprintReadWrite)
 	int32 CherryNumber;
-
 	//
+
+	UPROPERTY()
+	ELevelType CurrentLevelType;
+	
 
 protected:
 	// Widgets
@@ -112,8 +115,7 @@ protected:
 	TObjectPtr<APMPlayer> Player;	
 	UPROPERTY()
 	TObjectPtr<UPMGameInstance> GameInstance;
-	UPROPERTY()
-	ELevelType CurrentLevelType;
+	
 	UPROPERTY()
 	int32 CurrentLevelNum;
 

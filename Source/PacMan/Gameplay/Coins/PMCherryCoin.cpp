@@ -6,6 +6,10 @@
 #include "Kismet/GameplayStatics.h"
 
 
+void APMCherryCoin::SetMaterial()
+{
+}
+
 int32 APMCherryCoin::Interaction()
 {
 	if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))

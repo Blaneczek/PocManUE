@@ -9,6 +9,7 @@
 
 class USphereComponent;
 class UStaticMeshComponent;
+class UMaterialInstance;
 
 UCLASS()
 class PACMAN_API APMCoin : public AActor, public IPMInteractionInterface
@@ -23,6 +24,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void SetMaterial();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -36,4 +39,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UStaticMeshComponent> Mesh;
 
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Material")
+	TObjectPtr<UMaterialInstance> ClassicMaterial;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Material")
+	TObjectPtr<UMaterialInstance> MazeMaterial;
 };

@@ -6,8 +6,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameModes/Gameplay/PMGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "Gameplay/Player/PMPlayer.h"
 #include "Sound/SoundWave.h"
+#include "GameInstance/PMGameInstance.h"
 
 // Sets default values
 APMCoin::APMCoin()
@@ -26,6 +26,27 @@ void APMCoin::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SetMaterial();
+}
+
+void APMCoin::SetMaterial()
+{
+	if (UPMGameInstance* GI = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(this)))
+	{
+		switch (GI->GetCurrentLevelType())
+		{
+			case ELevelType::CLASSIC:
+			{
+				Mesh->SetMaterial(0, ClassicMaterial);
+				break;
+			}
+			case ELevelType::MAZE:
+			{
+				Mesh->SetMaterial(0, MazeMaterial);
+				break;
+			}
+		}
+	}
 }
 
 // Called every frame
@@ -37,9 +58,9 @@ void APMCoin::Tick(float DeltaTime)
 
 int32 APMCoin::Interaction()
 {
-	if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
+	if (APMGameModeBase* GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
 	{
-		gameMode->SubtractCoin();	
+		GameMode->SubtractCoin();	
 	}
 	else
 	{

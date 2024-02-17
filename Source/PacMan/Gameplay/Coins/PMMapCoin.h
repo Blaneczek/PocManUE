@@ -15,6 +15,9 @@ class PACMAN_API APMMapCoin : public APMCoin
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void SetMaterial() override;
+
 public:
 	virtual int32 Interaction() override;
 

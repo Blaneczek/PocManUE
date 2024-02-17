@@ -25,7 +25,7 @@ void APMGameModeMenu::BeginPlay()
 
 void APMGameModeMenu::ChooseNewGame(ELevelType GameType)
 {
-	GameInstance->SetLevel(GameType);
+	GameInstance->SetLevelType(GameType);
 
 	switch (GameType)
 	{
@@ -47,7 +47,7 @@ void APMGameModeMenu::ChooseNewGame(ELevelType GameType)
 
 void APMGameModeMenu::ContinueGame(ELevelType GameType)
 {
-	GameInstance->SetLevel(GameType);
+	GameInstance->SetLevelType(GameType);
 
 	switch (GameType)
 	{

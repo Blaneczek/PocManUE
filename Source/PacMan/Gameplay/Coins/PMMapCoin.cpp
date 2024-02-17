@@ -5,6 +5,10 @@
 #include "GameModes/Gameplay/PMGameModeMaze.h"
 #include "Kismet/GameplayStatics.h"
 
+void APMMapCoin::SetMaterial()
+{
+}
+
 int32 APMMapCoin::Interaction()
 {
 	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(this)))

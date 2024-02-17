@@ -38,7 +38,8 @@ void APMGameModeBase::BeginPlay()
 		return;
 	}
 	
-	CurrentLevelType = GameInstance->GetCurrentLevel();
+	CurrentLevelType = GameInstance->GetCurrentLevelType();
+
 	if (GameMusic != nullptr) UGameplayStatics::PlaySound2D(this, GameMusic);
 
 	SetGameplayValues();
