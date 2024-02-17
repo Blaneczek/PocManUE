@@ -5,6 +5,7 @@
 #include "Components/Button.h"
 #include "Components/Border.h"
 #include "GameInstance/PMGameInstance.h"
+#include "PMScoreboardWidget.h"
 
 void UPMMenuWidget::NativeConstruct()
 {
@@ -35,7 +36,8 @@ void UPMMenuWidget::OnMazeButtonClicked()
 
 void UPMMenuWidget::OnScoreboardButtonClicked()
 {
-	//TODO: scoreboard widget
+	Scoreboard->SetScores();
+	Scoreboard->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UPMMenuWidget::OnExitGameButtonClicked()

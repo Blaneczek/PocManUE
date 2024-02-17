@@ -148,8 +148,9 @@ private:
 	
 	UPROPERTY()
 	TObjectPtr<UPMGameInstance> GameInstance;
-	
-	ELevelType CurrentLevel;
+	UPROPERTY()
+	ELevelType CurrentLevelType;
+
 	int32 NumberOfCoins;
 
 	bool bCoinSound;

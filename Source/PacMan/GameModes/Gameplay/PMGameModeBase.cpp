@@ -30,14 +30,14 @@ void APMGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GameInstance = Cast<UPMGameInstance>(GetGameInstance());
+	GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (GameInstance == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | GameInstance is nullptr"));
 		return;
 	}
 	
-	CurrentLevel = GameInstance->GetCurrentLevel();
+	CurrentLevelType = GameInstance->GetCurrentLevel();
 	if (GameMusic != nullptr) UGameplayStatics::PlaySound2D(this, GameMusic);
 
 	SetPlayer();
@@ -180,6 +180,8 @@ void APMGameModeBase::ClosePauseMenu()
 
 void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound)
 {
+	GameInstance->AddScore(CurrentLevelType, FScoreboardData(Score, CherryNumber));
+
 	if (EndGameSound != nullptr) UGameplayStatics::PlaySound2D(this, EndGameSound);
 
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))

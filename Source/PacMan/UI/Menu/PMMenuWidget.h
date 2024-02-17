@@ -8,6 +8,7 @@
 
 class UButton;
 class UBorder;
+class UPMScoreboardWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNewClassic, ELevelType, levelType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FContinueClassic, ELevelType, levelType);
@@ -76,6 +77,10 @@ protected:
 	TObjectPtr<UBorder> ClassicStarter;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UBorder> MazeStarter;
+
+	// Scoreboard
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPMScoreboardWidget> Scoreboard;
 
 public:
 	//Delegates
