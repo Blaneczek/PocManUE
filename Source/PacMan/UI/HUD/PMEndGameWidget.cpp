@@ -3,6 +3,7 @@
 
 #include "PMEndGameWidget.h"
 #include "Components/Button.h"
+#include "Components/TextBlock.h"
 
 void UPMEndGameWidget::NativeConstruct()
 {
@@ -20,4 +21,9 @@ void UPMEndGameWidget::OnMenuButtonClicked()
 void UPMEndGameWidget::OnRestartButtonClicked()
 {
 	OnRestartGame.Broadcast();
+}
+
+void UPMEndGameWidget::SetScore(int32 Score, int32 Cherries)
+{
+	ScoreText->SetText(FText::FromString("Score: " + FString::FromInt(Score) + " | Cherries: " + FString::FromInt(Cherries)));
 }

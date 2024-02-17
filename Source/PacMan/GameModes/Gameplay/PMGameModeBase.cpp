@@ -192,6 +192,7 @@ void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave*
 
 	if (EndGameWidget != nullptr)
 	{
+		EndGameWidget->SetScore(Score, CherryNumber);
 		EndGameWidget->AddToViewport();
 	}
 }

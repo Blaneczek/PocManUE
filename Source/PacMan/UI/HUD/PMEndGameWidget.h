@@ -7,6 +7,7 @@
 #include "PMEndGameWidget.generated.h"
 
 class UButton;
+class UTextBlock;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBackToMenu);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRestartCurrentGame);
@@ -27,12 +28,18 @@ protected:
 	UFUNCTION()
 	void OnRestartButtonClicked();
 
+public:
+	void SetScore(int32 Score, int32 Cherries);
+
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> MenuButton;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> RestartButton;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> ScoreText;
 
 public:
 	UPROPERTY()
