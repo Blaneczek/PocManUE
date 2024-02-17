@@ -9,20 +9,24 @@ void UPMHUDWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Score->SetText(FText::AsNumber(0));
-	CherryNumber->SetText(FText::AsNumber(0));
 	Life1->SetVisibility(ESlateVisibility::Visible);
 	Life2->SetVisibility(ESlateVisibility::Visible);
 }
 
-void UPMHUDWidget::UpdateScore(int32 newScore)
+void UPMHUDWidget::SetValues(int32 InScore, int32 InCherryNumber)
 {
-	Score->SetText(FText::AsNumber(newScore));
+	Score->SetText(FText::AsNumber(InScore));
+	CherryNumber->SetText(FText::AsNumber(InCherryNumber));
 }
 
-void UPMHUDWidget::UpdateCherry(int32 newCherryNumber)
+void UPMHUDWidget::UpdateScore(int32 NewScore)
 {
-	CherryNumber->SetText(FText::AsNumber(newCherryNumber));
+	Score->SetText(FText::AsNumber(NewScore));
+}
+
+void UPMHUDWidget::UpdateCherry(int32 NewCherryNumber)
+{
+	CherryNumber->SetText(FText::AsNumber(NewCherryNumber));
 }
 
 void UPMHUDWidget::UpdateLife(int32 Lives)

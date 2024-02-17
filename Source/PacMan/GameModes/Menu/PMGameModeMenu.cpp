@@ -23,7 +23,7 @@ void APMGameModeMenu::BeginPlay()
 
 }
 
-void APMGameModeMenu::ChooseGame(ELevelType GameType)
+void APMGameModeMenu::ChooseNewGame(ELevelType GameType)
 {
 	GameInstance->SetLevel(GameType);
 
@@ -31,12 +31,14 @@ void APMGameModeMenu::ChooseGame(ELevelType GameType)
 	{
 		case ELevelType::CLASSIC:
 		{
-			UGameplayStatics::OpenLevel(this, "Classic");
+			GameInstance->ClassicGameData = FGameData(1, 0, 0);
+			UGameplayStatics::OpenLevel(this, *GameInstance->ClassicLevels.Find(1));
 			return;
 		}
 		case ELevelType::MAZE:
 		{
-			UGameplayStatics::OpenLevel(this, "Maze");
+			GameInstance->MazeGameData = FGameData(1, 0, 0);
+			UGameplayStatics::OpenLevel(this, *GameInstance->MazeLevels.Find(1));
 			return;
 		}
 		default: return;
@@ -45,7 +47,28 @@ void APMGameModeMenu::ChooseGame(ELevelType GameType)
 
 void APMGameModeMenu::ContinueGame(ELevelType GameType)
 {
+	GameInstance->SetLevel(GameType);
 
+	switch (GameType)
+	{
+		case ELevelType::CLASSIC:
+		{
+			if (GameInstance->ClassicGameData.LevelNum != 1)
+			{
+				UGameplayStatics::OpenLevel(this, *GameInstance->ClassicLevels.Find(GameInstance->ClassicGameData.LevelNum));
+			}			
+			return;
+		}
+		case ELevelType::MAZE:
+		{
+			if (GameInstance->MazeGameData.LevelNum != 1)
+			{
+				UGameplayStatics::OpenLevel(this, *GameInstance->MazeLevels.Find(GameInstance->MazeGameData.LevelNum));
+			}
+			return;
+		}
+	default: return;
+	}
 }
 
 void APMGameModeMenu::ExitGame()
@@ -65,8 +88,8 @@ void APMGameModeMenu::InitializeMenu()
 	if (PC != nullptr)
 	{
 		MenuWidget = CreateWidget<UPMMenuWidget>(PC, MenuWidgetClass);
-		MenuWidget->OnStartNewClassic.AddDynamic(this, &APMGameModeMenu::ChooseGame);
-		MenuWidget->OnStartNewMaze.AddDynamic(this, &APMGameModeMenu::ChooseGame);
+		MenuWidget->OnStartNewClassic.AddDynamic(this, &APMGameModeMenu::ChooseNewGame);
+		MenuWidget->OnStartNewMaze.AddDynamic(this, &APMGameModeMenu::ChooseNewGame);
 		MenuWidget->OnContinueClassic.AddDynamic(this, &APMGameModeMenu::ContinueGame);
 		MenuWidget->OnContinueMaze.AddDynamic(this, &APMGameModeMenu::ContinueGame);
 		MenuWidget->OnExitGame.AddDynamic(this, &APMGameModeMenu::ExitGame);

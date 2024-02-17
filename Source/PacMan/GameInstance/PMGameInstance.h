@@ -7,6 +7,7 @@
 #include "PMGameInstance.generated.h"
 
 class APMCamera;
+class UPMSaveGame;
 
 UENUM(BlueprintType)
 enum class ELevelType : uint8
@@ -18,58 +19,41 @@ enum class ELevelType : uint8
 
 
 USTRUCT()
-struct FClassicData
+struct FGameData
 {
 	GENERATED_BODY()
 
-	FName SubLevel;
+	UPROPERTY()
+	int32 LevelNum;
+	UPROPERTY()
 	int32 Score;
-	int32 Lives;
+	UPROPERTY()
 	int32 CherryNumber;
 
-	FClassicData()
+	FGameData()
 	{
-		SubLevel = "Classic01";
+		LevelNum = 1;
 		Score = 0;
-		Lives = 3;
 		CherryNumber = 0;
 	}
 
-	FClassicData(const FName& SubLevelName, int32 ScoreNum, int32 LivesNum, int32 CherryNum)
-		: SubLevel(SubLevelName), Score(ScoreNum), Lives(LivesNum), CherryNumber(CherryNum)
+	FGameData(int32 LevelNum, int32 ScoreNum, int32 CherryNum)
+		: LevelNum(LevelNum), Score(ScoreNum), CherryNumber(CherryNum)
 	{}
 };
 
-USTRUCT()
-struct FMazeData
-{
-	GENERATED_BODY()
 
-	FName SubLevel;
-	int32 Score;
-	int32 Lives;
-	int32 CherryNumber;
-
-	FMazeData()
-	{
-		SubLevel = "Maze01";
-		Score = 0;
-		Lives = 3;
-		CherryNumber = 0;
-	}
-
-	FMazeData(const FName& SubLevelName, int32 ScoreNum, int32 LivesNum, int32 CherryNum)
-		: SubLevel(SubLevelName), Score(ScoreNum), Lives(LivesNum), CherryNumber(CherryNum)
-	{}
-};
 
 USTRUCT()
 struct FScoreboardData
 {
 	GENERATED_BODY()
 
+	UPROPERTY()
 	int32 Score;
+	UPROPERTY()
 	int32 Cherries;
+	UPROPERTY()
 	FString Date;
 
 	FScoreboardData()
@@ -89,6 +73,7 @@ struct FScoreboardData
 	{
 		return (Score < ScoreboardData.Score);
 	}
+
 };
 
 /**
@@ -107,18 +92,31 @@ public:
 	void SetLevel(ELevelType LevelType) { CurrentLevelType = LevelType; };
 	ELevelType GetCurrentLevel() const { return CurrentLevelType; }
 
-	void SetClassicDara(const FClassicData& Data) { ClassicData = Data; }
-	FClassicData GetClassicData() const { return ClassicData; }
+	void SetClassicData(const FGameData& Data) { ClassicGameData = Data; }
 
-	void SetMazeData(const FMazeData& Data) { MazeData = Data; }
-	FMazeData GetMazeData() const { return  MazeData; } 
+	void SetMazeData(const FGameData& Data) { MazeGameData = Data; }
 
 	FText GetScoreData(ELevelType LevelType) const;
 
 	void AddScore(ELevelType LevelType, const FScoreboardData& ScoreData);
 
+	void SaveGame();
+	void LoadGame();
+
 private:
 	FText MakeScoreDataAsText(const TArray<FScoreboardData>& ScoreData) const;
+
+
+public:
+	UPROPERTY()
+	FGameData ClassicGameData;
+	UPROPERTY()
+	FGameData MazeGameData;
+
+	UPROPERTY()
+	TMap<int32, FName> ClassicLevels;
+	UPROPERTY()
+	TMap<int32, FName> MazeLevels;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan | Camera")
@@ -126,15 +124,14 @@ private:
 
 	UPROPERTY()
 	ELevelType CurrentLevelType;
-	
-	UPROPERTY()
-	FClassicData ClassicData;
-
-	UPROPERTY()
-	FMazeData MazeData;
 
 	UPROPERTY()
 	TArray<FScoreboardData> ClassicScoreData;
 	UPROPERTY()
 	TArray<FScoreboardData> MazeScoreData;
+
+	FString SaveSlotName;
+
+	UPROPERTY()
+	TObjectPtr<UPMSaveGame> SaveGameInstance;
 };

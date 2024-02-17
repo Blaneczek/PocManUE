@@ -28,8 +28,12 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void InitializeWidgets(APlayerController* PlayerController) override;
+	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame);
+	virtual void SetGameplayValues() override;
 	virtual void StartAllMovement() override;
 	virtual void StopGame() override;
+	virtual void RestartGameType() override;
+
 
 public:
 	virtual void PlayerAttackState() override;

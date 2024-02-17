@@ -27,10 +27,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void InitializeWidgets(APlayerController* PlayerController) override;
-	void PlayerChasedHandle(bool IsPlayerChased) override;
-	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound) override;
-	
+	virtual void InitializeWidgets(APlayerController* PlayerController) override;	
+	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame) override;
+	virtual void PlayerChasedHandle(bool IsPlayerChased) override;
+	virtual void RestartGameType() override;
+	virtual void SetGameplayValues() override;
+
 public:
 	virtual void HandleGhostHit() override;
 	virtual void PlayerAttackState() override;

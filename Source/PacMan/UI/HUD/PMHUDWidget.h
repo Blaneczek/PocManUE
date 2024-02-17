@@ -21,8 +21,9 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	void UpdateScore(int32 newScore);
-	void UpdateCherry(int32 newCherryNumber);
+	void SetValues(int32 InScore, int32 InCherryNumber);
+	void UpdateScore(int32 NewScore);
+	void UpdateCherry(int32 NewCherryNumber);
 	void UpdateLife(int32 Lives);
 
 protected:

@@ -1,7 +1,7 @@
 // Copyright (c) 2024 Dawid Szoldra. All rights reserved.
 
 
-#include "GameModes/Gameplay/PMGameModeMaze.h"
+#include "PMGameModeMaze.h"
 #include "UI/HUD/PMMazeHUD.h"
 #include "Gameplay/Splines/PMSpline.h"
 #include "Components/SplineComponent.h"
@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Gameplay/Ghosts/PMGhost.h"
 #include "Components/AudioComponent.h"
+#include "GameInstance/PMGameInstance.h"
 
 APMGameModeMaze::APMGameModeMaze()
 {
@@ -69,9 +70,34 @@ void APMGameModeMaze::PlayerChasedHandle(bool IsPlayerChased)
 	}
 }
 
-void APMGameModeMaze::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound)
+void APMGameModeMaze::RestartGameType()
 {
-	Super::EndGameHandle(EndGameWidget, EndGameSound);
+	UGameplayStatics::OpenLevel(this, *GameInstance->MazeLevels.Find(1));
+}
+
+void APMGameModeMaze::SetGameplayValues()
+{
+	Score = GameInstance->MazeGameData.Score;
+	CherryNumber = GameInstance->MazeGameData.CherryNumber;
+	CurrentLevelNum = GameInstance->MazeGameData.LevelNum;
+}
+
+void APMGameModeMaze::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame)
+{
+	if (bWonGame && GameInstance->MazeLevels.Contains(CurrentLevelNum + 1))
+	{
+		//add to viewport NEXT LEVEL widget;
+		GameInstance->MazeGameData = FGameData(CurrentLevelNum + 1, Score, CherryNumber);
+		GameInstance->SaveGame();
+		UGameplayStatics::OpenLevel(this, *GameInstance->MazeLevels.Find(CurrentLevelNum + 1));
+		return;
+	}
+	else
+	{
+		GameInstance->MazeGameData = FGameData(1, 0, 0);
+	}
+
+	Super::EndGameHandle(EndGameWidget, EndGameSound, bWonGame);
 
 	ClearChasedState();
 }

@@ -37,8 +37,12 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void InitializeWidgets(APlayerController* PlayerController);
+	virtual void SetGameplayValues() {};
 	virtual void PlayerChasedHandle(bool IsPlayerChased);
-	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound);
+	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame);
+
+	UFUNCTION()
+	virtual void RestartGameType() {};
 
 public:
 	virtual void HandleGhostHit();
@@ -52,8 +56,7 @@ public:
 	UFUNCTION()
 	void ClosePauseMenu();
 
-	UFUNCTION()
-	void RestartGameType();
+	
 
 	UFUNCTION()
 	void GoToMenu();
@@ -105,6 +108,14 @@ protected:
 	TArray<TObjectPtr<APMSpline>> Splines;
 	UPROPERTY()
 	TArray<TObjectPtr<APMGhost>> Ghosts;
+	UPROPERTY()
+	TObjectPtr<APMPlayer> Player;	
+	UPROPERTY()
+	TObjectPtr<UPMGameInstance> GameInstance;
+	UPROPERTY()
+	ELevelType CurrentLevelType;
+	UPROPERTY()
+	int32 CurrentLevelNum;
 
 	// Sounds
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
@@ -118,6 +129,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> CoinSound;
 
+	// Classes
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
+	TSubclassOf<APMGhost> GhostClass;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
+	TSubclassOf<APMCherryCoin> CherryCoinClass;
+
 private:
 	// Classes
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
@@ -128,28 +145,12 @@ private:
 	TSubclassOf<UPMStarterWidget> StarterWidgetClass;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMPauseWidget> PauseWidgetClass;
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
-	TSubclassOf<APMGhost> GhostClass;
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
-	TSubclassOf<APMCherryCoin> CherryCoinClass;
 	//
 	
 	// Timers
 	FTimerHandle CherryCoinTimer;
 	FTimerDelegate CherryCoinDel;
-	//
-
-	UPROPERTY()
-	TObjectPtr<APMPlayer> Player;
-	
-
-	// Sounds
-	
-	
-	UPROPERTY()
-	TObjectPtr<UPMGameInstance> GameInstance;
-	UPROPERTY()
-	ELevelType CurrentLevelType;
+	//	
 
 	int32 NumberOfCoins;
 

@@ -15,6 +15,7 @@
 #include "UI/HUD/PMPauseWidget.h"
 #include "GameInstance/PMGameInstance.h"
 #include "Sound/SoundWave.h"
+#include "Saved/PMSaveGame.h"
 
 
 APMGameModeBase::APMGameModeBase()
@@ -40,6 +41,7 @@ void APMGameModeBase::BeginPlay()
 	CurrentLevelType = GameInstance->GetCurrentLevel();
 	if (GameMusic != nullptr) UGameplayStatics::PlaySound2D(this, GameMusic);
 
+	SetGameplayValues();
 	SetPlayer();
 	SetGhosts();
 	SetSplines();
@@ -76,7 +78,7 @@ void APMGameModeBase::AddPoints(int32 points)
 	if (NumberOfCoins == 0)
 	{
 		StopGame();
-		EndGameHandle(WinGameWidget, WinGameSound);
+		EndGameHandle(WinGameWidget, WinGameSound, true);
 	}
 }
 
@@ -91,7 +93,7 @@ void APMGameModeBase::HandleGhostHit()
 
 	if (Lives == 0)
 	{
-		EndGameHandle(LoseGameWidget, LoseGameSound);
+		EndGameHandle(LoseGameWidget, LoseGameSound, false);
 		return;
 	}
 
@@ -168,7 +170,6 @@ void APMGameModeBase::OpenPauseMenu()
 
 void APMGameModeBase::ClosePauseMenu()
 {
-	UE_LOG(LogTemp, Warning, TEXT("clsoe pause"));
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
 	{
 		PC->SetShowMouseCursor(false);
@@ -178,9 +179,10 @@ void APMGameModeBase::ClosePauseMenu()
 	PauseWidget->RemoveFromParent();
 }
 
-void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound)
+void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame)
 {
 	GameInstance->AddScore(CurrentLevelType, FScoreboardData(Score, CherryNumber));
+	GameInstance->SaveGame();
 
 	if (EndGameSound != nullptr) UGameplayStatics::PlaySound2D(this, EndGameSound);
 
@@ -197,18 +199,8 @@ void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave*
 	}
 }
 
-void APMGameModeBase::RestartGameType()
-{
-	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-	if (PC != nullptr)
-	{
-		PC->RestartLevel();
-	}	
-}
-
 void APMGameModeBase::GoToMenu()
 {
-	UE_LOG(LogTemp, Warning, TEXT("menu"));
 	UGameplayStatics::OpenLevel(this, "Menu");
 }
 
@@ -355,3 +347,4 @@ void APMGameModeBase::SetSplines()
 		}
 	}
 }
+

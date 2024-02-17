@@ -21,15 +21,14 @@ class PACMAN_API APMGameModeMenu : public AGameModeBase
 protected:
 	virtual void BeginPlay() override;
 
-public:
+private:
 	UFUNCTION()
-	void ChooseGame(ELevelType GameType);
+	void ChooseNewGame(ELevelType GameType);
 	UFUNCTION()
 	void ContinueGame(ELevelType GameType);
 	UFUNCTION()
 	void ExitGame();
 
-private:
 	void InitializeMenu();
 
 public:
