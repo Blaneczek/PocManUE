@@ -12,7 +12,7 @@ void UPMGameInstance::Init()
 	ClassicLevels.Add(2, "Classic02");
 
 	MazeLevels.Add(1, "Maze01");
-	MazeLevels.Add(2, "Maze02");
+	//MazeLevels.Add(2, "Maze02");
 
 	SaveSlotName = "SaveSlot";
 	SetLevelType(ELevelType::MENU);
