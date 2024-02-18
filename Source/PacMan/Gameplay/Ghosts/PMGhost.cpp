@@ -584,7 +584,7 @@ void APMGhost::VulnerableFlickering()
 
 	if (!bFlickering )
 	{
-		DynMaterial->SetVectorParameterValue(TEXT("Color"), StartingColor);
+		DynMaterial->SetVectorParameterValue(TEXT("Color"), VulnerableColor);
 		bFlickering = true;
 	}
 	else
