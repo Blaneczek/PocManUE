@@ -43,6 +43,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan");
 	TObjectPtr<UMaterial> M_Map02;
 
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan");
+	TObjectPtr<UMaterial> M_Map03;
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> MapIcon1;
 
