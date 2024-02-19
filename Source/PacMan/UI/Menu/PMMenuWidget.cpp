@@ -27,11 +27,19 @@ void UPMMenuWidget::NativeConstruct()
 void UPMMenuWidget::OnClassicButtonClicked()
 {
 	ClassicStarter->SetVisibility(ESlateVisibility::Visible);
+	ClassicButton->SetIsEnabled(false);
+	MazeButton->SetIsEnabled(false);
+	ScoreboardButton->SetIsEnabled(false);
+	ExitGameButton->SetIsEnabled(false);
 }
 
 void UPMMenuWidget::OnMazeButtonClicked()
 {
 	MazeStarter->SetVisibility(ESlateVisibility::Visible);
+	ClassicButton->SetIsEnabled(false);
+	MazeButton->SetIsEnabled(false);
+	ScoreboardButton->SetIsEnabled(false);
+	ExitGameButton->SetIsEnabled(false);
 }
 
 void UPMMenuWidget::OnScoreboardButtonClicked()
@@ -48,11 +56,19 @@ void UPMMenuWidget::OnExitGameButtonClicked()
 void UPMMenuWidget::OnXClassicButtonClicked()
 {
 	ClassicStarter->SetVisibility(ESlateVisibility::Hidden);
+	ClassicButton->SetIsEnabled(true);
+	MazeButton->SetIsEnabled(true);
+	ScoreboardButton->SetIsEnabled(true);
+	ExitGameButton->SetIsEnabled(true);
 }
 
 void UPMMenuWidget::OnXMazeButtonClicked()
 {
 	MazeStarter->SetVisibility(ESlateVisibility::Hidden);
+	ClassicButton->SetIsEnabled(true);
+	MazeButton->SetIsEnabled(true);
+	ScoreboardButton->SetIsEnabled(true);
+	ExitGameButton->SetIsEnabled(true);
 }
 
 void UPMMenuWidget::OnNewClassicButtonClicked()
@@ -73,4 +89,14 @@ void UPMMenuWidget::OnContinueClassicButtonClicked()
 void UPMMenuWidget::OnContinueMazeButtonClicked()
 {
 	OnContinueMaze.Broadcast(ELevelType::MAZE);
+}
+
+void UPMMenuWidget::SetIsEnabledClassicButton(bool bInIsEnabled)
+{
+	ContinueClassicButton->SetIsEnabled(bInIsEnabled);
+}
+
+void UPMMenuWidget::SetIsEnabledMazeButton(bool bInIsEnabled)
+{
+	ContinueMazeButton->SetIsEnabled(bInIsEnabled);
 }

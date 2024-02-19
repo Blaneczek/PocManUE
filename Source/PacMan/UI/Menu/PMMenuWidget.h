@@ -49,6 +49,10 @@ protected:
 	UFUNCTION()
 	void OnContinueMazeButtonClicked();
 
+public:
+	void SetIsEnabledClassicButton(bool bInIsEnabled);
+	void SetIsEnabledMazeButton(bool bInIsEnabled);
+
 protected:
 	//Buttons
 	UPROPERTY(meta = (BindWidget))

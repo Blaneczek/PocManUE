@@ -93,6 +93,24 @@ void APMGameModeMenu::InitializeMenu()
 		MenuWidget->OnContinueClassic.AddDynamic(this, &APMGameModeMenu::ContinueGame);
 		MenuWidget->OnContinueMaze.AddDynamic(this, &APMGameModeMenu::ContinueGame);
 		MenuWidget->OnExitGame.AddDynamic(this, &APMGameModeMenu::ExitGame);
+
+		if (GameInstance->ClassicGameData.LevelNum == 1)
+		{
+			MenuWidget->SetIsEnabledClassicButton(false);
+		}
+		else
+		{
+			MenuWidget->SetIsEnabledClassicButton(true);
+		}
+
+		if (GameInstance->MazeGameData.LevelNum == 1)
+		{
+			MenuWidget->SetIsEnabledMazeButton(false);
+		}
+		else
+		{
+			MenuWidget->SetIsEnabledMazeButton(true);
+		}
 		MenuWidget->AddToViewport();
 	}
 }

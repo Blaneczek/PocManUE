@@ -38,9 +38,9 @@ FText UPMGameInstance::MakeScoreDataAsText(const TArray<FScoreboardData>& ScoreD
 	for (int32 index = 0; index < ScoreData.Num(); ++index)
 	{
 		FString itemScore = FString::FromInt(index + 1)
-			+ ". Score: " + FString::FromInt(ScoreData[index].Score)
-			+ " | Cherries: " + FString::FromInt(ScoreData[index].Cherries)
-			+ " | Date: " + ScoreData[index].Date
+			+ ".Score:" + FString::FromInt(ScoreData[index].Score)
+			+ " | Cherries:" + FString::FromInt(ScoreData[index].Cherries)
+			+ " | Date:" + ScoreData[index].Date
 			+ LINE_TERMINATOR TEXT("\n");
 		score.Append(itemScore);
 	}
