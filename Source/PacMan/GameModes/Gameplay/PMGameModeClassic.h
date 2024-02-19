@@ -34,7 +34,6 @@ protected:
 	virtual void StopGame() override;
 	virtual void RestartGameType() override;
 
-
 public:
 	virtual void PlayerAttackState() override;
 	virtual void EndPlayerAttackState() override;

@@ -3,6 +3,7 @@
 
 #include "PMGameModeMaze.h"
 #include "UI/HUD/PMMazeHUD.h"
+#include "UI/HUD/PMNextLevelWidget.h"
 #include "Gameplay/Splines/PMSpline.h"
 #include "Components/SplineComponent.h"
 #include "Gameplay/Coins/PMMapCoin.h"
@@ -83,10 +84,17 @@ void APMGameModeMaze::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave*
 {
 	if (bWonGame && GameInstance->MazeLevels.Contains(CurrentLevelNum + 1))
 	{
-		//add to viewport NEXT LEVEL widget;
+		if (NextLevelWidget != nullptr)
+		{
+			NextLevelWidget->AddToViewport();
+		}
 		GameInstance->MazeGameData = FGameData(CurrentLevelNum + 1, Score, CherryNumber);
 		GameInstance->SaveGame();
-		UGameplayStatics::OpenLevel(this, *GameInstance->MazeLevels.Find(CurrentLevelNum + 1));
+
+		FTimerHandle NextLevelTimer;
+		FTimerDelegate NextLevelDel;
+		NextLevelDel.BindUFunction(this, "OpenNextLevel", *GameInstance->MazeLevels.Find(CurrentLevelNum + 1));
+		GetWorld()->GetTimerManager().SetTimer(NextLevelTimer, NextLevelDel, 2.f, false);
 		return;
 	}
 	else

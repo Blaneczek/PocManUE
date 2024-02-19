@@ -13,6 +13,7 @@
 #include "UI/HUD/PMEndGameWidget.h"
 #include "UI/HUD/PMStarterWidget.h"
 #include "UI/HUD/PMPauseWidget.h"
+#include "UI/HUD/PMNextLevelWidget.h"
 #include "GameInstance/PMGameInstance.h"
 #include "Sound/SoundWave.h"
 #include "Saved/PMSaveGame.h"
@@ -200,6 +201,11 @@ void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave*
 	}
 }
 
+void APMGameModeBase::OpenNextLevel(const FName& LevelName)
+{
+	UGameplayStatics::OpenLevel(this, LevelName);
+}
+
 void APMGameModeBase::GoToMenu()
 {
 	UGameplayStatics::OpenLevel(this, "Menu");
@@ -302,6 +308,15 @@ void APMGameModeBase::InitializeWidgets(APlayerController* PlayerController)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | WindGameWidgetClass is nullptr"));
 	}
+
+	if (NextLevelWidgetClass != nullptr)
+	{
+		NextLevelWidget = CreateWidget<UPMNextLevelWidget>(PlayerController, NextLevelWidgetClass);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | NextLevelWidgetClass is nullptr"));
+	}
 }
 
 void APMGameModeBase::PlayerChasedHandle(bool IsPlayerChased)
@@ -319,9 +334,9 @@ void APMGameModeBase::SetPlayer()
 
 void APMGameModeBase::SetGhosts()
 {
-	TArray<AActor*> ghosts;
-	UGameplayStatics::GetAllActorsOfClass(this, GhostClass, ghosts);
-	for (auto& item : ghosts)
+	TArray<AActor*> OutGhosts;
+	UGameplayStatics::GetAllActorsOfClass(this, GhostClass, OutGhosts);
+	for (auto& item : OutGhosts)
 	{
 		APMGhost* ghost = Cast<APMGhost>(item);
 		if (ghost != nullptr)
@@ -337,9 +352,9 @@ void APMGameModeBase::SetGhosts()
 
 void APMGameModeBase::SetSplines()
 {
-	TArray<AActor*> cherrySplines;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APMSpline::StaticClass(), cherrySplines);
-	for (auto& item : cherrySplines)
+	TArray<AActor*> OutSplines;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APMSpline::StaticClass(), OutSplines);
+	for (auto& item : OutSplines)
 	{
 		APMSpline* spline = Cast<APMSpline>(item);
 		if (spline != nullptr && !spline->ActorHasTag(TEXT("withoutCoins")))

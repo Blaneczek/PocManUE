@@ -3,6 +3,7 @@
 
 #include "PMGameModeClassic.h"
 #include "UI/HUD/PMClassicHUD.h"
+#include "UI/HUD/PMNextLevelWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundWave.h"
 #include "Components/AudioComponent.h"
@@ -42,12 +43,19 @@ void APMGameModeClassic::InitializeWidgets(APlayerController* PlayerController)
 
 void APMGameModeClassic::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame)
 {
-	if (bWonGame && GameInstance->ClassicLevels.Contains(CurrentLevelNum + 1))
+	if (bWonGame && GameInstance->ClassicLevels.Contains(CurrentLevelNum + 1)) // Next level
 	{
-		//add to viewport NEXT LEVEL widget;
+		if (NextLevelWidget != nullptr)
+		{
+			NextLevelWidget->AddToViewport();
+		}		
 		GameInstance->ClassicGameData = FGameData(CurrentLevelNum + 1, Score, CherryNumber);
 		GameInstance->SaveGame();
-		UGameplayStatics::OpenLevel(this, *GameInstance->ClassicLevels.Find(CurrentLevelNum + 1));
+
+		FTimerHandle NextLevelTimer;
+		FTimerDelegate NextLevelDel;
+		NextLevelDel.BindUFunction(this, FName("OpenNextLevel"), *GameInstance->ClassicLevels.Find(CurrentLevelNum + 1));
+		GetWorld()->GetTimerManager().SetTimer(NextLevelTimer, NextLevelDel, 2.f, false);
 		return;
 	}
 	else
@@ -95,6 +103,7 @@ void APMGameModeClassic::RestartGameType()
 {
 	UGameplayStatics::OpenLevel(this, *GameInstance->ClassicLevels.Find(1));
 }
+
 
 void APMGameModeClassic::PlayerAttackState()
 {

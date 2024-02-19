@@ -15,6 +15,7 @@ class UPMHUDWidget;
 class UPMEndGameWidget;
 class UPMStarterWidget;
 class UPMPauseWidget;
+class UPMNextLevelWidget;
 class UPMGameInstance;
 class USoundWave;
 enum class ELevelType : uint8;
@@ -41,6 +42,8 @@ protected:
 	virtual void PlayerChasedHandle(bool IsPlayerChased);
 	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame);
 
+	UFUNCTION()
+	void OpenNextLevel(const FName& LevelName);
 	UFUNCTION()
 	virtual void RestartGameType() {};
 
@@ -105,6 +108,21 @@ protected:
 	TObjectPtr<UPMEndGameWidget> WinGameWidget;
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
 	TObjectPtr<UPMPauseWidget> PauseWidget;
+	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
+	TObjectPtr<UPMNextLevelWidget> NextLevelWidget;
+	//
+	 
+	// Widget classes
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
+	TSubclassOf<UPMEndGameWidget> LoseGameWidgetClass;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
+	TSubclassOf<UPMEndGameWidget> WinGameWidgetClass;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
+	TSubclassOf<UPMStarterWidget> StarterWidgetClass;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
+	TSubclassOf<UPMPauseWidget> PauseWidgetClass;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
+	TSubclassOf<UPMNextLevelWidget> NextLevelWidgetClass;
 	//
 
 	UPROPERTY()
@@ -131,30 +149,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> CoinSound;
 
-	// Classes
+	// Gameplay classes
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMGhost> GhostClass;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMCherryCoin> CherryCoinClass;
 
-private:
-	// Classes
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
-	TSubclassOf<UPMEndGameWidget> LoseGameWidgetClass;
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
-	TSubclassOf<UPMEndGameWidget> WinGameWidgetClass;
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
-	TSubclassOf<UPMStarterWidget> StarterWidgetClass;
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
-	TSubclassOf<UPMPauseWidget> PauseWidgetClass;
-	//
+	
 	
 	// Timers
 	FTimerHandle CherryCoinTimer;
 	FTimerDelegate CherryCoinDel;
 	//	
 
-	int32 NumberOfCoins;
 
+	int32 NumberOfCoins;
 	bool bCoinSound;
 };
