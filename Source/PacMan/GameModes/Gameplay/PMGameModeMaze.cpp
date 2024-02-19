@@ -33,18 +33,15 @@ void APMGameModeMaze::InitializeWidgets(APlayerController* PlayerController)
 
 	if (MazeHUDClass != nullptr)
 	{
-		HUDWidget = CreateWidget<UPMMazeHUD>(PlayerController, MazeHUDClass);
-		HUDWidget->AddToViewport();
+		HUDWidget = CreateWidget<UPMMazeHUD>(PlayerController, MazeHUDClass);		
 		MazeHUD = Cast<UPMMazeHUD>(HUDWidget);
-		if (MazeHUD == nullptr)
+		if (MazeHUD != nullptr)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | MazeHUD is nullptr"));
-		}
+			MazeHUD->AddToViewport();
+			MazeHUD->SetMap(CurrentLevelNum);		
+		}	
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | ClassicHUDClass is nullptr"));
-	}
+
 }
 
 void APMGameModeMaze::PlayerChasedHandle(bool IsPlayerChased)

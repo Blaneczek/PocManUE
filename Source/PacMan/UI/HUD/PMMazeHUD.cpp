@@ -29,6 +29,31 @@ void UPMMazeHUD::HideMap()
 	MapDisplay->SetVisibility(ESlateVisibility::Hidden);
 }
 
+void UPMMazeHUD::SetMap(int32 LevelNum)
+{
+	switch (LevelNum)
+	{
+		case 1:
+		{
+			UE_LOG(LogTemp, Warning, TEXT("map01"));
+			MapDisplay->SetBrushFromMaterial(M_Map01);
+			MapDisplay->SetBrushSize(FVector2D(700.f, 340.f));
+			return;
+		}
+		case 2:
+		{
+			UE_LOG(LogTemp, Warning, TEXT("map02"));
+			MapDisplay->SetBrushFromMaterial(M_Map02);
+			MapDisplay->SetBrushSize(FVector2D(450.f, 420.f));
+			return;
+		}
+		case 3:
+		{
+
+		}
+	}
+}
+
 void UPMMazeHUD::ShowChaseScreen()
 {
 	ChaseScreen->SetVisibility(ESlateVisibility::Visible);

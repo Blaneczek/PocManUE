@@ -8,6 +8,7 @@
 
 class UImage;
 class UWidgetAnimation;
+class UMaterial;
 
 /**
  * 
@@ -22,6 +23,7 @@ protected:
 public:
 	void ShowMap();
 	void HideMap();
+	void SetMap(int32 LevelNum);
 	
 	void ShowChaseScreen();
 	void HideChaseScreen();
@@ -34,6 +36,12 @@ public:
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> MapDisplay;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan");
+	TObjectPtr<UMaterial> M_Map01;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan");
+	TObjectPtr<UMaterial> M_Map02;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> MapIcon1;
