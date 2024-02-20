@@ -12,34 +12,19 @@ void UPMMenuWidget::NativeConstruct()
 	ClassicStarter->SetVisibility(ESlateVisibility::Hidden);
 	MazeStarter->SetVisibility(ESlateVisibility::Hidden);
 
-	ClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnClassicButtonClicked);
-	MazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnMazeButtonClicked);
-	ScoreboardButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnScoreboardButtonClicked);
-	ExitGameButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnExitGameButtonClicked);
-	XClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnXClassicButtonClicked);
-	XMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnXMazeButtonClicked);
-	NewClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnNewClassicButtonClicked);
-	NewMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnNewMazeButtonClicked);
-	ContinueClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnContinueClassicButtonClicked);
-	ContinueMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnContinueMazeButtonClicked);
+	BindButtons();
 }
 
 void UPMMenuWidget::OnClassicButtonClicked()
 {
 	ClassicStarter->SetVisibility(ESlateVisibility::Visible);
-	ClassicButton->SetIsEnabled(false);
-	MazeButton->SetIsEnabled(false);
-	ScoreboardButton->SetIsEnabled(false);
-	ExitGameButton->SetIsEnabled(false);
+	ToggleButtons(false);
 }
 
 void UPMMenuWidget::OnMazeButtonClicked()
 {
 	MazeStarter->SetVisibility(ESlateVisibility::Visible);
-	ClassicButton->SetIsEnabled(false);
-	MazeButton->SetIsEnabled(false);
-	ScoreboardButton->SetIsEnabled(false);
-	ExitGameButton->SetIsEnabled(false);
+	ToggleButtons(false);
 }
 
 void UPMMenuWidget::OnScoreboardButtonClicked()
@@ -50,45 +35,39 @@ void UPMMenuWidget::OnScoreboardButtonClicked()
 
 void UPMMenuWidget::OnExitGameButtonClicked()
 {
-	OnExitGame.Broadcast();
+	OnExitGame.ExecuteIfBound();
 }
 
 void UPMMenuWidget::OnXClassicButtonClicked()
 {
 	ClassicStarter->SetVisibility(ESlateVisibility::Hidden);
-	ClassicButton->SetIsEnabled(true);
-	MazeButton->SetIsEnabled(true);
-	ScoreboardButton->SetIsEnabled(true);
-	ExitGameButton->SetIsEnabled(true);
+	ToggleButtons(true);
 }
 
 void UPMMenuWidget::OnXMazeButtonClicked()
 {
 	MazeStarter->SetVisibility(ESlateVisibility::Hidden);
-	ClassicButton->SetIsEnabled(true);
-	MazeButton->SetIsEnabled(true);
-	ScoreboardButton->SetIsEnabled(true);
-	ExitGameButton->SetIsEnabled(true);
+	ToggleButtons(true);
 }
 
 void UPMMenuWidget::OnNewClassicButtonClicked()
 {
-	OnStartNewClassic.Broadcast(ELevelType::CLASSIC);
+	OnStartNewClassic.ExecuteIfBound(ELevelType::CLASSIC);
 }
 
 void UPMMenuWidget::OnNewMazeButtonClicked()
 {
-	OnStartNewMaze.Broadcast(ELevelType::MAZE);
+	OnStartNewMaze.ExecuteIfBound(ELevelType::MAZE);
 }
 
 void UPMMenuWidget::OnContinueClassicButtonClicked()
 {
-	OnContinueClassic.Broadcast(ELevelType::CLASSIC);
+	OnContinueClassic.ExecuteIfBound(ELevelType::CLASSIC);
 }
 
 void UPMMenuWidget::OnContinueMazeButtonClicked()
 {
-	OnContinueMaze.Broadcast(ELevelType::MAZE);
+	OnContinueMaze.ExecuteIfBound(ELevelType::MAZE);
 }
 
 void UPMMenuWidget::SetIsEnabledClassicButton(bool bInIsEnabled)
@@ -99,4 +78,45 @@ void UPMMenuWidget::SetIsEnabledClassicButton(bool bInIsEnabled)
 void UPMMenuWidget::SetIsEnabledMazeButton(bool bInIsEnabled)
 {
 	ContinueMazeButton->SetIsEnabled(bInIsEnabled);
+}
+
+void UPMMenuWidget::BindButtons()
+{
+	if (ClassicButton != nullptr)
+		ClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnClassicButtonClicked);
+
+	if (MazeButton != nullptr)
+		MazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnMazeButtonClicked);
+
+	if (ScoreboardButton != nullptr)
+		ScoreboardButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnScoreboardButtonClicked);
+
+	if (ExitGameButton != nullptr)
+		ExitGameButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnExitGameButtonClicked);
+
+	if (XClassicButton != nullptr)
+		XClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnXClassicButtonClicked);
+
+	if (XMazeButton != nullptr)
+		XMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnXMazeButtonClicked);
+
+	if (NewClassicButton != nullptr)
+		NewClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnNewClassicButtonClicked);
+
+	if (NewMazeButton != nullptr)
+		NewMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnNewMazeButtonClicked);
+
+	if (ContinueClassicButton != nullptr)
+		ContinueClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnContinueClassicButtonClicked);
+
+	if (ContinueMazeButton != nullptr)
+		ContinueMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnContinueMazeButtonClicked);
+}
+
+void UPMMenuWidget::ToggleButtons(bool bInIsEnabled)
+{
+	ClassicButton->SetIsEnabled(bInIsEnabled);
+	MazeButton->SetIsEnabled(bInIsEnabled);
+	ScoreboardButton->SetIsEnabled(bInIsEnabled);
+	ExitGameButton->SetIsEnabled(bInIsEnabled);
 }

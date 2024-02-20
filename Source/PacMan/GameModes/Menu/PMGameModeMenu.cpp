@@ -4,9 +4,7 @@
 #include "PMGameModeMenu.h"
 #include "GameInstance/PMGameInstance.h"
 #include "Kismet/GameplayStatics.h"
-#include "Blueprint/UserWidget.h"
 #include "UI/Menu/PMMenuWidget.h"
-#include "PlayerControllers/PMPlayerControllerMenu.h"
 
 void APMGameModeMenu::BeginPlay()
 {
@@ -19,8 +17,12 @@ void APMGameModeMenu::BeginPlay()
 		return;
 	}
 
-	InitializeMenu();
+	if (MenuAudio != nullptr)
+	{
+		UGameplayStatics::PlaySound2D(this, MenuAudio, 0.5f);
+	}
 
+	InitializeMenu();
 }
 
 void APMGameModeMenu::ChooseNewGame(ELevelType GameType)
@@ -84,33 +86,18 @@ void APMGameModeMenu::InitializeMenu()
 		return;
 	}
 
-	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-	if (PC != nullptr)
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
 	{
 		MenuWidget = CreateWidget<UPMMenuWidget>(PC, MenuWidgetClass);
-		MenuWidget->OnStartNewClassic.AddDynamic(this, &APMGameModeMenu::ChooseNewGame);
-		MenuWidget->OnStartNewMaze.AddDynamic(this, &APMGameModeMenu::ChooseNewGame);
-		MenuWidget->OnContinueClassic.AddDynamic(this, &APMGameModeMenu::ContinueGame);
-		MenuWidget->OnContinueMaze.AddDynamic(this, &APMGameModeMenu::ContinueGame);
-		MenuWidget->OnExitGame.AddDynamic(this, &APMGameModeMenu::ExitGame);
+		MenuWidget->OnStartNewClassic.BindUObject(this, &APMGameModeMenu::ChooseNewGame);
+		MenuWidget->OnStartNewMaze.BindUObject(this, &APMGameModeMenu::ChooseNewGame);
+		MenuWidget->OnContinueClassic.BindUObject(this, &APMGameModeMenu::ContinueGame);
+		MenuWidget->OnContinueMaze.BindUObject(this, &APMGameModeMenu::ContinueGame);
+		MenuWidget->OnExitGame.BindUObject(this, &APMGameModeMenu::ExitGame);
 
-		if (GameInstance->ClassicGameData.LevelNum == 1)
-		{
-			MenuWidget->SetIsEnabledClassicButton(false);
-		}
-		else
-		{
-			MenuWidget->SetIsEnabledClassicButton(true);
-		}
+		GameInstance->ClassicGameData.LevelNum == 1 ? MenuWidget->SetIsEnabledClassicButton(false) : MenuWidget->SetIsEnabledClassicButton(true);
+		GameInstance->MazeGameData.LevelNum == 1 ? MenuWidget->SetIsEnabledMazeButton(false) : MenuWidget->SetIsEnabledMazeButton(true);
 
-		if (GameInstance->MazeGameData.LevelNum == 1)
-		{
-			MenuWidget->SetIsEnabledMazeButton(false);
-		}
-		else
-		{
-			MenuWidget->SetIsEnabledMazeButton(true);
-		}
 		MenuWidget->AddToViewport();
 	}
 }

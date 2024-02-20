@@ -8,7 +8,7 @@
 
 class UPMGameInstance;
 class UPMMenuWidget;
-enum class ELevelType : uint8 ;
+class USoundWave;
 
 /**
  * 
@@ -31,16 +31,20 @@ private:
 
 	void InitializeMenu();
 
-public:
-	UPROPERTY(BlueprintReadWrite)
+protected:
+	UPROPERTY(BlueprintReadWrite, Category = "PocMan")
 	TObjectPtr<UPMMenuWidget> MenuWidget;
-
-private:
-	UPROPERTY()
-	TObjectPtr<UPMGameInstance> GameInstance;
 
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets");
 	TSubclassOf<UPMMenuWidget> MenuWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Audio");
+	TObjectPtr<USoundWave> MenuAudio;
+
+	UPROPERTY()
+	TObjectPtr<UPMGameInstance> GameInstance;
+
+	
 
 	
 };

@@ -9,12 +9,13 @@
 class UButton;
 class UBorder;
 class UPMScoreboardWidget;
+enum class ELevelType : uint8;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNewClassic, ELevelType, levelType);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FContinueClassic, ELevelType, levelType);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNewMaze, ELevelType, levelType);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FContinueMaze, ELevelType, levelType);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FExitGame);
+DECLARE_DELEGATE_OneParam(FOnNewClassic, ELevelType);
+DECLARE_DELEGATE_OneParam(FOnContinueClassic, ELevelType);
+DECLARE_DELEGATE_OneParam(FOnNewMaze, ELevelType);
+DECLARE_DELEGATE_OneParam(FOnContinueMaze, ELevelType);
+DECLARE_DELEGATE(FOnExitGame);
 
 /**
  * 
@@ -49,53 +50,63 @@ protected:
 	UFUNCTION()
 	void OnContinueMazeButtonClicked();
 
+	void ToggleButtons(bool bInIsEnabled);
+
 public:
 	void SetIsEnabledClassicButton(bool bInIsEnabled);
 	void SetIsEnabledMazeButton(bool bInIsEnabled);
 
+private:
+	void BindButtons();
+
 protected:
 	//Buttons
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> ClassicButton;
-	UPROPERTY(meta = (BindWidget))
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> MazeButton;
-	UPROPERTY(meta = (BindWidget))
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> ScoreboardButton;
-	UPROPERTY(meta = (BindWidget))
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> ExitGameButton;
-	UPROPERTY(meta = (BindWidget))
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> XClassicButton;
-	UPROPERTY(meta = (BindWidget))
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> XMazeButton;
-	UPROPERTY(meta = (BindWidget))
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> NewClassicButton;
-	UPROPERTY(meta = (BindWidget))
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> NewMazeButton;
-	UPROPERTY(meta = (BindWidget))
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> ContinueClassicButton;
-	UPROPERTY(meta = (BindWidget))
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> ContinueMazeButton;
 
 	// Classic/Maze starters
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UBorder> ClassicStarter;
-	UPROPERTY(meta = (BindWidget))
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UBorder> MazeStarter;
 
 	// Scoreboard
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UPMScoreboardWidget> Scoreboard;
 
 public:
-	//Delegates
-	UPROPERTY()
-	FNewClassic OnStartNewClassic;
-	UPROPERTY()
-	FNewMaze OnStartNewMaze;
-	UPROPERTY()
-	FContinueClassic OnContinueClassic;
-	UPROPERTY()
-	FContinueMaze OnContinueMaze;
-	UPROPERTY()
-	FExitGame OnExitGame;
+	// Delegates	
+	FOnNewClassic OnStartNewClassic;	
+	FOnNewMaze OnStartNewMaze;	
+	FOnContinueClassic OnContinueClassic;	
+	FOnContinueMaze OnContinueMaze;	
+	FOnExitGame OnExitGame;
 };
