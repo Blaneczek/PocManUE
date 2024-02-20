@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2024 Dawid Szoldra. All rights reserved..
 
 
 #include "PMEndGameWidget.h"
@@ -15,15 +15,15 @@ void UPMEndGameWidget::NativeConstruct()
 
 void UPMEndGameWidget::OnMenuButtonClicked()
 {
-	OnBackToMenu.Broadcast();
+	OnBackToMenu.ExecuteIfBound();
 }
 
 void UPMEndGameWidget::OnRestartButtonClicked()
 {
-	OnRestartGame.Broadcast();
+	OnRestartGame.ExecuteIfBound();
 }
 
-void UPMEndGameWidget::SetScore(int32 Score, int32 Cherries)
+void UPMEndGameWidget::SetFinalScores(int32 InScore, int32 InCherries)
 {
-	ScoreText->SetText(FText::FromString("Score: " + FString::FromInt(Score) + " | Cherries: " + FString::FromInt(Cherries)));
+	FinalScoresText->SetText(FText::FromString("Score:" + FString::FromInt(InScore) + " | Cherries:" + FString::FromInt(InCherries)));
 }

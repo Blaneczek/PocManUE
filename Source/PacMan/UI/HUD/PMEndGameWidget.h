@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2024 Dawid Szoldra. All rights reserved.
 
 #pragma once
 
@@ -9,8 +9,8 @@
 class UButton;
 class UTextBlock;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBackToMenu);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRestartCurrentGame);
+DECLARE_DELEGATE(FBackToMenu);
+DECLARE_DELEGATE(FRestartCurrentGame);
 
 /**
  * 
@@ -29,21 +29,19 @@ protected:
 	void OnRestartButtonClicked();
 
 public:
-	void SetScore(int32 Score, int32 Cherries);
+	void SetFinalScores(int32 Score, int32 Cherries);
 
 protected:
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> MenuButton;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> RestartButton;
 
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> ScoreText;
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
+	TObjectPtr<UTextBlock> FinalScoresText;
 
 public:
-	UPROPERTY()
 	FBackToMenu OnBackToMenu;
-	UPROPERTY()
 	FRestartCurrentGame OnRestartGame;
 };

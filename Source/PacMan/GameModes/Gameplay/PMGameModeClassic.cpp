@@ -32,7 +32,8 @@ void APMGameModeClassic::InitializeWidgets(APlayerController* PlayerController)
 	if (ClassicHUDClass != nullptr)
 	{
 		HUDWidget = CreateWidget<UPMClassicHUD>(PlayerController, ClassicHUDClass);
-		HUDWidget->SetValues(Score, CherryNumber);
+		HUDWidget->SetScore(Score);
+		HUDWidget->SetCherries(Cherries);
 		HUDWidget->AddToViewport();
 	}
 	else
@@ -49,7 +50,7 @@ void APMGameModeClassic::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWa
 		{
 			NextLevelWidget->AddToViewport();
 		}		
-		GameInstance->ClassicGameData = FGameData(CurrentLevelNum + 1, Score, CherryNumber);
+		GameInstance->ClassicGameData = FGameData(CurrentLevelNum + 1, Score, Cherries);
 		GameInstance->SaveGame();
 
 		FTimerHandle NextLevelTimer;
@@ -69,7 +70,7 @@ void APMGameModeClassic::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWa
 void APMGameModeClassic::SetGameplayValues()
 {
 	Score = GameInstance->ClassicGameData.Score;
-	CherryNumber = GameInstance->ClassicGameData.CherryNumber;
+	Cherries = GameInstance->ClassicGameData.CherryNumber;
 	CurrentLevelNum = GameInstance->ClassicGameData.LevelNum;
 }
 

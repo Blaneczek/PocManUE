@@ -1,13 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2024 Dawid Szoldra. All rights reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UI/HUD/PMHUDWidget.h"
+#include "PMHUDWidget.h"
 #include "PMClassicHUD.generated.h"
-
-class UTextBlock;
-class UImage;
 
 /**
  * 

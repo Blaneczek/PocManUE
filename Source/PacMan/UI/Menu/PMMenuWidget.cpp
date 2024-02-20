@@ -29,7 +29,7 @@ void UPMMenuWidget::OnMazeButtonClicked()
 
 void UPMMenuWidget::OnScoreboardButtonClicked()
 {
-	Scoreboard->SetScores();
+	Scoreboard->SetFinalScores();
 	Scoreboard->SetVisibility(ESlateVisibility::Visible);
 }
 
@@ -82,35 +82,16 @@ void UPMMenuWidget::SetIsEnabledMazeButton(bool bInIsEnabled)
 
 void UPMMenuWidget::BindButtons()
 {
-	if (ClassicButton != nullptr)
-		ClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnClassicButtonClicked);
-
-	if (MazeButton != nullptr)
-		MazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnMazeButtonClicked);
-
-	if (ScoreboardButton != nullptr)
-		ScoreboardButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnScoreboardButtonClicked);
-
-	if (ExitGameButton != nullptr)
-		ExitGameButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnExitGameButtonClicked);
-
-	if (XClassicButton != nullptr)
-		XClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnXClassicButtonClicked);
-
-	if (XMazeButton != nullptr)
-		XMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnXMazeButtonClicked);
-
-	if (NewClassicButton != nullptr)
-		NewClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnNewClassicButtonClicked);
-
-	if (NewMazeButton != nullptr)
-		NewMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnNewMazeButtonClicked);
-
-	if (ContinueClassicButton != nullptr)
-		ContinueClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnContinueClassicButtonClicked);
-
-	if (ContinueMazeButton != nullptr)
-		ContinueMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnContinueMazeButtonClicked);
+	ClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnClassicButtonClicked);
+	MazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnMazeButtonClicked);
+	ScoreboardButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnScoreboardButtonClicked);
+	ExitGameButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnExitGameButtonClicked);
+	XClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnXClassicButtonClicked);
+	XMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnXMazeButtonClicked);
+	NewClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnNewClassicButtonClicked);
+	NewMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnNewMazeButtonClicked);
+	ContinueClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnContinueClassicButtonClicked);
+	ContinueMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnContinueMazeButtonClicked);
 }
 
 void UPMMenuWidget::ToggleButtons(bool bInIsEnabled)

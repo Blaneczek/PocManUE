@@ -9,25 +9,28 @@ void UPMStarterWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Number = 3;
+	NumberToShow = 3;
 
-	DisplayTime->SetText(FText::AsNumber(Number));
-	PlayAnimation(ScreenFadeAnim);
-
-	GetWorld()->GetTimerManager().SetTimer(CounterTimer, this, &UPMStarterWidget::Counter, 1, true);
+	if (ScreenFadeAnim != nullptr)
+	{
+		PlayAnimation(ScreenFadeAnim);
+	}
+	
+	DisplayTime->SetText(FText::AsNumber(NumberToShow));
+	GetWorld()->GetTimerManager().SetTimer(TextCounterTimer, this, &UPMStarterWidget::TextCounter, 1, true);
 }
 
-void UPMStarterWidget::Counter()
+void UPMStarterWidget::TextCounter()
 {
-	DisplayTime->SetText(FText::AsNumber(--Number));
+	DisplayTime->SetText(FText::AsNumber(--NumberToShow));
 
-	if (Number == 0 && CounterTimer.IsValid())
+	if (NumberToShow == 0 && TextCounterTimer.IsValid())
 	{
-		GetWorld()->GetTimerManager().ClearTimer(CounterTimer);
+		GetWorld()->GetTimerManager().ClearTimer(TextCounterTimer);
 		DisplayTime->SetText(FText::FromString("LET'S GO!"));
 
-		FTimerHandle RemoveTimer;
-		GetWorld()->GetTimerManager().SetTimer(RemoveTimer, this, &UPMStarterWidget::RemoveFromParent, 1, false);
+		FTimerHandle RemoveWidgetTimer;
+		GetWorld()->GetTimerManager().SetTimer(RemoveWidgetTimer, this, &UPMStarterWidget::RemoveFromParent, 1, false);
 	}
 }
 

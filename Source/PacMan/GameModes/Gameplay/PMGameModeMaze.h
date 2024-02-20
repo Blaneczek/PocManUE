@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameModes/Gameplay/PMGameModeBase.h"
+#include "PMGameModeBase.h"
 #include "PMGameModeMaze.generated.h"
 
 class UPMMazeHUD;

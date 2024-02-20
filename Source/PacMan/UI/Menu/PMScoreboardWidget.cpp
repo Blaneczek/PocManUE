@@ -22,7 +22,7 @@ void UPMScoreboardWidget::OnXButtonClicked()
 
 void UPMScoreboardWidget::OnClearButtonClicked()
 {
-	if (UPMGameInstance* GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(this)))
+	if (UPMGameInstance* GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
 	{
 		GameInstance->ClearScoreData();
 		ClassicScore->SetText(FText::FromString(""));
@@ -30,9 +30,9 @@ void UPMScoreboardWidget::OnClearButtonClicked()
 	}
 }
 
-void UPMScoreboardWidget::SetScores()
+void UPMScoreboardWidget::SetFinalScores()
 {
-	if (UPMGameInstance* GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(this)))
+	if (UPMGameInstance* GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
 	{
 		ClassicScore->SetText(GameInstance->GetScoreData(ELevelType::CLASSIC));
 		MazeScore->SetText(GameInstance->GetScoreData(ELevelType::MAZE));

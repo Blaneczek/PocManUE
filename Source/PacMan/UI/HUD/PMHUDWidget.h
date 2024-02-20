@@ -21,21 +21,18 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	void SetValues(int32 InScore, int32 InCherryNumber);
-	void UpdateScore(int32 NewScore);
-	void UpdateCherry(int32 NewCherryNumber);
-	void UpdateLife(int32 Lives);
+	void SetScore(int32 InScore);
+	void SetCherries(int32 InCherries);
+	void UpdateLives(int32 LifeNum);
 
 protected:
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UTextBlock> Score;
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
+	TObjectPtr<UTextBlock> Cherries;
 
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> CherryNumber;
-
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UImage> Life1;
-
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UImage> Life2;
 };

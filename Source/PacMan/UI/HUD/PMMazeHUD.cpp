@@ -16,39 +16,36 @@ void UPMMazeHUD::NativeConstruct()
 	VulnerableScreen->SetVisibility(ESlateVisibility::Hidden);
 	
 	FTimerHandle MapTimer;
-	GetWorld()->GetTimerManager().SetTimer(MapTimer, this, &UPMMazeHUD::HideMap, 3.f, false);
+	FTimerDelegate MapTimerDel;
+	MapTimerDel.BindUObject(this, &UPMMazeHUD::SetMapVisibility, ESlateVisibility::Hidden);
+	GetWorld()->GetTimerManager().SetTimer(MapTimer, MapTimerDel, 3.f, false);
 }
 
-void UPMMazeHUD::ShowMap()
+void UPMMazeHUD::SetMapVisibility(ESlateVisibility InVisibility)
 {
-	MapDisplay->SetVisibility(ESlateVisibility::Visible);
+	MapDisplay->SetVisibility(InVisibility);
 }
 
-void UPMMazeHUD::HideMap()
-{
-	MapDisplay->SetVisibility(ESlateVisibility::Hidden);
-}
-
-void UPMMazeHUD::SetMap(int32 LevelNum)
+void UPMMazeHUD::SetMapDisplay(int32 LevelNum)
 {
 	switch (LevelNum)
 	{
 		case 1:
 		{
 			MapDisplay->SetBrushFromMaterial(M_Map01);
-			MapDisplay->SetBrushSize(FVector2D(700.f, 340.f));
+			MapDisplay->SetDesiredSizeOverride(FVector2D(700.f, 340.f));
 			return;
 		}
 		case 2:
 		{
 			MapDisplay->SetBrushFromMaterial(M_Map02);
-			MapDisplay->SetBrushSize(FVector2D(450.f, 420.f));
+			MapDisplay->SetDesiredSizeOverride(FVector2D(450.f, 420.f));
 			return;
 		}
 		case 3:
 		{
 			MapDisplay->SetBrushFromMaterial(M_Map03);
-			MapDisplay->SetBrushSize(FVector2D(450.f, 420.f));
+			MapDisplay->SetDesiredSizeOverride(FVector2D(450.f, 420.f));
 			return;
 		}
 	}

@@ -21,17 +21,16 @@ protected:
 	virtual void NativeConstruct() override;
 
 private:
-	void Counter();
+	void TextCounter();
 
 protected:
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UTextBlock> DisplayTime;
 
-	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "PocMan", meta = (BindWidgetAnim))
 	TObjectPtr<UWidgetAnimation> ScreenFadeAnim;
 
 private:
-	int32 Number;
-
-	FTimerHandle CounterTimer;
+	int32 NumberToShow;
+	FTimerHandle TextCounterTimer;
 };

@@ -3,7 +3,6 @@
 
 #include "PMPauseWidget.h"
 #include "Components/Button.h"
-#include "Kismet/GameplayStatics.h"
 
 void UPMPauseWidget::NativeConstruct()
 {
@@ -15,10 +14,10 @@ void UPMPauseWidget::NativeConstruct()
 
 void UPMPauseWidget::OnMenuButtonClicked()
 {
-	OnBackToMenu.Broadcast();
+	OnBackToMenu.ExecuteIfBound();
 }
 
 void UPMPauseWidget::OnContinueButtonClicked()
 {
-	OnContinue.Broadcast();
+	OnContinue.ExecuteIfBound();
 }

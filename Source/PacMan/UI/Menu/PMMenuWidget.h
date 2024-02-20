@@ -60,50 +60,36 @@ private:
 	void BindButtons();
 
 protected:
-	//Buttons
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> ClassicButton;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> MazeButton;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> ScoreboardButton;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> ExitGameButton;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> XClassicButton;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> XMazeButton;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> NewClassicButton;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> NewMazeButton;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> ContinueClassicButton;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> ContinueMazeButton;
 
-	// Classic/Maze starters
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UBorder> ClassicStarter;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UBorder> MazeStarter;
 
-	// Scoreboard
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UPMScoreboardWidget> Scoreboard;
 
 public:
-	// Delegates	
 	FOnNewClassic OnStartNewClassic;	
 	FOnNewMaze OnStartNewMaze;	
 	FOnContinueClassic OnContinueClassic;	

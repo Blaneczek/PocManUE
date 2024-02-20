@@ -26,18 +26,18 @@ protected:
 	void OnClearButtonClicked();
 
 public:
-	void SetScores();
+	void SetFinalScores();
 
 protected:
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> XScoreButton;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> ClearScoreButton;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UMultiLineEditableTextBox> ClassicScore;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UMultiLineEditableTextBox> MazeScore;
 };

@@ -13,29 +13,23 @@ void UPMHUDWidget::NativeConstruct()
 	Life2->SetVisibility(ESlateVisibility::Visible);
 }
 
-void UPMHUDWidget::SetValues(int32 InScore, int32 InCherryNumber)
+void UPMHUDWidget::SetScore(int32 InScore)
 {
 	Score->SetText(FText::AsNumber(InScore));
-	CherryNumber->SetText(FText::AsNumber(InCherryNumber));
 }
 
-void UPMHUDWidget::UpdateScore(int32 NewScore)
+void UPMHUDWidget::SetCherries(int32 InCherries)
 {
-	Score->SetText(FText::AsNumber(NewScore));
+	Cherries->SetText(FText::AsNumber(InCherries));
 }
 
-void UPMHUDWidget::UpdateCherry(int32 NewCherryNumber)
+void UPMHUDWidget::UpdateLives(int32 LifeNum)
 {
-	CherryNumber->SetText(FText::AsNumber(NewCherryNumber));
-}
-
-void UPMHUDWidget::UpdateLife(int32 Lives)
-{
-	if (Lives == 2)
+	if (LifeNum == 2)
 	{
 		Life2->SetVisibility(ESlateVisibility::Hidden);
 	}
-	else if (Lives == 1)
+	else if (LifeNum == 1)
 	{
 		Life1->SetVisibility(ESlateVisibility::Hidden);
 	}

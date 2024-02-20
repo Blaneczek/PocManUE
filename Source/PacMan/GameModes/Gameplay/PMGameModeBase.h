@@ -89,7 +89,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	int32 Lives;
 	UPROPERTY(BlueprintReadWrite)
-	int32 CherryNumber;
+	int32 Cherries;
 	//
 
 	UPROPERTY()
@@ -148,20 +148,17 @@ protected:
 	TObjectPtr<USoundWave> PlayerHittedSound;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> CoinSound;
-
+	//
+	
 	// Gameplay classes
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMGhost> GhostClass;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMCherryCoin> CherryCoinClass;
+	//
 
-	
-	
-	// Timers
 	FTimerHandle CherryCoinTimer;
 	FTimerDelegate CherryCoinDel;
-	//	
-
 
 	int32 NumberOfCoins;
 	bool bCoinSound;

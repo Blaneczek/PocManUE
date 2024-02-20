@@ -24,7 +24,7 @@ APMGameModeBase::APMGameModeBase()
 	Score = 0;
 	NumberOfCoins = 0;
 	Lives = 3;
-	CherryNumber = 0;
+	Cherries = 0;
 	bCoinSound = true;
 }
 
@@ -74,7 +74,7 @@ void APMGameModeBase::AddPoints(int32 points)
 
 	if (HUDWidget != nullptr)
 	{
-		HUDWidget->UpdateScore(Score);
+		HUDWidget->SetScore(Score);
 	}
 
 	if (NumberOfCoins == 0)
@@ -90,7 +90,7 @@ void APMGameModeBase::HandleGhostHit()
 	Lives--;
 	if (HUDWidget != nullptr)
 	{
-		HUDWidget->UpdateLife(Lives);
+		HUDWidget->UpdateLives(Lives);
 	}
 
 	if (Lives == 0)
@@ -183,7 +183,7 @@ void APMGameModeBase::ClosePauseMenu()
 
 void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame)
 {
-	GameInstance->AddScore(CurrentLevelType, FScoreboardData(Score, CherryNumber));
+	GameInstance->AddScore(CurrentLevelType, FScoreboardData(Score, Cherries));
 	GameInstance->SaveGame();
 
 	if (EndGameSound != nullptr) UGameplayStatics::PlaySound2D(this, EndGameSound);
@@ -196,7 +196,7 @@ void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave*
 
 	if (EndGameWidget != nullptr)
 	{
-		EndGameWidget->SetScore(Score, CherryNumber);
+		EndGameWidget->SetFinalScores(Score, Cherries);
 		EndGameWidget->AddToViewport();
 	}
 }
@@ -240,10 +240,10 @@ void APMGameModeBase::AddCherryCoin()
 {
 	GetWorld()->GetTimerManager().SetTimer(CherryCoinTimer, CherryCoinDel, 10.f, false);
 
-	CherryNumber++;
+	Cherries++;
 	if (HUDWidget != nullptr)
 	{
-		HUDWidget->UpdateCherry(CherryNumber);
+		HUDWidget->SetCherries(Cherries);
 	}
 }
 
@@ -279,8 +279,8 @@ void APMGameModeBase::InitializeWidgets(APlayerController* PlayerController)
 	if (LoseGameWidgetClass != nullptr)
 	{
 		LoseGameWidget = CreateWidget<UPMEndGameWidget>(PlayerController, LoseGameWidgetClass);
-		LoseGameWidget->OnBackToMenu.AddDynamic(this, &APMGameModeBase::GoToMenu);
-		LoseGameWidget->OnRestartGame.AddDynamic(this, &APMGameModeBase::RestartGameType);
+		LoseGameWidget->OnBackToMenu.BindUObject(this, &APMGameModeBase::GoToMenu);
+		LoseGameWidget->OnRestartGame.BindUObject(this, &APMGameModeBase::RestartGameType);
 	}
 	else
 	{
@@ -290,8 +290,8 @@ void APMGameModeBase::InitializeWidgets(APlayerController* PlayerController)
 	if (WinGameWidgetClass != nullptr)
 	{
 		WinGameWidget = CreateWidget<UPMEndGameWidget>(PlayerController, WinGameWidgetClass);
-		WinGameWidget->OnBackToMenu.AddDynamic(this, &APMGameModeBase::GoToMenu);
-		WinGameWidget->OnRestartGame.AddDynamic(this, &APMGameModeBase::RestartGameType);
+		WinGameWidget->OnBackToMenu.BindUObject(this, &APMGameModeBase::GoToMenu);
+		WinGameWidget->OnRestartGame.BindUObject(this, &APMGameModeBase::RestartGameType);
 	}
 	else
 	{
@@ -301,8 +301,8 @@ void APMGameModeBase::InitializeWidgets(APlayerController* PlayerController)
 	if (PauseWidgetClass != nullptr)
 	{
 		PauseWidget = CreateWidget<UPMPauseWidget>(PlayerController, PauseWidgetClass);
-		PauseWidget->OnBackToMenu.AddDynamic(this, &APMGameModeBase::GoToMenu);
-		PauseWidget->OnContinue.AddDynamic(this, &APMGameModeBase::ClosePauseMenu);
+		PauseWidget->OnBackToMenu.BindUObject(this, &APMGameModeBase::GoToMenu);
+		PauseWidget->OnContinue.BindUObject(this, &APMGameModeBase::ClosePauseMenu);
 	}
 	else
 	{

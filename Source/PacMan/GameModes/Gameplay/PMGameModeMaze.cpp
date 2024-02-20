@@ -39,7 +39,7 @@ void APMGameModeMaze::InitializeWidgets(APlayerController* PlayerController)
 		if (MazeHUD != nullptr)
 		{
 			MazeHUD->AddToViewport();
-			MazeHUD->SetMap(CurrentLevelNum);		
+			MazeHUD->SetMapDisplay(CurrentLevelNum);		
 		}	
 	}
 
@@ -76,7 +76,7 @@ void APMGameModeMaze::RestartGameType()
 void APMGameModeMaze::SetGameplayValues()
 {
 	Score = GameInstance->MazeGameData.Score;
-	CherryNumber = GameInstance->MazeGameData.CherryNumber;
+	Cherries = GameInstance->MazeGameData.CherryNumber;
 	CurrentLevelNum = GameInstance->MazeGameData.LevelNum;
 }
 
@@ -88,7 +88,7 @@ void APMGameModeMaze::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave*
 		{
 			NextLevelWidget->AddToViewport();
 		}
-		GameInstance->MazeGameData = FGameData(CurrentLevelNum + 1, Score, CherryNumber);
+		GameInstance->MazeGameData = FGameData(CurrentLevelNum + 1, Score, Cherries);
 		GameInstance->SaveGame();
 
 		FTimerHandle NextLevelTimer;
@@ -155,7 +155,7 @@ void APMGameModeMaze::EndPlayerAttackState()
 
 void APMGameModeMaze::HideMap()
 {
-	MazeHUD->HideMap();
+	MazeHUD->SetMapVisibility(ESlateVisibility::Hidden);
 	bMapOpen = false;
 }
 
@@ -163,7 +163,7 @@ void APMGameModeMaze::ShowMap()
 {
 	if (bMapOpen || MapsNumber == 0) return;
 
-	MazeHUD->ShowMap();
+	MazeHUD->SetMapVisibility(ESlateVisibility::Visible);
 	bMapOpen = true;
 	MazeHUD->UpdateMapIcon(MapsNumber, ESlateVisibility::Hidden);
 	MapsNumber--;

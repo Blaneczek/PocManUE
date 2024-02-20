@@ -8,8 +8,8 @@
 
 class UButton;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBackToMenu);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnContinue);
+DECLARE_DELEGATE(FOnBackToMenu);
+DECLARE_DELEGATE(FOnContinue);
 
 /**
  * 
@@ -28,15 +28,13 @@ protected:
 	void OnContinueButtonClicked();
 
 protected:
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> MenuButton;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> ContinueButton;
 
 public:
-	UPROPERTY()
 	FOnBackToMenu OnBackToMenu;
-	UPROPERTY()
 	FOnContinue OnContinue;
 };
