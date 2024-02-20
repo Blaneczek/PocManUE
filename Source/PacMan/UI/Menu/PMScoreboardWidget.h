@@ -22,17 +22,22 @@ protected:
 
 	UFUNCTION()
 	void OnXButtonClicked();
+	UFUNCTION()
+	void OnClearButtonClicked();
 
 public:
 	void SetScores();
 
 protected:
-	UPROPERTY(meta = (BindWidget))	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UButton> XScoreButton;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UButton> ClearScoreButton;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UMultiLineEditableTextBox> ClassicScore;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UMultiLineEditableTextBox> MazeScore;
 };

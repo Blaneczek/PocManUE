@@ -12,6 +12,7 @@ void UPMScoreboardWidget::NativeConstruct()
 	SetVisibility(ESlateVisibility::Hidden);
 
 	XScoreButton->OnClicked.AddDynamic(this, &UPMScoreboardWidget::OnXButtonClicked);
+	ClearScoreButton->OnClicked.AddDynamic(this, &UPMScoreboardWidget::OnClearButtonClicked);
 }
 
 void UPMScoreboardWidget::OnXButtonClicked()
@@ -19,13 +20,21 @@ void UPMScoreboardWidget::OnXButtonClicked()
 	SetVisibility(ESlateVisibility::Hidden);
 }
 
+void UPMScoreboardWidget::OnClearButtonClicked()
+{
+	if (UPMGameInstance* GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(this)))
+	{
+		GameInstance->ClearScoreData();
+		ClassicScore->SetText(FText::FromString(""));
+		MazeScore->SetText(FText::FromString(""));
+	}
+}
+
 void UPMScoreboardWidget::SetScores()
 {
-	UPMGameInstance* gameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(this));
-	if (gameInstance != nullptr)
+	if (UPMGameInstance* GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(this)))
 	{
-		ClassicScore->SetText(gameInstance->GetScoreData(ELevelType::CLASSIC));
-		MazeScore->SetText(gameInstance->GetScoreData(ELevelType::MAZE));
-	}
-	
+		ClassicScore->SetText(GameInstance->GetScoreData(ELevelType::CLASSIC));
+		MazeScore->SetText(GameInstance->GetScoreData(ELevelType::MAZE));
+	}	
 }

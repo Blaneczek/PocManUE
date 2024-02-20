@@ -59,6 +59,18 @@ FText UPMGameInstance::GetScoreData(ELevelType LevelType) const
 	return FText::FromString("");
 }
 
+void UPMGameInstance::ClearScoreData()
+{
+	if (ClassicScoreData.IsEmpty() && MazeScoreData.IsEmpty())
+	{
+		return;		
+	}
+
+	ClassicScoreData.Empty();
+	MazeScoreData.Empty();
+	SaveGame();
+}
+
 
 void UPMGameInstance::AddScore(ELevelType LevelType, const FScoreboardData& ScoreData)
 {
@@ -98,16 +110,10 @@ void UPMGameInstance::SaveGame()
 
 void UPMGameInstance::LoadGame()
 {
-	UE_LOG(LogTemp, Warning, TEXT("load game"));
 	if (UGameplayStatics::DoesSaveGameExist(SaveSlotName, 0))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("load game exist"));
 		SaveGameInstance = Cast<UPMSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
 		SaveGameInstance->GetSaveData(ClassicGameData, MazeGameData, ClassicScoreData, MazeScoreData);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("load game doesnt exist"));
 	}
 }
 

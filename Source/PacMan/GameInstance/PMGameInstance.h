@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2024 Dawid Szoldra. All rights reserved.
 
 #pragma once
 
@@ -97,6 +97,7 @@ public:
 	void SetMazeData(const FGameData& Data) { MazeGameData = Data; }
 
 	FText GetScoreData(ELevelType LevelType) const;
+	void ClearScoreData();
 
 	void AddScore(ELevelType LevelType, const FScoreboardData& ScoreData);
 

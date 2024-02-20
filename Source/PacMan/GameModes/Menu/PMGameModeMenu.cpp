@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2024 Dawid Szoldra. All rights reserved.
 
 
 #include "PMGameModeMenu.h"
@@ -14,7 +14,6 @@ void APMGameModeMenu::BeginPlay()
 	if (GameInstance == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("APMGameModeMenu::BeginPlay | GameInstance is nullptr"));
-		return;
 	}
 
 	if (MenuAudio != nullptr)
@@ -27,50 +26,55 @@ void APMGameModeMenu::BeginPlay()
 
 void APMGameModeMenu::ChooseNewGame(ELevelType GameType)
 {
+	if (!IsValid(GameInstance)) return;
+
 	GameInstance->SetLevelType(GameType);
+	FName* LevelName;
 
 	switch (GameType)
 	{
 		case ELevelType::CLASSIC:
 		{
 			GameInstance->ClassicGameData = FGameData(1, 0, 0);
-			UGameplayStatics::OpenLevel(this, *GameInstance->ClassicLevels.Find(1));
-			return;
+			LevelName = GameInstance->ClassicLevels.Find(1);
+			break;
 		}
 		case ELevelType::MAZE:
 		{
 			GameInstance->MazeGameData = FGameData(1, 0, 0);
-			UGameplayStatics::OpenLevel(this, *GameInstance->MazeLevels.Find(1));
-			return;
+			LevelName = GameInstance->MazeLevels.Find(1);
+			break;
 		}
 		default: return;
 	}
+
+	GameInstance->SaveGame();
+	UGameplayStatics::OpenLevel(this, *LevelName);
 }
 
 void APMGameModeMenu::ContinueGame(ELevelType GameType)
 {
+	if (!IsValid(GameInstance)) return;
+
 	GameInstance->SetLevelType(GameType);
+	FName* LevelName;
 
 	switch (GameType)
 	{
 		case ELevelType::CLASSIC:
 		{
-			if (GameInstance->ClassicGameData.LevelNum != 1)
-			{
-				UGameplayStatics::OpenLevel(this, *GameInstance->ClassicLevels.Find(GameInstance->ClassicGameData.LevelNum));
-			}			
-			return;
+			LevelName = GameInstance->ClassicLevels.Find(GameInstance->ClassicGameData.LevelNum);	
+			break;
 		}
 		case ELevelType::MAZE:
 		{
-			if (GameInstance->MazeGameData.LevelNum != 1)
-			{
-				UGameplayStatics::OpenLevel(this, *GameInstance->MazeLevels.Find(GameInstance->MazeGameData.LevelNum));
-			}
-			return;
+			LevelName = GameInstance->MazeLevels.Find(GameInstance->MazeGameData.LevelNum);
+			break;
 		}
-	default: return;
+		default: return;
 	}
+
+	UGameplayStatics::OpenLevel(this, *LevelName);
 }
 
 void APMGameModeMenu::ExitGame()
@@ -89,6 +93,12 @@ void APMGameModeMenu::InitializeMenu()
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
 	{
 		MenuWidget = CreateWidget<UPMMenuWidget>(PC, MenuWidgetClass);
+		if (MenuWidget == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("APMGameModeMenu::InitializeMenu | MenuWidget is nullptr"));
+			return;
+		}
+
 		MenuWidget->OnStartNewClassic.BindUObject(this, &APMGameModeMenu::ChooseNewGame);
 		MenuWidget->OnStartNewMaze.BindUObject(this, &APMGameModeMenu::ChooseNewGame);
 		MenuWidget->OnContinueClassic.BindUObject(this, &APMGameModeMenu::ContinueGame);
