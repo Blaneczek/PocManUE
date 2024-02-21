@@ -46,25 +46,21 @@ void APMMazePlayer::MoveLeft()
 	{
 		case EDirection::UPWARD:
 		{
-			TempDirection = EDirection::NONE;
 			DesiredDirection = EDirection::LEFT;
 			return;
 		}
 		case EDirection::DOWN:
 		{
-			TempDirection = EDirection::NONE;
 			DesiredDirection = EDirection::RIGHT;
 			return;
 		}
 		case EDirection::LEFT:
 		{
-			TempDirection = EDirection::NONE;
 			DesiredDirection = EDirection::DOWN;
 			return;
 		}
 		case EDirection::RIGHT:
 		{
-			TempDirection = EDirection::NONE;
 			DesiredDirection = EDirection::UPWARD;
 			return;
 		}
@@ -86,25 +82,21 @@ void APMMazePlayer::MoveRight()
 	{
 		case EDirection::UPWARD:
 		{
-			TempDirection = EDirection::NONE;
 			DesiredDirection = EDirection::RIGHT;
 			return;
 		}
 		case EDirection::DOWN:
 		{
-			TempDirection = EDirection::NONE;
 			DesiredDirection = EDirection::LEFT;
 			return;
 		}
 		case EDirection::LEFT:
 		{
-			TempDirection = EDirection::NONE;
 			DesiredDirection = EDirection::UPWARD;
 			return;
 		}
 		case EDirection::RIGHT:
 		{
-			TempDirection = EDirection::NONE;
 			DesiredDirection = EDirection::DOWN;
 			return;
 		}
@@ -118,28 +110,24 @@ void APMMazePlayer::TurnAround()
 	{
 		case EDirection::UPWARD:
 		{
-			TempDirection = EDirection::NONE;
 			DesiredDirection = EDirection::DOWN;
 			RotatePlayer(90.f, EDirection::DOWN);
 			return;
 		}
 		case EDirection::DOWN:
 		{
-			TempDirection = EDirection::NONE;
 			DesiredDirection = EDirection::UPWARD;
 			RotatePlayer(-90.f, EDirection::UPWARD);
 			return;
 		}
 		case EDirection::LEFT:
 		{
-			TempDirection = EDirection::NONE;
 			DesiredDirection = EDirection::RIGHT;
 			RotatePlayer(0.f, EDirection::RIGHT);
 			return;
 		}
 		case EDirection::RIGHT:
 		{
-			TempDirection = EDirection::NONE;
 			DesiredDirection = EDirection::LEFT;
 			RotatePlayer(180.f, EDirection::LEFT);
 			return;
@@ -150,7 +138,7 @@ void APMMazePlayer::TurnAround()
 
 void APMMazePlayer::OpenMap()
 {
-	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(this)))
+	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
 		GM->ShowMap();
 	}

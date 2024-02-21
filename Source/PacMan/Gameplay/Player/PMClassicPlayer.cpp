@@ -6,6 +6,27 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+APMClassicPlayer::APMClassicPlayer()
+{
+	TopMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Top"));
+	TopMesh->SetupAttachment(Mesh);
+	BottomMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Bottom"));
+	BottomMesh->SetupAttachment(Mesh);
+
+	AnimationSpeed = 0.2f;
+	AnimationDirection = 1.f;
+}
+
+void APMClassicPlayer::Tick(float DeltaTime)
+{
+	if (bIsMoving)
+	{
+		AnimateMesh(DeltaTime);
+	}
+
+	Super::Tick(DeltaTime);
+}
+
 // Called to bind functionality to input
 void APMClassicPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -69,5 +90,29 @@ void APMClassicPlayer::MoveRight()
 	if (CurrentDirection == EDirection::LEFT)
 	{
 		RotatePlayer(0.f, EDirection::RIGHT);
+	}
+}
+
+void APMClassicPlayer::AnimateMesh(float DeltaTime)
+{
+	if (AnimationTimeElapsed < AnimationSpeed)
+	{
+		if (AnimationDirection > 0)
+		{
+			TopMesh->SetRelativeRotation(FRotator(FMath::Lerp(0.f, -60.f, AnimationTimeElapsed / AnimationSpeed), 0.f, 0.f));
+			BottomMesh->SetRelativeRotation(FRotator(FMath::Lerp(0.f, 60.f, AnimationTimeElapsed / AnimationSpeed), 0.f, 0.f));
+		}
+		else
+		{
+			TopMesh->SetRelativeRotation(FRotator(FMath::Lerp(-60.f, 0.f, AnimationTimeElapsed / AnimationSpeed), 0.f, 0.f));
+			BottomMesh->SetRelativeRotation(FRotator(FMath::Lerp(60.f, 0.f, AnimationTimeElapsed / AnimationSpeed), 0.f, 0.f));
+		}
+		
+		AnimationTimeElapsed += DeltaTime;
+	}
+	else
+	{
+		AnimationDirection *= -1.f;
+		AnimationTimeElapsed = 0;
 	}
 }

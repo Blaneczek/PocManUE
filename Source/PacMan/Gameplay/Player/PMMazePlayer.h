@@ -36,10 +36,10 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
-	UInputAction* TurnAroundAction;
+	TObjectPtr<UInputAction> TurnAroundAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
-	UInputAction* OpenMapAction;
+	TObjectPtr<UInputAction> OpenMapAction;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

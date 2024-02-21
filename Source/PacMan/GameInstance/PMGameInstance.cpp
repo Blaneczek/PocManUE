@@ -25,16 +25,6 @@ void UPMGameInstance::Init()
 	LoadGame();
 }
 
-TSubclassOf<APMCamera> UPMGameInstance::GetCameraClass() const
-{
-	if (CurrentLevelType == ELevelType::CLASSIC)
-	{
-		return ClassicCameraClass;
-	}
-
-	return nullptr;
-}
-
 FText UPMGameInstance::MakeScoreboardDataAsText(const TArray<FScoreboardData>& FinalScoresData) const
 {
 	FString FinalScores = "";

@@ -21,6 +21,9 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	void SetCamera(TSubclassOf<APMCamera> CameraClass);
+	void SetCamera();
 
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan")
+	TSubclassOf<APMCamera> ClassicCameraClass;
 };

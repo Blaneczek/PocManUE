@@ -17,6 +17,10 @@ class PACMAN_API APMClassicPlayer : public APMPlayer
 	GENERATED_BODY()
 
 public:
+	APMClassicPlayer();
+
+	virtual void Tick(float DeltaTime) override;
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -28,10 +32,24 @@ public:
 	virtual void MoveLeft() override;
 	virtual void MoveRight() override;
 
+private:
+	void AnimateMesh(float DeltaTime);
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
-	UInputAction* MoveUpAction;
+	TObjectPtr<UInputAction> MoveUpAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
-	UInputAction* MoveDownAction;
+	TObjectPtr<UInputAction> MoveDownAction;
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)\
+	TObjectPtr<UStaticMeshComponent> TopMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<UStaticMeshComponent> BottomMesh;
+
+private:
+	float AnimationSpeed;
+	float AnimationTimeElapsed = 0.f;
+	float AnimationDirection;
 };

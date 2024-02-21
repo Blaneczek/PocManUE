@@ -37,26 +37,11 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-	//MappingContext
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
-	UInputMappingContext* MappingContext;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
-	UInputAction* MoveLeftAction;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
-	UInputAction* MoveRightAction;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
-	UInputAction* OpenPauseMenuAction;
-
 	UFUNCTION()
 	virtual void MoveLeft() {};
 	UFUNCTION()
@@ -67,13 +52,12 @@ protected:
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	bool CheckIfAtPoint();
+	bool CheckIfAtSplinePoint();
 	void ChooseNewSpline();
 
 	void RotatePlayer(float Yaw, EDirection Direction);	
 
 public:
-	void HidePlayer();
 	void ResetPlayer();
 	void StartPlayer();
 	void StartMovement();
@@ -83,14 +67,27 @@ public:
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	USphereComponent* CollisionSphere;
+	TObjectPtr<USphereComponent> CollisionSphere;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* Mesh;
+	TObjectPtr<UStaticMeshComponent> Mesh;
 
 protected:
+	//MappingContext
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
+	TObjectPtr<UInputMappingContext> MappingContext;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
+	TObjectPtr<UInputAction> MoveLeftAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
+	TObjectPtr<UInputAction> MoveRightAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
+	TObjectPtr<UInputAction> OpenPauseMenuAction;
+
 	UPROPERTY()
-	APMSpline* CurrentSpline;
+	TObjectPtr<APMSpline> CurrentSpline;
 
 	UPROPERTY()
 	TObjectPtr<APMGameModeBase> GameMode;

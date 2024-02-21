@@ -8,16 +8,20 @@
 
 int32 APMCherryCoin::Interaction()
 {
-	if (APMGameModeBase* GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
+	if (APMGameModeBase* GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
 		GameMode->AddCherryCoin();
 
-		if (PickUpSound != nullptr) UGameplayStatics::PlaySound2D(this, PickUpSound);
+		if (PickUpSound != nullptr) 
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
+		}		
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("APMCherryCoin::Interaction | gameMode is nullptr"))
 	}
+
 	Destroy();
 	return 100;
 }

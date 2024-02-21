@@ -42,8 +42,6 @@ struct FGameData
 	{}
 };
 
-
-
 USTRUCT()
 struct FScoreboardData
 {
@@ -73,7 +71,6 @@ struct FScoreboardData
 	{
 		return (Score < ScoreboardData.Score);
 	}
-
 };
 
 /**
@@ -86,8 +83,6 @@ class PACMAN_API UPMGameInstance : public UGameInstance
 
 public:
 	virtual void Init() override;
-
-	TSubclassOf<APMCamera> GetCameraClass() const;
 
 	void SetLevelType(ELevelType LevelType) { CurrentLevelType = LevelType; };
 	FORCEINLINE static ELevelType GetCurrentLevelType() { return CurrentLevelType; }
@@ -117,9 +112,6 @@ public:
 	TMap<int32, FName> MazeLevels;
 
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Camera")
-	TSubclassOf<APMCamera> ClassicCameraClass;
-
 	static ELevelType CurrentLevelType;
 
 	// Save system

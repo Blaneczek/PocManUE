@@ -7,7 +7,7 @@
 
 int32 APMAttackCoin::Interaction()
 {
-	if (APMGameModeBase* GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
+	if (APMGameModeBase* GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
 		GameMode->PlayerAttackState();
 	}

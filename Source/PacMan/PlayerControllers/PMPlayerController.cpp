@@ -13,26 +13,27 @@ void APMPlayerController::BeginPlay()
 	bShowMouseCursor = false;
 	SetInputMode(FInputModeGameOnly());
 
-	if (UPMGameInstance* GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
-	{
-		SetCamera(GameInstance->GetCameraClass());
-	}	
+	SetCamera();
 }
 
-void APMPlayerController::SetCamera(TSubclassOf<APMCamera> CameraClass)
+void APMPlayerController::SetCamera()
 {
-	if (CameraClass == nullptr)
+	if (ClassicCameraClass == nullptr)
 	{
 		return;
 	}
 
-	AActor* Camera = Cast<APMCamera>(UGameplayStatics::GetActorOfClass(GetWorld(), CameraClass));
-	if (Camera != nullptr)
+	if (UPMGameInstance::GetCurrentLevelType() == ELevelType::CLASSIC)
 	{
-		SetViewTargetWithBlend(Camera);
+		AActor* Camera = Cast<APMCamera>(UGameplayStatics::GetActorOfClass(GetWorld(), ClassicCameraClass));
+		if (Camera != nullptr)
+		{
+			SetViewTargetWithBlend(Camera);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("APMPlayerController::SetCamera | Camera is nullptr"));
+		}
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("APMPlayerController::SetCamera | Camera is nullptr"));
-	}
+	
 }

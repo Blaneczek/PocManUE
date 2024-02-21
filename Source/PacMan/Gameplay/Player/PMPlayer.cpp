@@ -2,7 +2,6 @@
 
 #include "PMPlayer.h"
 #include "Components/StaticMeshComponent.h"
-#include "Camera/CameraComponent.h"
 #include "Components/SphereComponent.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
@@ -24,6 +23,7 @@ APMPlayer::APMPlayer()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(CollisionSphere);
 	
+	Speed = 500.f;
 	MovingDirection = 1.f;
 	PositionOnSpline = 1.f;
 	bIsMoving = false;
@@ -38,7 +38,7 @@ void APMPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
+	GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::BeginPlay | GameMode is nullptr"));
@@ -72,10 +72,11 @@ void APMPlayer::Tick(float DeltaTime)
 	{
 		PositionOnSpline += DeltaTime * MovingDirection * Speed;
 	}
+
 	const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
 	SetActorLocation(NewLocation);
 
-	if (CheckIfAtPoint())
+	if (CheckIfAtSplinePoint())
 	{
 		UnmarkSpline();
 		bIsMoving = false;
@@ -99,41 +100,38 @@ void APMPlayer::RotatePlayer(float Yaw, EDirection Direction)
 	CurrentDirection = Direction;
 	SetActorRotation(FRotator(0, Yaw, 0));
 	MovingDirection = Yaw <= 0 ? 1.f : -1.f;
-	PositionOnSpline += MovingDirection; //to be sure that player won't stuck when PositionOnSpline == DistanceAtSplinePoint
+	PositionOnSpline += (MovingDirection * 5); //to be sure that player won't stuck when PositionOnSpline == DistanceAtSplinePoint
 	bIsMoving = true;
 }
 
 void APMPlayer::MarkSpline()
 {
-	CurrentSpline->Tags.Add(FName("markedSpline"));
+	if (CurrentSpline != nullptr)
+	{
+		CurrentSpline->Tags.Add(FName("markedSpline"));
+	}		
 }
 
 void APMPlayer::UnmarkSpline()
 {
-	CurrentSpline->Tags.Remove(FName("markedSpline"));
+	if (CurrentSpline != nullptr)
+	{
+		CurrentSpline->Tags.Remove(FName("markedSpline"));
+	}
 }
 
 void APMPlayer::ResetPlayer()
 {
-	APlayerController* PC = Cast<APlayerController>(GetController());
-	if (PC != nullptr)
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		DisableInput(PC);
-		UE_LOG(LogTemp, Warning, TEXT("jest controller"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("nie ma controllera"));
 	}
 
 	bIsMoving = false;
 	FTimerHandle ResetTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMPlayer::HidePlayer, 1.f, false);
-}
-
-void APMPlayer::HidePlayer()
-{
-	SetActorHiddenInGame(true);
+	FTimerDelegate ResetDel;
+	ResetDel.BindUObject(this, &APMPlayer::SetActorHiddenInGame, true);
+	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, ResetDel, 1.f, false);
 }
 
 void APMPlayer::StartPlayer()
@@ -145,7 +143,7 @@ void APMPlayer::StartPlayer()
 	TempDirection = EDirection::NONE;
 	DesiredDirection = EDirection::RIGHT;
 	CurrentDirection = EDirection::RIGHT;
-	this->SetActorHiddenInGame(false);
+	SetActorHiddenInGame(false);
 
 	TArray<AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("Start")), OutActors);
@@ -166,24 +164,22 @@ void APMPlayer::StartPlayer()
 
 void APMPlayer::StartMovement()
 {
-	bIsMoving = true;
-	APlayerController* PC = Cast<APlayerController>(GetController());
-	if (PC != nullptr)
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
-		this->EnableInput(PC);		
+		EnableInput(PC);		
+		bIsMoving = true;
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::StartMovement | PlayerController is nullptr"));
-	}
-	
+	}	
 }
 
 void APMPlayer::StopMovement()
 {
-	bIsMoving = false;
-	APlayerController* PC = Cast<APlayerController>(GetController());
-	if (PC != nullptr)
+	bIsMoving = false;	
+
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		this->DisableInput(PC);	
 	}
@@ -200,19 +196,17 @@ void APMPlayer::OpenPauseMenu()
 
 void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor == nullptr || OtherActor == this)
+	if ( (OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr))
 	{
-		return;
-	}
-
-	IPMInteractionInterface* InteractionInterface = Cast<IPMInteractionInterface>(OtherActor);
-	if (InteractionInterface != nullptr)
-	{
-		GameMode->AddPoints(InteractionInterface->Interaction());
+		IPMInteractionInterface* InteractionInterface = Cast<IPMInteractionInterface>(OtherActor);
+		if (InteractionInterface != nullptr)
+		{
+			GameMode->AddPoints(InteractionInterface->Interaction());
+		}
 	}
 }
 
-bool APMPlayer::CheckIfAtPoint()
+bool APMPlayer::CheckIfAtSplinePoint()
 {
 	if (PositionOnSpline >= CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1))
 	{
@@ -230,125 +224,65 @@ bool APMPlayer::CheckIfAtPoint()
 
 void APMPlayer::ChooseNewSpline()
 {
+	APMSpline* NewSpline = nullptr;
+
 	switch (DesiredDirection)
 	{
 		case EDirection::UPWARD:
 		{
-			if (APMSpline* newSpline = CurrentSpline->Splines[SplineIndex].UPWARD)
-			{
-				if (CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName("releaseGhost")))
-				{
-					TempDirection = DesiredDirection;
-					DesiredDirection = CurrentDirection;
-					return;
-				}
-
-				if (TempDirection != EDirection::NONE)
-				{
-					DesiredDirection = TempDirection;
-				}
-				SetActorRotation(FRotator(0, -90, 0));
-				CurrentSpline = newSpline;
-				PositionOnSpline = 1.f;
-				CurrentDirection = EDirection::UPWARD;
-				MovingDirection = 1.f;
-				bIsMoving = true;
-			}
-			else
-			{
-				TempDirection = DesiredDirection;
-				DesiredDirection = CurrentDirection;
-			}
-			return;
-		}
+			NewSpline = CurrentSpline->Splines[SplineIndex].UPWARD;
+			break;
+		}		
 		case EDirection::DOWN:
 		{
-			if (APMSpline* newSpline = CurrentSpline->Splines[SplineIndex].DOWN)
-			{	
-				if (CurrentSpline->Splines[SplineIndex].DOWN->ActorHasTag(FName("releaseGhost")))
-				{
-					TempDirection = DesiredDirection;
-					DesiredDirection = CurrentDirection;
-					return;
-				}
-
-				if (TempDirection != EDirection::NONE)
-				{
-					DesiredDirection = TempDirection;
-				}
-				SetActorRotation(FRotator(0, 90, 0));
-				CurrentSpline = newSpline;
-				PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
-				CurrentDirection = EDirection::DOWN;
-				MovingDirection = -1.f;
-				bIsMoving = true;
-			}
-			else
-			{
-				TempDirection = DesiredDirection;
-				DesiredDirection = CurrentDirection;
-			}
-			return;
-		}
+			NewSpline = CurrentSpline->Splines[SplineIndex].DOWN;
+			break;
+		}			
 		case EDirection::RIGHT:
 		{
-			if (APMSpline* newSpline = CurrentSpline->Splines[SplineIndex].RIGHT)
-			{
-				if (CurrentSpline->Splines[SplineIndex].RIGHT->ActorHasTag(FName("releaseGhost")))
-				{
-					TempDirection = DesiredDirection;
-					DesiredDirection = CurrentDirection;
-					return;
-				}
-
-				if (TempDirection != EDirection::NONE)
-				{
-					DesiredDirection = TempDirection;
-				}
-				SetActorRotation(FRotator(0, 0, 0));
-				CurrentSpline = newSpline;
-				PositionOnSpline = 1.f;
-				CurrentDirection = EDirection::RIGHT;
-				MovingDirection = 1.f;
-				bIsMoving = true;
-			}
-			else
-			{
-				TempDirection = DesiredDirection;
-				DesiredDirection = CurrentDirection;
-			}
-			return;
-		}
+			NewSpline = CurrentSpline->Splines[SplineIndex].RIGHT;
+			break;
+		}			
 		case EDirection::LEFT:
 		{
-			if (APMSpline* newSpline = CurrentSpline->Splines[SplineIndex].LEFT)
-			{
-				if (CurrentSpline->Splines[SplineIndex].LEFT->ActorHasTag(FName("releaseGhost")))
-				{
-					TempDirection = DesiredDirection;
-					DesiredDirection = CurrentDirection;
-					return;
-				}
-
-				if (TempDirection != EDirection::NONE)
-				{
-					DesiredDirection = TempDirection;
-				}
-				SetActorRotation(FRotator(0, 180, 0));
-				CurrentSpline = newSpline;
-				PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
-				CurrentDirection = EDirection::LEFT;
-				MovingDirection = -1.f;
-				bIsMoving = true;
-			}
-			else
-			{
-				TempDirection = DesiredDirection;
-				DesiredDirection = CurrentDirection;
-			}
-			return;
-		}
+			NewSpline = CurrentSpline->Splines[SplineIndex].LEFT;
+			break;
+		}		
 		default: return;
+	}
+
+	if (!NewSpline || NewSpline->ActorHasTag(FName("releaseGhost")))
+	{
+		TempDirection = DesiredDirection;
+		DesiredDirection = CurrentDirection;
+		return;
+	}
+
+	float NewYaw = 0.f;
+	if (DesiredDirection == EDirection::UPWARD)
+	{
+		NewYaw = -90.f;
+	}
+	else if (DesiredDirection == EDirection::DOWN)
+	{
+		NewYaw = 90.f;
+	}	
+	else if (DesiredDirection == EDirection::LEFT)
+	{
+		NewYaw = 180.f;
+	}
+	
+	SetActorRotation(FRotator(0, NewYaw, 0));
+	CurrentSpline = NewSpline;
+	PositionOnSpline = (DesiredDirection == EDirection::UPWARD || DesiredDirection == EDirection::RIGHT) ? 1.f :
+						CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
+	CurrentDirection = DesiredDirection;
+	MovingDirection = (DesiredDirection == EDirection::UPWARD || DesiredDirection == EDirection::RIGHT) ? 1.f : -1.f;
+	bIsMoving = true;
+
+	if (TempDirection != EDirection::NONE)
+	{
+		DesiredDirection = TempDirection;
 	}
 }
 
