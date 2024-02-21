@@ -1,15 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2024 Dawid Szoldra. All rights reserved.
 
 
 #include "PMPlayerControllerMenu.h"
-#include "Gameplay/Player/PMClassicPlayer.h"
-#include "Gameplay/Player/PMMazePlayer.h"
 
 void APMPlayerControllerMenu::BeginPlay()
 {
 	Super::BeginPlay();
 
 	bShowMouseCursor = true;
-	SetInputMode(FInputModeUIOnly());
-	
+	SetInputMode(FInputModeUIOnly());	
 }

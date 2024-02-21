@@ -2,19 +2,20 @@
 
 
 #include "PMSaveGame.h"
+#include "GameInstance/PMGameInstance.h"
 
-void UPMSaveGame::SetSaveData(const FGameData& InClassicGameData, const FGameData& InMazeGameData, const TArray<FScoreboardData>& InClassicScoreData, const TArray<FScoreboardData>& InMazeScoreData)
+void UPMSaveGame::SetSaveData(const FGameData& InClassicGameData, const FGameData& InMazeGameData, const TArray<FScoreboardData>& InClassicScoreboardData, const TArray<FScoreboardData>& InMazeScoreboardData)
 {
 	ClassicGameData = InClassicGameData;
 	MazeGameData = InMazeGameData;
-	ClassicScoreData = InClassicScoreData;
-	MazeScoreData = InMazeScoreData;
+	ClassicScoreboardData = InClassicScoreboardData;
+	MazeScoreboardData = InMazeScoreboardData;
 }
 
-void UPMSaveGame::GetSaveData(FGameData& OutClassicGameData, FGameData& OutMazeGameData, TArray<FScoreboardData>& OutClassicScoreData, TArray<FScoreboardData>& OutMazeScoreData)
+void UPMSaveGame::GetSaveData(FGameData& OutClassicGameData, FGameData& OutMazeGameData, TArray<FScoreboardData>& OutClassicScoreboardData, TArray<FScoreboardData>& OutMazeScoreboardData)
 {
 	OutClassicGameData = ClassicGameData;
 	OutMazeGameData = MazeGameData;
-	OutClassicScoreData = ClassicScoreData;
-	OutMazeScoreData = MazeScoreData;
+	OutClassicScoreboardData = ClassicScoreboardData;
+	OutMazeScoreboardData = MazeScoreboardData;
 }

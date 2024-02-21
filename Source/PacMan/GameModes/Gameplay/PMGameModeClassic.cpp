@@ -70,7 +70,7 @@ void APMGameModeClassic::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWa
 void APMGameModeClassic::SetGameplayValues()
 {
 	Score = GameInstance->ClassicGameData.Score;
-	Cherries = GameInstance->ClassicGameData.CherryNumber;
+	Cherries = GameInstance->ClassicGameData.Cherries;
 	CurrentLevelNum = GameInstance->ClassicGameData.LevelNum;
 }
 

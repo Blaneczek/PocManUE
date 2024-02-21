@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2024 Dawid Szoldra. All rights reserved.
 
 
 #include "PMPlayerController.h"
@@ -12,21 +12,12 @@ void APMPlayerController::BeginPlay()
 
 	bShowMouseCursor = false;
 	SetInputMode(FInputModeGameOnly());
-	SetCamera(GetCameraClass());
-}
 
-TSubclassOf<APMCamera> APMPlayerController::GetCameraClass() const
-{
-	UPMGameInstance* gameInstance = Cast<UPMGameInstance>(GetGameInstance());
-
-	if (gameInstance == nullptr)
+	if (UPMGameInstance* GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("APMPlayerController::GetCameraClass | GameInstance is nullptr"));
-		return nullptr;
-	}
-
-	return gameInstance->GetCameraClass();
-}	
+		SetCamera(GameInstance->GetCameraClass());
+	}	
+}
 
 void APMPlayerController::SetCamera(TSubclassOf<APMCamera> CameraClass)
 {
@@ -35,10 +26,10 @@ void APMPlayerController::SetCamera(TSubclassOf<APMCamera> CameraClass)
 		return;
 	}
 
-	AActor* camera = Cast<APMCamera>(UGameplayStatics::GetActorOfClass(GetWorld(), CameraClass));
-	if (camera != nullptr)
+	AActor* Camera = Cast<APMCamera>(UGameplayStatics::GetActorOfClass(GetWorld(), CameraClass));
+	if (Camera != nullptr)
 	{
-		SetViewTargetWithBlend(camera);
+		SetViewTargetWithBlend(Camera);
 	}
 	else
 	{

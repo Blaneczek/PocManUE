@@ -28,17 +28,17 @@ struct FGameData
 	UPROPERTY()
 	int32 Score;
 	UPROPERTY()
-	int32 CherryNumber;
+	int32 Cherries;
 
 	FGameData()
 	{
 		LevelNum = 1;
 		Score = 0;
-		CherryNumber = 0;
+		Cherries = 0;
 	}
 
-	FGameData(int32 LevelNum, int32 ScoreNum, int32 CherryNum)
-		: LevelNum(LevelNum), Score(ScoreNum), CherryNumber(CherryNum)
+	FGameData(int32 InLevelNum, int32 InScore, int32 InCherries)
+		: LevelNum(InLevelNum), Score(InScore), Cherries(InCherries)
 	{}
 };
 
@@ -63,8 +63,8 @@ struct FScoreboardData
 		Date = FDateTime::Now().ToString();
 	}
 
-	FScoreboardData(int32 ScoreNum, int32 CherryNum)
-		: Score(ScoreNum), Cherries(CherryNum)
+	FScoreboardData(int32 InScore, int32 InCherries)
+		: Score(InScore), Cherries(InCherries)
 	{
 		Date = FDateTime::Now().ToString();
 	}
@@ -93,20 +93,17 @@ public:
 	ELevelType GetCurrentLevelType() const { return CurrentLevelType; }
 
 	void SetClassicData(const FGameData& Data) { ClassicGameData = Data; }
-
 	void SetMazeData(const FGameData& Data) { MazeGameData = Data; }
 
-	FText GetScoreData(ELevelType LevelType) const;
-	void ClearScoreData();
-
-	void AddScore(ELevelType LevelType, const FScoreboardData& ScoreData);
+	FText GetScoreboardData(ELevelType LevelType) const;
+	void ClearScoreboardData();
+	void AddScoreboardData(ELevelType LevelType, const FScoreboardData& ScoreboardData);
 
 	void SaveGame();
 	void LoadGame();
 
 private:
-	FText MakeScoreDataAsText(const TArray<FScoreboardData>& ScoreData) const;
-
+	FText MakeScoreboardDataAsText(const TArray<FScoreboardData>& FinalScoresData) const;
 
 public:
 	UPROPERTY()
@@ -120,19 +117,19 @@ public:
 	TMap<int32, FName> MazeLevels;
 
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan | Camera")
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Camera")
 	TSubclassOf<APMCamera> ClassicCameraClass;
 
 	UPROPERTY()
 	ELevelType CurrentLevelType;
 
-	UPROPERTY()
-	TArray<FScoreboardData> ClassicScoreData;
-	UPROPERTY()
-	TArray<FScoreboardData> MazeScoreData;
-
+	// Save system
 	FString SaveSlotName;
-
 	UPROPERTY()
 	TObjectPtr<UPMSaveGame> SaveGameInstance;
+
+	UPROPERTY()
+	TArray<FScoreboardData> ClassicScoreboardData;
+	UPROPERTY()
+	TArray<FScoreboardData> MazeScoreboardData;
 };

@@ -1,5 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-// Made by Dawid Szo³dra
+// Copyright (c) 2024 Dawid Szoldra. All rights reserved.
 
 #include "PMPlayer.h"
 #include "Components/StaticMeshComponent.h"

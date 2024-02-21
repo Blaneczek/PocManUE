@@ -76,7 +76,7 @@ void APMGameModeMaze::RestartGameType()
 void APMGameModeMaze::SetGameplayValues()
 {
 	Score = GameInstance->MazeGameData.Score;
-	Cherries = GameInstance->MazeGameData.CherryNumber;
+	Cherries = GameInstance->MazeGameData.Cherries;
 	CurrentLevelNum = GameInstance->MazeGameData.LevelNum;
 }
 

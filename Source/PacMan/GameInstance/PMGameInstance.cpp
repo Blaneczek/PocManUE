@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2024 Dawid Szoldra. All rights reserved.
 
 #include "PMGameInstance.h"
 #include "Saved/PMSaveGame.h"
@@ -17,6 +17,7 @@ void UPMGameInstance::Init()
 	MazeLevels.Add(3, "Maze03");
 
 	SaveSlotName = "SaveSlot";
+
 	SetLevelType(ELevelType::MENU);
 
 	LoadGame();
@@ -24,88 +25,88 @@ void UPMGameInstance::Init()
 
 TSubclassOf<APMCamera> UPMGameInstance::GetCameraClass() const
 {
-	switch (CurrentLevelType)
+	if (CurrentLevelType == ELevelType::CLASSIC)
 	{
-		case ELevelType::CLASSIC: return ClassicCameraClass;
-		case ELevelType::MAZE: return nullptr;
+		return ClassicCameraClass;
 	}
+
 	return nullptr;
 }
 
-FText UPMGameInstance::MakeScoreDataAsText(const TArray<FScoreboardData>& ScoreData) const
+FText UPMGameInstance::MakeScoreboardDataAsText(const TArray<FScoreboardData>& FinalScoresData) const
 {
-	FString score = "";
-	for (int32 index = 0; index < ScoreData.Num(); ++index)
+	FString FinalScores = "";
+	for (int32 index = 0; index < FinalScoresData.Num(); ++index)
 	{
-		FString itemScore = FString::FromInt(index + 1)
-			+ ".Score:" + FString::FromInt(ScoreData[index].Score)
-			+ " | Cherries:" + FString::FromInt(ScoreData[index].Cherries)
-			+ " | Date:" + ScoreData[index].Date
+		FString itemScores = FString::FromInt(index + 1)
+			+ ".Score:" + FString::FromInt(FinalScoresData[index].Score)
+			+ " | Cherries:" + FString::FromInt(FinalScoresData[index].Cherries)
+			+ " | Date:" + FinalScoresData[index].Date
 			+ LINE_TERMINATOR TEXT("\n");
-		score.Append(itemScore);
+		FinalScores.Append(itemScores);
 	}
 
-	return FText::FromString(score);
+	return FText::FromString(FinalScores);
 }
 
 
-FText UPMGameInstance::GetScoreData(ELevelType LevelType) const
+FText UPMGameInstance::GetScoreboardData(ELevelType LevelType) const
 {
 	switch (LevelType)
 	{
-		case ELevelType::CLASSIC: return MakeScoreDataAsText(ClassicScoreData);
-		case ELevelType::MAZE: return MakeScoreDataAsText(MazeScoreData);
+		case ELevelType::CLASSIC: return MakeScoreboardDataAsText(ClassicScoreboardData);
+		case ELevelType::MAZE: return MakeScoreboardDataAsText(MazeScoreboardData);
 	}
+
 	return FText::FromString("");
 }
 
-void UPMGameInstance::ClearScoreData()
+void UPMGameInstance::ClearScoreboardData()
 {
-	if (ClassicScoreData.IsEmpty() && MazeScoreData.IsEmpty())
+	if (ClassicScoreboardData.IsEmpty() && MazeScoreboardData.IsEmpty())
 	{
 		return;		
 	}
 
-	ClassicScoreData.Empty();
-	MazeScoreData.Empty();
+	ClassicScoreboardData.Empty();
+	MazeScoreboardData.Empty();
 	SaveGame();
 }
 
 
-void UPMGameInstance::AddScore(ELevelType LevelType, const FScoreboardData& ScoreData)
+void UPMGameInstance::AddScoreboardData(ELevelType LevelType, const FScoreboardData& ScoreData)
 {
 	switch (LevelType)
 	{
 		case ELevelType::CLASSIC:
 		{
-			ClassicScoreData.Add(ScoreData);
-			ClassicScoreData.Sort([](const FScoreboardData& a, const FScoreboardData& b) { return a.Score > b.Score; });
+			ClassicScoreboardData.Add(ScoreData);
+			ClassicScoreboardData.Sort([](const FScoreboardData& a, const FScoreboardData& b) { return a.Score > b.Score; });
 			return;
 		}
 		case ELevelType::MAZE:
 		{
-			MazeScoreData.Add(ScoreData);
-			MazeScoreData.Sort([](const FScoreboardData& a, const FScoreboardData& b) { return a.Score > b.Score; });
+			MazeScoreboardData.Add(ScoreData);
+			MazeScoreboardData.Sort([](const FScoreboardData& a, const FScoreboardData& b) { return a.Score > b.Score; });
 			return;
 		}
 		default: return;
-	}
-	
+	}	
 }
 
 void UPMGameInstance::SaveGame()
 {
-	if (UGameplayStatics::DoesSaveGameExist(SaveSlotName, 0))
-	{
-		SaveGameInstance->SetSaveData(ClassicGameData, MazeGameData, ClassicScoreData, MazeScoreData);
-		UGameplayStatics::SaveGameToSlot(SaveGameInstance, SaveSlotName, 0);
-	}
-	else
+	if (!UGameplayStatics::DoesSaveGameExist(SaveSlotName, 0))
 	{
 		SaveGameInstance = Cast<UPMSaveGame>(UGameplayStatics::CreateSaveGameObject(UPMSaveGame::StaticClass()));
-		SaveGameInstance->SetSaveData(ClassicGameData, MazeGameData, ClassicScoreData, MazeScoreData);
-		UGameplayStatics::SaveGameToSlot(SaveGameInstance, SaveSlotName, 0);
+		if (SaveGameInstance == nullptr)
+		{
+			return;
+		}				
 	}
+
+	SaveGameInstance->SetSaveData(ClassicGameData, MazeGameData, ClassicScoreboardData, MazeScoreboardData);
+	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SaveSlotName, 0);
 }
 
 void UPMGameInstance::LoadGame()
@@ -113,7 +114,10 @@ void UPMGameInstance::LoadGame()
 	if (UGameplayStatics::DoesSaveGameExist(SaveSlotName, 0))
 	{
 		SaveGameInstance = Cast<UPMSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
-		SaveGameInstance->GetSaveData(ClassicGameData, MazeGameData, ClassicScoreData, MazeScoreData);
+		if (SaveGameInstance != nullptr)
+		{
+			SaveGameInstance->GetSaveData(ClassicGameData, MazeGameData, ClassicScoreboardData, MazeScoreboardData);
+		}		
 	}
 }
 

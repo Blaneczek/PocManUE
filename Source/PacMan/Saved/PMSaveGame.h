@@ -7,7 +7,6 @@
 #include "GameInstance/PMGameInstance.h"
 #include "PMSaveGame.generated.h"
 
-
 /**
  * 
  */
@@ -17,8 +16,8 @@ class PACMAN_API UPMSaveGame : public USaveGame
 	GENERATED_BODY()
 
 public:
-	void SetSaveData(const FGameData& InClassicGameData, const FGameData& InMazeGameData, const TArray<FScoreboardData>& InClassicScoreData, const TArray<FScoreboardData>& InMazeScoreData);
-	void GetSaveData(FGameData& OutClassicGameData, FGameData& OutMazeGameData, TArray<FScoreboardData>& OutClassicScoreData, TArray<FScoreboardData>& OutMazeScoreData);
+	void SetSaveData(const FGameData& InClassicGameData, const FGameData& InMazeGameData, const TArray<FScoreboardData>& InClassicScoreboardData, const TArray<FScoreboardData>& InMazeScoreboardData);
+	void GetSaveData(FGameData& OutClassicGameData, FGameData& OutMazeGameData, TArray<FScoreboardData>& OutClassicScoreboardData, TArray<FScoreboardData>& OutMazeScoreboardData);
 
 public:
 	UPROPERTY()
@@ -26,7 +25,7 @@ public:
 	UPROPERTY()
 	FGameData MazeGameData;
 	UPROPERTY()
-	TArray<FScoreboardData> ClassicScoreData;
+	TArray<FScoreboardData> ClassicScoreboardData;
 	UPROPERTY()
-	TArray<FScoreboardData> MazeScoreData;
+	TArray<FScoreboardData> MazeScoreboardData;
 };

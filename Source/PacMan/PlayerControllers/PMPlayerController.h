@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2024 Dawid Szoldra. All rights reserved.
 
 #pragma once
 
@@ -7,8 +7,6 @@
 #include "PMPlayerController.generated.h"
 
 class APMCamera;
-class APMClassicPlayer;
-class APMMazePlayer;
 
 /**
  * 
@@ -22,14 +20,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:
-	TSubclassOf<APMCamera> GetCameraClass() const;
+private:
 	void SetCamera(TSubclassOf<APMCamera> CameraClass);
 
-private:
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
-	TSubclassOf<APMClassicPlayer> ClassicPlayerClass;
-
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
-	TSubclassOf<APMMazePlayer> MazePlayerClass;
 };
