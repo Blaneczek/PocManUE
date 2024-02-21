@@ -17,7 +17,7 @@ class PACMAN_API APMCherryCoin : public APMCoin
 	GENERATED_BODY()
 
 protected:
-	virtual void SetMaterial() override;
+	virtual void IncreaseCoinsCounter() override {};
 
 public:
 	virtual int32 Interaction() override;

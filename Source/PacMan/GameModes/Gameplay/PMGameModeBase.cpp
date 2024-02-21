@@ -26,6 +26,7 @@ APMGameModeBase::APMGameModeBase()
 	Lives = 3;
 	Cherries = 0;
 	bCoinSound = true;
+	APMCoin::ResetCoinsNumber();
 }
 
 void APMGameModeBase::BeginPlay()
@@ -56,10 +57,16 @@ void APMGameModeBase::BeginPlay()
 
 	CherryCoinDel.BindUFunction(this, FName("SpawnSpecialCoin"), CherryCoinClass);
 	GetWorld()->GetTimerManager().SetTimer(CherryCoinTimer, CherryCoinDel, 10.f, false);
+
 }
 
 void APMGameModeBase::AddPoints(int32 points)
 {
+	if (points == 10)
+	{
+		NumberOfCoins--;
+	}
+
 	Score += points;
 
 	if (bCoinSound && CoinSound != nullptr)
@@ -77,7 +84,7 @@ void APMGameModeBase::AddPoints(int32 points)
 		HUDWidget->SetScore(Score);
 	}
 
-	if (NumberOfCoins == 0)
+	if (APMCoin::GetCoinsNumber() == 0)
 	{
 		StopGame();
 		EndGameHandle(WinGameWidget, WinGameSound, true);
@@ -221,7 +228,7 @@ void APMGameModeBase::SubtractCoin()
 	NumberOfCoins--;
 }
 
-void APMGameModeBase::SpawnSpecialCoin(TSubclassOf<APMCoin> CoinClass)
+void APMGameModeBase::SpawnSpecialCoin(TSubclassOf<APMCoin> SpecialCoinClass)
 {
 	const int32 randomIndex = FMath::RandRange(0, Splines.Num() - 1);
 
@@ -232,7 +239,7 @@ void APMGameModeBase::SpawnSpecialCoin(TSubclassOf<APMCoin> CoinClass)
 		const FRotator rotation = FRotator(0, 0, 0);
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		GetWorld()->SpawnActor<APMCoin>(CoinClass, location, rotation, SpawnInfo);
+		GetWorld()->SpawnActor<APMCoin>(SpecialCoinClass, location, rotation, SpawnInfo);
 	}
 }
 

@@ -5,21 +5,18 @@
 #include "Kismet/GameplayStatics.h"
 
 
-void APMAttackCoin::SetMaterial()
-{
-}
-
 int32 APMAttackCoin::Interaction()
 {
-	if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
+	if (APMGameModeBase* GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
 	{
-		gameMode->PlayerAttackState();
-		UE_LOG(LogTemp, Warning, TEXT("AttackCoin"))
+		GameMode->PlayerAttackState();
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("APMAttackCoin::Interaction | gameMode is nullptr"))
 	}
+
+	CoinsCounter--;
 	Destroy();
-	return 20;
+	return 10;
 }

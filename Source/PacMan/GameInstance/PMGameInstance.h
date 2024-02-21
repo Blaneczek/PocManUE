@@ -90,7 +90,7 @@ public:
 	TSubclassOf<APMCamera> GetCameraClass() const;
 
 	void SetLevelType(ELevelType LevelType) { CurrentLevelType = LevelType; };
-	ELevelType GetCurrentLevelType() const { return CurrentLevelType; }
+	FORCEINLINE static ELevelType GetCurrentLevelType() { return CurrentLevelType; }
 
 	void SetClassicData(const FGameData& Data) { ClassicGameData = Data; }
 	void SetMazeData(const FGameData& Data) { MazeGameData = Data; }
@@ -120,8 +120,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Camera")
 	TSubclassOf<APMCamera> ClassicCameraClass;
 
-	UPROPERTY()
-	ELevelType CurrentLevelType;
+	static ELevelType CurrentLevelType;
 
 	// Save system
 	FString SaveSlotName;

@@ -16,16 +16,16 @@ struct FSplines
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, meta = (DisplayName = "UP"))
-	APMSpline* UPWARD;
+	TObjectPtr<APMSpline> UPWARD;
 
 	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, meta = (DisplayName = "DOWN"))
-	APMSpline* DOWN;
+	TObjectPtr<APMSpline>  DOWN;
 
 	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, meta = (DisplayName = "LEFT"))
-	APMSpline* LEFT;
+	TObjectPtr<APMSpline>  LEFT;
 
 	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, meta = (DisplayName = "RIGHT"))
-	APMSpline* RIGHT;
+	TObjectPtr<APMSpline>  RIGHT;
 
 	FSplines()
 		: UPWARD(nullptr), DOWN(nullptr), LEFT(nullptr), RIGHT(nullptr)
@@ -49,19 +49,22 @@ public:
 	void SpawnCoins();
 
 public:		
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USplineComponent* SplineComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PocMan")
+	TObjectPtr<USplineComponent> SplineComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PocMan")
 	TArray<FSplines> Splines;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<USceneComponent> SceneComponent;
+
 private:
-	UPROPERTY(VisibleAnywhere)
-	USceneComponent* SceneComponent;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan")
+	float CoinDistanceOnSpline = 120.f;
 
-	UPROPERTY(EditAnywhere)
-	float Distance = 120.f;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan")
+	TSubclassOf<APMCoin> ClassicCoinClass;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<APMCoin> CoinClass;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan")
+	TSubclassOf<APMCoin> MazeCoinClass;
 };

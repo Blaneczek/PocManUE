@@ -4,6 +4,8 @@
 #include "Saved/PMSaveGame.h"
 #include "Kismet/GameplayStatics.h"
 
+ELevelType UPMGameInstance::CurrentLevelType = ELevelType::MENU;
+
 void UPMGameInstance::Init()
 {
 	Super::Init();

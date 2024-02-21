@@ -68,7 +68,7 @@ public:
 	void SubtractCoin();
 
 	UFUNCTION()
-	void SpawnSpecialCoin(TSubclassOf<APMCoin> CoinClass);
+	void SpawnSpecialCoin(TSubclassOf<APMCoin> SpecialCoinClass);
 
 	void AddCherryCoin();
 
@@ -153,6 +153,8 @@ protected:
 	// Gameplay classes
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMGhost> GhostClass;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
+	TSubclassOf<APMCoin> CoinClass;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMCherryCoin> CherryCoinClass;
 	//

@@ -14,9 +14,6 @@ class PACMAN_API APMAttackCoin : public APMCoin
 {
 	GENERATED_BODY()
 
-protected:
-	virtual void SetMaterial() override;
-
 public:
 	virtual int32 Interaction() override;
 };

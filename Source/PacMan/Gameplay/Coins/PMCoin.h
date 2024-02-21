@@ -17,20 +17,19 @@ class PACMAN_API APMCoin : public AActor, public IPMInteractionInterface
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	APMCoin();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void SetMaterial();
+	virtual void IncreaseCoinsCounter();
 
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	virtual int32 Interaction() override;
+
+	FORCEINLINE static int32 GetCoinsNumber() { return CoinsCounter; }
+	static void ResetCoinsNumber() { CoinsCounter = 0; }
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -43,4 +42,7 @@ public:
 	TObjectPtr<UMaterialInstance> ClassicMaterial;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Material")
 	TObjectPtr<UMaterialInstance> MazeMaterial;
+
+protected:
+	static int32 CoinsCounter;
 };

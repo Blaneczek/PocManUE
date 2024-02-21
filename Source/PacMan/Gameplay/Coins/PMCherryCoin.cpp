@@ -6,15 +6,11 @@
 #include "Kismet/GameplayStatics.h"
 
 
-void APMCherryCoin::SetMaterial()
-{
-}
-
 int32 APMCherryCoin::Interaction()
 {
-	if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
+	if (APMGameModeBase* GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
 	{
-		gameMode->AddCherryCoin();
+		GameMode->AddCherryCoin();
 
 		if (PickUpSound != nullptr) UGameplayStatics::PlaySound2D(this, PickUpSound);
 	}

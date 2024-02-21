@@ -5,9 +5,6 @@
 #include "GameModes/Gameplay/PMGameModeMaze.h"
 #include "Kismet/GameplayStatics.h"
 
-void APMMapCoin::SetMaterial()
-{
-}
 
 int32 APMMapCoin::Interaction()
 {
@@ -15,7 +12,10 @@ int32 APMMapCoin::Interaction()
 	{
 		if (GM->GetMapsNumber() < 2)
 		{
-			if (PickUpSound != nullptr) UGameplayStatics::PlaySound2D(this, PickUpSound);
+			if (PickUpSound != nullptr)
+			{
+				UGameplayStatics::PlaySound2D(this, PickUpSound);
+			}
 
 			GM->AddMap();
 			Destroy();
