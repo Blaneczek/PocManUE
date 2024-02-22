@@ -28,6 +28,8 @@ APMGhost::APMGhost()
 
 	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensing"));
 
+	State = EGhostState::NONE;
+	CurrentDirection = EGhostDirection::NONE;
 	MovingDirection = 1.f;
 	PositionOnSpline = 1.f;
 	bIsMoving = false;
@@ -38,6 +40,7 @@ APMGhost::APMGhost()
 	SplineIndex = 0;
 	Speed = NormalSpeed;
 	StartingMovingDirection = 1.f;
+	ChaseTimeCounter = 0;
 	StartingRotation = FRotator(0, 0, 0);
 	SetEyesPosition(0);
 }
@@ -52,7 +55,7 @@ void APMGhost::BeginPlay()
 	Mesh->SetMaterial(0, DynMaterial);
 
 	GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (GameMode != nullptr)
+	if (GameMode)
 	{
 		GameMode->OnStartGame.AddUObject(this, &APMGhost::StartGhost);
 		GameMode->OnStopGame.AddUObject(this, &APMGhost::ResetGhost);
@@ -69,10 +72,6 @@ void APMGhost::BeginPlay()
 	{
 		PawnSensing->OnSeePawn.AddDynamic(this, &APMGhost::OnSeePawn);
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGhost::BeginPlay | PawnSensing is nullptr"));
-	}
 
 	if (StartingSpline != nullptr)
 	{
@@ -84,12 +83,10 @@ void APMGhost::BeginPlay()
 	}
 
 	Player = Cast<APMPlayer>(UGameplayStatics::GetPlayerController(GetWorld(),0)->GetPawn());
-	if (Player == nullptr)
+	if (!Player)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PMGhost::BeginPlay | Player is nullptr"));
-		return;
 	}
-
 }
 
 // Called every frame
@@ -110,8 +107,32 @@ void APMGhost::Tick(float DeltaTime)
 	if (CheckIfAtPoint())
 	{
 		bIsMoving = false;
-		ChooseNewSpline();
+		HandleMovement();
 	}
+}
+
+TArray<int32> APMGhost::FindValidSplinesInRandomMovement()
+{
+	TArray<int32> OutValidSplines;
+
+	if ((CurrentSpline->Splines[SplineIndex].UPWARD != nullptr) && (!CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName("releaseGhost"))))
+	{
+		OutValidSplines.Add(0);
+	}
+	if ((CurrentSpline->Splines[SplineIndex].DOWN != nullptr) && (!CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName("releaseGhost"))))
+	{
+		OutValidSplines.Add(1);
+	}
+	if ((CurrentSpline->Splines[SplineIndex].LEFT != nullptr) && (!CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName("releaseGhost"))))
+	{
+		OutValidSplines.Add(2);
+	}
+	if ((CurrentSpline->Splines[SplineIndex].RIGHT != nullptr) && (!CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName("releaseGhost"))))
+	{
+		OutValidSplines.Add(3);
+	}
+
+	return OutValidSplines;
 }
 
 bool APMGhost::CheckIfAtPoint()
@@ -130,33 +151,53 @@ bool APMGhost::CheckIfAtPoint()
 	return	false;
 }
 
-void APMGhost::ChooseNewSpline()
+void APMGhost::HandleMovement()
 {
-	TArray<int32> validSplines;
-	int32 counter = 0;
-
-	if (CurrentSpline->Splines[SplineIndex].UPWARD != nullptr)
+	if (State == EGhostState::BASE)
 	{
-		validSplines.Add(0);
-		counter++;
-	}		
-	if (CurrentSpline->Splines[SplineIndex].DOWN != nullptr)
-	{
-		validSplines.Add(1);
-		counter++;
-	}
-	if (CurrentSpline->Splines[SplineIndex].LEFT != nullptr)
-	{
-		validSplines.Add(2);
-		counter++;
-	}
-	if (CurrentSpline->Splines[SplineIndex].RIGHT != nullptr)
-	{
-		validSplines.Add(3);
-		counter++;
+		GhostBaseMovement();
+		return;
 	}
 
-	if (counter == 0)
+	if ((State == EGhostState::PASSIVE) || (State == EGhostState::VULNERABLE))
+	{
+		TArray<int32> ValidSplines = FindValidSplinesInRandomMovement();
+		const int32 ValidSplinesNum = ValidSplines.Num();
+		if (ValidSplinesNum == 0)
+		{
+			TurnAround();
+			return;
+		}
+
+		const int32 RandomIndex = FMath::RandRange(-1, ValidSplinesNum - 1);
+		ChooseNewSpline(ValidSplines[RandomIndex]);
+		return;
+	}
+
+	if (State == EGhostState::ATTACK)
+	{
+		int32 FoundSpline = FindPath(FName("player_MarkedSpline")); 
+		ChooseNewSpline(FoundSpline);
+		return;
+	}
+
+	if (State == EGhostState::RELEASE)
+	{
+		int32 FoundSpline = FindPath(FName("release_MarkedSpline"));
+		ChooseNewSpline(FoundSpline);
+		return;
+	}
+
+	if (State == EGhostState::HITTED)
+	{
+		int32 FoundSpline = FindPath(FName("base_MarkedSpline"));
+		ChooseNewSpline(FoundSpline);
+		return;
+	}
+
+
+	/*
+	if (ValidSplinesNum == 0)
 	{
   		MovingDirection *= -1;
 		const float yawRotation = GetActorRotation().Yaw + (-180 * MovingDirection);
@@ -169,11 +210,12 @@ void APMGhost::ChooseNewSpline()
 	// 0 - UPWARD, 1 - DOWN, 2 - LEFT, 3 - RIGHT
 	switch (State)
 	{
+		case EGhostState::VULNERABLE:
 		case EGhostState::PASSIVE:
 		{
-			const int32 randomIndex = FMath::RandRange(0, counter - 1);
+			const int32 randomIndex = FMath::RandRange(0, ValidSplinesNum - 1);
 
-			switch (validSplines[randomIndex])
+			switch (ValidSplines[randomIndex])
 			{
 				case 0:
 				{
@@ -226,10 +268,11 @@ void APMGhost::ChooseNewSpline()
 				default: return;
 			}
 		}
+		case EGhostState::HITTED:
 		case EGhostState::RELEASE:
 		case EGhostState::ATTACK: 
 		{
-			int32 choosenSpline = FindPath();
+			int32 choosenSpline = FindPath(FName("sds")); //TODO: marked spline as parameter
 			
 			switch (choosenSpline)
 			{
@@ -321,61 +364,54 @@ void APMGhost::ChooseNewSpline()
 			return;
 		}
 		default: return;
-	}
+	}*/
 
 }
 
-int32 APMGhost::FindPath()
+int32 APMGhost::FindPath(const FName& SplineTag)
 {
-	TMap<FString, APMSpline*> visitedSplines;
-	std::queue<FSplineQueueData> splineQueue;
+	TMap<FString, APMSpline*> VisitedSplines;
+	TQueue<FSplineQueueData> SplineQueue;
 
-	TMap<int32, APMSpline*> validSplines = AvailableSplines(CurrentSpline, SplineIndex);
+	TMap<int32, APMSpline*> ValidSplines = FindValidSplinesInMarkedMovement(CurrentSpline, SplineIndex);
 
-	for (auto& item : validSplines)
+	for (auto& item : ValidSplines)
 	{
-		if (!bGhostHitted && item.Value->ActorHasTag(FName("markedSpline")))
+		if (item.Value->ActorHasTag(SplineTag))
 		{
-			return item.Key;
+			ReachingMarkedSpline();
+			return item.Key;			
 		}
-		else if (bGhostHitted && item.Value->ActorHasTag(FName("base")))
-		{	
-			EndVulnerableState();
-			ReleaseGhost();
-			return item.Key;		
-		}
-
-		splineQueue.push(FSplineQueueData(item.Key, item.Key, item.Value));	
+		SplineQueue.Enqueue(FSplineQueueData(item.Key, item.Key, item.Value));	
 	}
 
-	while (!splineQueue.empty())
+	while (!SplineQueue.IsEmpty())
 	{
-		APMSpline* checkedSpline = splineQueue.front().Spline;
-		int32 firstSpline = splineQueue.front().firstSpline;
-		int32 nextSplineIndex = splineQueue.front().currentSplineIndex;
-		splineQueue.pop();
+		APMSpline* CheckedSpline = SplineQueue.Peek()->Spline;
+		const int32 FirstSpline = SplineQueue.Peek()->FirstSplineIndex;
+		const int32 NextSplineIndex = SplineQueue.Peek()->CurrentSplineIndex;
+		SplineQueue.Pop();
 
-		if (nextSplineIndex == 0 || nextSplineIndex == 3)
+		if (NextSplineIndex == 0 || NextSplineIndex == 3)
 		{
-			validSplines = AvailableSplines(checkedSpline, 1);
+			ValidSplines = FindValidSplinesInMarkedMovement(CheckedSpline, 1);
 		}
-		else if (nextSplineIndex == 1 || nextSplineIndex == 2)
+		else if (NextSplineIndex == 1 || NextSplineIndex == 2)
 		{
-			validSplines = AvailableSplines(checkedSpline, 0);
+			ValidSplines = FindValidSplinesInMarkedMovement(CheckedSpline, 0);
 		}
 
-		for (auto& item : validSplines)
+		for (auto& item : ValidSplines)
 		{
-			FString splineName = item.Value->GetName();
-			if (!visitedSplines.Contains(splineName))
+			FString SplineName = item.Value->GetName();
+			if (!VisitedSplines.Contains(SplineName))
 			{
-				visitedSplines.Add(splineName, item.Value);
-				splineQueue.push(FSplineQueueData(firstSpline, item.Key, item.Value));
+				VisitedSplines.Add(SplineName, item.Value);
+				SplineQueue.Enqueue(FSplineQueueData(FirstSpline, item.Key, item.Value));
 
-				if ( (!bGhostHitted && item.Value->ActorHasTag(FName("markedSpline")))
-					|| (bGhostHitted && item.Value->ActorHasTag(FName("base"))) )
+				if ( item.Value->ActorHasTag(SplineTag))
 				{
-					return firstSpline;
+					return FirstSpline;
 				}
 			}
 		}		
@@ -505,7 +541,7 @@ void APMGhost::StartGhost()
 	PositionOnSpline = 1.f;
 	State = StartingState;	
 
-	Speed = State == EGhostState::WAIT ? VulnerableSpeed : NormalSpeed;
+	Speed = State == EGhostState::BASE ? VulnerableSpeed : NormalSpeed;
 
 	if (CurrentSpline != nullptr)
 	{
@@ -519,7 +555,7 @@ void APMGhost::StartGhost()
 void APMGhost::StartMovement()
 {
 	bIsMoving = true;
-	if (State == EGhostState::WAIT)
+	if (State == EGhostState::BASE)
 	{
 		Speed = VulnerableSpeed;
 		GetWorld()->GetTimerManager().SetTimer(ReleaseTimerHandle, this, &APMGhost::ReleaseGhost, ReleaseTime, false);
@@ -565,7 +601,7 @@ void APMGhost::EndVulnerableState()
 {
 	bGhostHitted = false;
 	bVulnerable = false;
-	Speed = State == EGhostState::WAIT ? VulnerableSpeed : NormalSpeed;
+	Speed = State == EGhostState::BASE ? VulnerableSpeed : NormalSpeed;
 	bDoOnce = true;
 	bFlickering = false;
 	
@@ -627,28 +663,108 @@ void APMGhost::CanSee()
 	bCanSee = true;
 }
 
-TMap<int32, APMSpline*> APMGhost::AvailableSplines(APMSpline* Spline, int32 index)
+void APMGhost::MoveToNewSpline(APMSpline* NewSpline, float Direction, float YawRotation)
 {
-	TMap<int32, APMSpline*> validSplines;
+	if (!NewSpline)
+	{
+		CurrentSpline = NewSpline;
+	}
+	MovingDirection = Direction;
+	PositionOnSpline = MovingDirection > 0 ? 1.f : CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
+	SetActorRotation(FRotator(0, YawRotation, 0));
+	SetEyesPosition(YawRotation);
+	bIsMoving = true;
+}
+
+void APMGhost::TurnAround()
+{
+	const float NewMovingDirection = MovingDirection * -1.f;
+	const float YawRotation = GetActorRotation().Yaw + (-180 * NewMovingDirection);
+	MoveToNewSpline(nullptr, NewMovingDirection, YawRotation);
+}
+
+void APMGhost::GhostBaseMovement()
+{
+	if ((CurrentSpline->Splines[SplineIndex].UPWARD != nullptr) && (CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(TEXT("releaseGhost"))))
+	{
+		TurnAround();
+		return;
+	}
+
+	if (CurrentSpline->Splines[SplineIndex].UPWARD != nullptr)
+	{
+		MoveToNewSpline(CurrentSpline->Splines[SplineIndex].UPWARD, 1.f, -90.f);
+		return;
+	}
+
+	if (CurrentSpline->Splines[SplineIndex].DOWN != nullptr)
+	{
+		MoveToNewSpline(CurrentSpline->Splines[SplineIndex].DOWN, -1.f, 90.f);
+		return;
+	}
+
+	return;
+}
+
+void APMGhost::ChooseNewSpline(int32 ChoosenSpline)
+{
+	switch (ChoosenSpline)
+	{
+		case -1:
+		{
+			TurnAround();
+			return;
+		}
+		case 0:
+		{
+			MoveToNewSpline(CurrentSpline->Splines[SplineIndex].UPWARD, 1.f, -90.f);
+			return;
+		}
+		case 1:
+		{
+			MoveToNewSpline(CurrentSpline->Splines[SplineIndex].DOWN, -1.f, 90.f);
+			return;
+		}
+		case 2:
+		{
+			MoveToNewSpline(CurrentSpline->Splines[SplineIndex].LEFT, -1.f, 180.f);
+			return;
+		}
+		case 3:
+		{
+			MoveToNewSpline(CurrentSpline->Splines[SplineIndex].RIGHT, 1.f, 0.f);
+			return;
+		}
+		default: return;
+	}
+}
+
+void APMGhost::ReachingMarkedSpline()
+{
+}
+
+TMap<int32, APMSpline*> APMGhost::FindValidSplinesInMarkedMovement(APMSpline* Spline, int32 index)
+{
+	TMap<int32, APMSpline*> ValidSplines;
 
 	if (Spline->Splines[index].UPWARD != nullptr)
 	{
-		validSplines.Add(0, Spline->Splines[index].UPWARD);
+		ValidSplines.Add(0, Spline->Splines[index].UPWARD);
 	}
 	if (Spline->Splines[index].DOWN != nullptr)
 	{
-		validSplines.Add(1, Spline->Splines[index].DOWN);
+		ValidSplines.Add(1, Spline->Splines[index].DOWN);
 	}
 	if (Spline->Splines[index].LEFT != nullptr)
 	{
-		validSplines.Add(2, Spline->Splines[index].LEFT);
+		ValidSplines.Add(2, Spline->Splines[index].LEFT);
 	}
 	if (Spline->Splines[index].RIGHT != nullptr)
 	{
-		validSplines.Add(3, Spline->Splines[index].RIGHT);
+		ValidSplines.Add(3, Spline->Splines[index].RIGHT);
 	}
 
-	return validSplines;
+	return ValidSplines;
 }
 
 

@@ -25,10 +25,7 @@ protected:
 	virtual void SetEyesPosition(const int32 YawRotation) override;
 
 private:
-	void SetEyesRight();
-	void SetEyesLeft();
-	void SetEyesUp();
-	void SetEyesDown();
+	void SetEyes(const FVector& InEyeL, const FVector& InEyeR, const FVector& InIrisL, const FVector& InIrisR);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

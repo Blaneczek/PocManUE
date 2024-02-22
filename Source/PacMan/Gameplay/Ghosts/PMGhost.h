@@ -7,8 +7,6 @@
 #include "Interfaces/PMInteractionInterface.h"
 #include "PMGhost.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnGhostHit);
-
 class UStaticMeshComponent;
 class USphereComponent;
 class APMSpline;
@@ -20,10 +18,13 @@ class UMaterialInstanceDynamic;
 UENUM()
 enum class EGhostState : uint8
 {
-	PASSIVE	UMETA(DisplayName = "PASSIVE"),
-	ATTACK	UMETA(DisplayName = "ATTACK"),
-	WAIT	UMETA(DisplayName = "WAIT"),
-	RELEASE UMETA(DisplayName = "RELEASE")
+	NONE		UMETA(DisplayName = "None"),
+	PASSIVE		UMETA(DisplayName = "Passive"),
+	ATTACK		UMETA(DisplayName = "Attack"),
+	BASE		UMETA(DisplayName = "Base"),
+	RELEASE		UMETA(DisplayName = "Release"),
+	VULNERABLE	UMETA(DisplayName = "Vulnerable"),
+	HITTED		UMETA(DisplayName = "Hitted")
 };
 
 UENUM()
@@ -41,16 +42,19 @@ struct FSplineQueueData
 {
 	GENERATED_BODY()
 
-	int32 firstSpline;
-	int32 currentSplineIndex;
-	APMSpline* Spline;
+	UPROPERTY()
+	int32 FirstSplineIndex;
+	UPROPERTY()
+	int32 CurrentSplineIndex;
+	UPROPERTY()
+	TObjectPtr<APMSpline> Spline;
 
 	FSplineQueueData()
 	{
 	}
 
 	FSplineQueueData(int32 firstSpline, int32 currentSplineIndex, APMSpline* Spline)
-		: firstSpline(firstSpline), currentSplineIndex(currentSplineIndex), Spline(Spline)
+		: FirstSplineIndex(firstSpline), CurrentSplineIndex(currentSplineIndex), Spline(Spline)
 	{}
 };
 
@@ -60,27 +64,30 @@ class PACMAN_API APMGhost : public APawn, public IPMInteractionInterface
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
 	APMGhost();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	bool CheckIfAtPoint();
-	void ChooseNewSpline();
-	int32 FindPath();
-	TMap<int32, APMSpline*> AvailableSplines(APMSpline* Spline, int32 index);
-
-	UFUNCTION(BlueprintCallable)
-	void OnSeePawn(APawn* OtherPawn);
-	void AttackTimer();
-
 	virtual int32 Interaction() override;
+
+protected:
+	virtual void SetEyesPosition(const int32 YawRotation) {};
+
+	TArray<int32> FindValidSplinesInRandomMovement();
+	bool CheckIfAtPoint();
+	void HandleMovement();
+	int32 FindPath(const FName& SplineTag);
+	TMap<int32, APMSpline*> FindValidSplinesInMarkedMovement(APMSpline* Spline, int32 index);
+
+	UFUNCTION()
+	void OnSeePawn(APawn* OtherPawn);
+
+	void AttackTimer();
 
 	void ReleaseGhost();
 	void ResetGhost();
@@ -97,65 +104,53 @@ public:
 
 	bool IsVulnerable() { return bVulnerable; }
 
-protected:
-	virtual void SetEyesPosition(const int32 YawRotation) {};
+private:
+	void MoveToNewSpline(APMSpline* NewSpline, float Direction, float YawRotation);
+	void TurnAround();
+	void GhostBaseMovement();
+	void ChooseNewSpline(int32 ChoosenSpline);
+	void ReachingMarkedSpline();
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UStaticMeshComponent> Mesh;
-
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> CollisionSphere;
-
 	UPROPERTY()
 	TObjectPtr<APMSpline> CurrentSpline;
-
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UPawnSensingComponent> PawnSensing;	
 
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	float NormalSpeed = 800.f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	float VulnerableSpeed = 600.f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	float ReturnSpeed = 1200.f;
-
-	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	float ReleaseTime = 2.f;
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
+	TObjectPtr<APMSpline> StartingSpline;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
+	EGhostState StartingState;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
+	FRotator StartingRotation;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
+	float StartingMovingDirection;	
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
+	FLinearColor StartingColor;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
+	FLinearColor VulnerableColor;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
+	int32 MaxChaseTime = 4;
 
-	UPROPERTY()
-	EGhostDirection CurrentDirection;
-
-private:
+protected:
 	UPROPERTY()
 	TObjectPtr<APMGameModeBase> GameMode;
 
-	UPROPERTY()
 	EGhostState State;
-
-	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
-	EGhostState StartingState;
-
-	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
-	FRotator StartingRotation;
-
-	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
-	float StartingMovingDirection;
-
-	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
-	TObjectPtr<APMSpline> StartingSpline;
-
-	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
-	FLinearColor StartingColor;
-
-	UPROPERTY(EditInstanceOnly, Category = "PocMan|Gameplay")
-	FLinearColor VulnerableColor;
-
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
-	int32 MaxChaseTime = 4;
+	EGhostDirection CurrentDirection;
 
 	UPROPERTY()
 	TObjectPtr<APMPlayer> Player = nullptr;
@@ -163,28 +158,31 @@ private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynMaterial;
 
-	// Sounds
+	// Audio
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> HitSoundClassic;
-
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> HitSoundMaze;
+	//
 
-	float Speed = 50.f;
+	float Speed = 500.f;
 	float PositionOnSpline;
-	int32 MovingDirection;
+	float MovingDirection;
 	int32 SplineIndex;
+	int32 ChaseTimeCounter;
 	bool bIsMoving;
 	bool bDoOnce;
 	bool bVulnerable;
 	bool bGhostHitted;
 	bool bFlickering;
 	bool bCanSee;
-	int32 ChaseTimeCounter = 0;
+	
 
+	// Timers
 	FTimerHandle ChaseTimerHandle;
 	FTimerHandle CanSeeTimerHandle;
 	FTimerHandle ReleaseTimerHandle;
 	FTimerHandle VulnerableTimerHandle;
 	FTimerHandle FlickeringTimerHandle;
+	//
 };

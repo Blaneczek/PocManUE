@@ -29,56 +29,32 @@ void APMClassicGhost::SetEyesPosition(const int32 YawRotation)
 	{
 		case 0: 
 		{
-			SetEyesRight();
+			SetEyes(FVector(0, 0, 0), FVector(0, 0, 0), FVector(-19, 0, -5), FVector(-13, 0, -5));
 			return;
 		}
 		case 90:
 		{
-			SetEyesDown();
+			SetEyes(FVector(0, 0, 0), FVector(0, 0, 0), FVector(-11, 0, -16), FVector(-5, 0, -16));
 			return;
 		}
 		case -90:
 		{
-			SetEyesUp();
+			SetEyes(FVector(0, 0, 26), FVector(0, 0, 28), FVector(-11, 0, 8), FVector(-5, 0, 8));
 			return;
 		}
 		case 180:
 		{
-			SetEyesLeft();
+			SetEyes(FVector(0, 0, 0), FVector(0, 0, 0), FVector(-5, 0, -5), FVector(0, 0, -5));
 			return;
 		}
 
 	}
 }
 
-void APMClassicGhost::SetEyesRight()
+void APMClassicGhost::SetEyes(const FVector& InEyeL, const FVector& InEyeR, const FVector& InIrisL, const FVector& InIrisR)
 {
-	EyeL->SetRelativeLocation(FVector(0, 0, 0));
-	EyeR->SetRelativeLocation(FVector(0, 0, 0));
-	IrisL->SetRelativeLocation(FVector(-19, 0, -5));
-	IrisR->SetRelativeLocation(FVector(-13, 0, -5));
-}
-
-void APMClassicGhost::SetEyesLeft()
-{
-	EyeL->SetRelativeLocation(FVector(0, 0, 0));
-	EyeR->SetRelativeLocation(FVector(0, 0, 0));
-	IrisL->SetRelativeLocation(FVector(-5, 0, -5));
-	IrisR->SetRelativeLocation(FVector(0, 0, -5));
-}
-
-void APMClassicGhost::SetEyesUp()
-{
-	EyeL->SetRelativeLocation(FVector(0, 0, 26));
-	EyeR->SetRelativeLocation(FVector(0, 0, 28));
-	IrisL->SetRelativeLocation(FVector(-11, 0, 8));
-	IrisR->SetRelativeLocation(FVector(-5, 0, 8));
-}
-
-void APMClassicGhost::SetEyesDown()
-{
-	EyeL->SetRelativeLocation(FVector(0, 0, 0));
-	EyeR->SetRelativeLocation(FVector(0, 0, 0));
-	IrisL->SetRelativeLocation(FVector(-11, 0, -16));
-	IrisR->SetRelativeLocation(FVector(-5, 0, -16));
+	EyeL->SetRelativeLocation(InEyeL);
+	EyeR->SetRelativeLocation(InEyeR);
+	IrisL->SetRelativeLocation(InIrisL);
+	IrisR->SetRelativeLocation(InIrisR);
 }
