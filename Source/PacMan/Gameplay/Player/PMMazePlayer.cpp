@@ -47,25 +47,27 @@ void APMMazePlayer::MoveLeft()
 		case EDirection::UPWARD:
 		{
 			DesiredDirection = EDirection::LEFT;
-			return;
+			break;
 		}
 		case EDirection::DOWN:
 		{
 			DesiredDirection = EDirection::RIGHT;
-			return;
+			break;
 		}
 		case EDirection::LEFT:
 		{
 			DesiredDirection = EDirection::DOWN;
-			return;
+			break;
 		}
 		case EDirection::RIGHT:
-		{
+		{			
 			DesiredDirection = EDirection::UPWARD;
-			return;
+			break;
 		}
-		default: return;
+		default: break;
 	}
+
+	TempDirection = EDirection::NONE;
 }
 
 void APMMazePlayer::MoveRight()
@@ -77,31 +79,32 @@ void APMMazePlayer::MoveRight()
 	*		    LEFT	  RIGHT
 	*				 DOWN
 	*/
-	//UE_LOG(LogTemp, Warning, TEXT("%s"), *UEnum::GetValueAsString(CurrentDirection));
 	switch (CurrentDirection)
 	{
 		case EDirection::UPWARD:
 		{
 			DesiredDirection = EDirection::RIGHT;
-			return;
+			break;
 		}
 		case EDirection::DOWN:
 		{
 			DesiredDirection = EDirection::LEFT;
-			return;
+			break;
 		}
 		case EDirection::LEFT:
 		{
 			DesiredDirection = EDirection::UPWARD;
-			return;
+			break;
 		}
 		case EDirection::RIGHT:
 		{
 			DesiredDirection = EDirection::DOWN;
-			return;
+			break;
 		}
-		default: return;
+		default: break;
 	}
+
+	TempDirection = EDirection::NONE;
 }
 
 void APMMazePlayer::TurnAround()
@@ -109,31 +112,33 @@ void APMMazePlayer::TurnAround()
 	switch (CurrentDirection)
 	{
 		case EDirection::UPWARD:
-		{
-			DesiredDirection = EDirection::DOWN;
+		{			
 			RotatePlayer(90.f, EDirection::DOWN);
-			return;
+			DesiredDirection = EDirection::DOWN;
+			break;
 		}
 		case EDirection::DOWN:
-		{
-			DesiredDirection = EDirection::UPWARD;
+		{			
 			RotatePlayer(-90.f, EDirection::UPWARD);
-			return;
+			DesiredDirection = EDirection::UPWARD;
+			break;
 		}
 		case EDirection::LEFT:
-		{
-			DesiredDirection = EDirection::RIGHT;
+		{			
 			RotatePlayer(0.f, EDirection::RIGHT);
-			return;
+			DesiredDirection = EDirection::RIGHT;
+			break;
 		}
 		case EDirection::RIGHT:
-		{
-			DesiredDirection = EDirection::LEFT;
+		{			
 			RotatePlayer(180.f, EDirection::LEFT);
-			return;
+			DesiredDirection = EDirection::LEFT;			
+			break;
 		}
 		default: return;
 	}
+
+	TempDirection = EDirection::NONE;
 }
 
 void APMMazePlayer::OpenMap()
@@ -141,9 +146,5 @@ void APMMazePlayer::OpenMap()
 	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
 		GM->ShowMap();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("APMMazePlayer::OpenMap | GameMode is nullptr"));
 	}
 }

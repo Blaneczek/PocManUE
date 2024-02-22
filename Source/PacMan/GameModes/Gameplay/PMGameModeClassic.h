@@ -27,6 +27,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+public:
+	virtual void StartPlayerAttackState() override;
+	virtual void EndPlayerAttackState() override;
+
+protected:
 	virtual void InitializeWidgets(APlayerController* PlayerController) override;
 	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame);
 	virtual void SetGameplayValues() override;
@@ -34,20 +39,17 @@ protected:
 	virtual void StopGame() override;
 	virtual void RestartGameType() override;
 
-public:
-	virtual void PlayerAttackState() override;
-	virtual void EndPlayerAttackState() override;
-
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMClassicHUD> ClassicHUDClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> GhostSound;
-
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> VulnerableGhostSound;
 
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> GhostAudio;
+
+	FTimerHandle VulnerableGhostTimer;
 };

@@ -10,19 +10,14 @@ int32 APMMapCoin::Interaction()
 {
 	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
+		GM->AddMap();
 		if (GM->GetMapsNumber() < 2)
 		{
 			if (PickUpSound != nullptr)
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
-			}
-
-			GM->AddMap();
+			}		
 			Destroy();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("APMMapCoin::Interaction | gameMode is nullptr"))
 		}
 	}
 	return 0;

@@ -31,6 +31,7 @@ public:
 	void HideVulnerableScreen();
 
 	void UpdateMapIcon(int32 MapNumber, ESlateVisibility IconVisibility);
+	void ShowFullMapsText();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan");
@@ -51,8 +52,14 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UImage> VulnerableScreen;
 
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
+	TObjectPtr<UTextBlock> FullMapsText;
+
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", Transient, meta = (BindWidgetAnim))
 	TObjectPtr<UWidgetAnimation> ChaseFlickeringAnim;
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", Transient, meta = (BindWidgetAnim))
 	TObjectPtr<UWidgetAnimation> VulnerableFlickeringAnim;
+
+private:
+	FTimerHandle FullMapsTextTimer;
 };

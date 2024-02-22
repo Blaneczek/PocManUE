@@ -26,6 +26,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+protected:
 	UFUNCTION()
 	void TurnAround();
 	UFUNCTION()
@@ -34,6 +35,13 @@ public:
 	virtual void MoveLeft() override;
 	virtual void MoveRight() override;
 
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<UCameraComponent> Camera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<USpringArmComponent> CameraArm;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
 	TObjectPtr<UInputAction> TurnAroundAction;
@@ -41,10 +49,5 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
 	TObjectPtr<UInputAction> OpenMapAction;
 
-public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TObjectPtr<UCameraComponent> Camera;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TObjectPtr<USpringArmComponent> CameraArm;
 };

@@ -39,23 +39,25 @@ void APMPlayer::BeginPlay()
 	Super::BeginPlay();
 	
 	GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (GameMode == nullptr)
+	if (GameMode)
+	{
+		GameMode->OnStartGame.AddUObject(this, &APMPlayer::StartPlayer);
+		GameMode->OnStopGame.AddUObject(this, &APMPlayer::ResetPlayer);
+		GameMode->OnStartMovement.AddUObject(this, &APMPlayer::StartMovement);
+		GameMode->OnStopMovement.AddUObject(this, &APMPlayer::StopMovement);		
+	}
+	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::BeginPlay | GameMode is nullptr"));
 	}
 
-	APlayerController* PC = Cast<APlayerController>(GetController());
-	if (PC != nullptr)
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{	
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(MappingContext, 0);
 		}
 		DisableInput(PC);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::BeginPlay | PlayerController is nullptr"));
 	}
 
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APMPlayer::OnOverlapBegin);
@@ -66,7 +68,10 @@ void APMPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (CurrentSpline == nullptr) return;
+	if (CurrentSpline == nullptr)
+	{
+		return;
+	}
 
 	if (bIsMoving)
 	{
@@ -122,12 +127,8 @@ void APMPlayer::UnmarkSpline()
 
 void APMPlayer::ResetPlayer()
 {
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		DisableInput(PC);
-	}
+	StopMovement();
 
-	bIsMoving = false;
 	FTimerHandle ResetTimerHandle;
 	FTimerDelegate ResetDel;
 	ResetDel.BindUObject(this, &APMPlayer::SetActorHiddenInGame, true);
@@ -143,10 +144,9 @@ void APMPlayer::StartPlayer()
 	TempDirection = EDirection::NONE;
 	DesiredDirection = EDirection::RIGHT;
 	CurrentDirection = EDirection::RIGHT;
-	SetActorHiddenInGame(false);
 
 	TArray<AActor*> OutActors;
-	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("Start")), OutActors);
+	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("start")), OutActors);
 	for (AActor* item : OutActors)
 	{
 		CurrentSpline = Cast<APMSpline>(item);
@@ -160,6 +160,8 @@ void APMPlayer::StartPlayer()
 
 	const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
 	SetActorLocation(NewLocation);
+	
+	SetActorHiddenInGame(false);
 }
 
 void APMPlayer::StartMovement()
@@ -169,10 +171,6 @@ void APMPlayer::StartMovement()
 		EnableInput(PC);		
 		bIsMoving = true;
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::StartMovement | PlayerController is nullptr"));
-	}	
 }
 
 void APMPlayer::StopMovement()
@@ -183,15 +181,14 @@ void APMPlayer::StopMovement()
 	{
 		this->DisableInput(PC);	
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::StopMovement | PlayerController is nullptr"));
-	}
 }
 
 void APMPlayer::OpenPauseMenu()
 {
-	GameMode->OpenPauseMenu();
+	if (GameMode != nullptr)
+	{
+		GameMode->OpenPauseMenu();
+	}	
 }
 
 void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

@@ -4,6 +4,7 @@
 #include "PMMazeHUD.h"
 #include "Components/Image.h"
 #include "Animation/WidgetAnimation.h"
+#include "Components/TextBlock.h"
 
 void UPMMazeHUD::NativeConstruct()
 {
@@ -14,6 +15,7 @@ void UPMMazeHUD::NativeConstruct()
 	MapDisplay->SetVisibility(ESlateVisibility::Visible);
 	ChaseScreen->SetVisibility(ESlateVisibility::Hidden);
 	VulnerableScreen->SetVisibility(ESlateVisibility::Hidden);
+	FullMapsText->SetVisibility(ESlateVisibility::Hidden);
 	
 	FTimerHandle MapTimer;
 	FTimerDelegate MapTimerDel;
@@ -59,8 +61,11 @@ void UPMMazeHUD::ShowChaseScreen()
 
 void UPMMazeHUD::HideChaseScreen()
 {
-	ChaseScreen->SetVisibility(ESlateVisibility::Hidden);
-	StopAnimation(ChaseFlickeringAnim);
+	if (ChaseScreen->GetVisibility() == ESlateVisibility::Visible)
+	{
+		ChaseScreen->SetVisibility(ESlateVisibility::Hidden);
+		StopAnimation(ChaseFlickeringAnim);
+	}	
 }
 
 void UPMMazeHUD::ShowVulnerableScreen()
@@ -85,4 +90,18 @@ void UPMMazeHUD::UpdateMapIcon(int32 MapNumber, ESlateVisibility IconVisibility)
 	{
 		MapIcon1->SetVisibility(IconVisibility);
 	}
+}
+
+void UPMMazeHUD::ShowFullMapsText()
+{
+	FullMapsText->SetVisibility(ESlateVisibility::Visible);
+
+	if (FullMapsTextTimer.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FullMapsTextTimer);
+	}
+
+	FTimerDelegate FullMapsDel;
+	FullMapsDel.BindLambda([&]() { FullMapsText->SetVisibility(ESlateVisibility::Hidden); });
+	GetWorld()->GetTimerManager().SetTimer(FullMapsTextTimer, FullMapsDel, 2.f, false);
 }

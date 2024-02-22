@@ -22,7 +22,6 @@
 APMGameModeBase::APMGameModeBase()
 {
 	Score = 0;
-	NumberOfCoins = 0;
 	Lives = 3;
 	Cherries = 0;
 	bCoinSound = true;
@@ -33,7 +32,7 @@ void APMGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(this));
+	GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (GameInstance == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | GameInstance is nullptr"));
@@ -42,18 +41,17 @@ void APMGameModeBase::BeginPlay()
 	
 	CurrentLevelType = GameInstance->GetCurrentLevelType();
 
-	if (GameMusic != nullptr) UGameplayStatics::PlaySound2D(this, GameMusic);
+	if (GameMusic != nullptr) UGameplayStatics::PlaySound2D(GetWorld(), GameMusic);
 
 	SetGameplayValues();
-	SetPlayer();
-	SetGhosts();
 	SetSplines();
-	
-	StartGame();
+		
 	InitializeWidgets(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	FTimerHandle StartTimer;
-	GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &APMGameModeBase::StartAllMovement, 3.f, false);
+	FTimerHandle StartGameTimer;
+	GetWorld()->GetTimerManager().SetTimer(StartGameTimer, this, &APMGameModeBase::StartGame, 1.f, false);
+
+	GetWorld()->GetTimerManager().SetTimer(StartMovementTimer, this, &APMGameModeBase::StartAllMovement, 3.f, false);
 
 	CherryCoinDel.BindUFunction(this, FName("SpawnSpecialCoin"), CherryCoinClass);
 	GetWorld()->GetTimerManager().SetTimer(CherryCoinTimer, CherryCoinDel, 10.f, false);
@@ -62,17 +60,12 @@ void APMGameModeBase::BeginPlay()
 
 void APMGameModeBase::AddPoints(int32 points)
 {
-	if (points == 10)
-	{
-		NumberOfCoins--;
-	}
-
 	Score += points;
 
-	if (bCoinSound && CoinSound != nullptr)
+	if (bCoinSound && (CoinSound != nullptr))
 	{
 		bCoinSound = false;
-		UGameplayStatics::PlaySound2D(this, CoinSound);
+		UGameplayStatics::PlaySound2D(GetWorld(), CoinSound);
 	}
 	else
 	{
@@ -94,92 +87,68 @@ void APMGameModeBase::AddPoints(int32 points)
 void APMGameModeBase::HandleGhostHit()
 {
 	StopGame();
-	Lives--;
-	if (HUDWidget != nullptr)
-	{
-		HUDWidget->UpdateLives(Lives);
-	}
 
+	Lives--;
 	if (Lives == 0)
 	{
 		EndGameHandle(LoseGameWidget, LoseGameSound, false);
 		return;
 	}
 
-	if (PlayerHittedSound != nullptr) UGameplayStatics::PlaySound2D(this, PlayerHittedSound);
+	if (HUDWidget != nullptr)
+	{
+		HUDWidget->UpdateLives(Lives);
+	}
 
-	FTimerHandle ResetTimer;
-	GetWorld()->GetTimerManager().SetTimer(ResetTimer, this, &APMGameModeBase::StartGame, 2.f, false);
-	FTimerHandle StartTimer;
-	GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &APMGameModeBase::StartAllMovement, 3.f, false);
+	if (PlayerHittedSound != nullptr)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), PlayerHittedSound);
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(ResetGameTimer, this, &APMGameModeBase::StartGame, 2.f, false);
+	GetWorld()->GetTimerManager().SetTimer(StartMovementTimer, this, &APMGameModeBase::StartAllMovement, 3.f, false);
 }
 
 void APMGameModeBase::StartGame()
 {	
-	Player->StartPlayer();
-
-	for (auto& ghost : Ghosts)
-	{
-		ghost->StartGhost();
-	}
+	OnStartGame.Broadcast();
 }
 
 void APMGameModeBase::StopGame()
 {
-	if (Player != nullptr)
-	{
-		Player->ResetPlayer();
-	}
-
-	for (auto& ghost : Ghosts)
-	{
-		ghost->ResetGhost();
-	}
+	OnStopGame.Broadcast();
 }
 
 void APMGameModeBase::StopAllMovement()
 {
-	if (Player != nullptr)
-	{
-		Player->StopMovement();
-	}
+	OnStopMovement.Broadcast();
 
-	for (auto& ghost : Ghosts)
-	{
-		ghost->StopMovement();
-	}
-
-	FTimerHandle StartMovementTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(StartMovementTimerHandle, this, &APMGameModeBase::StartAllMovement, 0.5, false);
 }
 
 void APMGameModeBase::StartAllMovement()
 {
-	if (Player != nullptr)
-	{
-		Player->StartMovement();
-	}
-
-	for (auto& ghost : Ghosts)
-	{
-		ghost->StartMovement();
-	}
+	OnStartMovement.Broadcast();
 }
 
 void APMGameModeBase::OpenPauseMenu()
 {
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+	if (PauseWidget != nullptr)
+	{
+		PauseWidget->AddToViewport();
+	}
+
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
 	{
 		PC->SetShowMouseCursor(true);
 		PC->SetInputMode(FInputModeUIOnly());
 		PC->SetPause(true);
-	}
-	if (IsValid(PauseWidget)) PauseWidget->AddToViewport();
+	}			
 }
 
 void APMGameModeBase::ClosePauseMenu()
 {
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
 	{
 		PC->SetShowMouseCursor(false);
 		PC->SetInputMode(FInputModeGameOnly());
@@ -190,18 +159,24 @@ void APMGameModeBase::ClosePauseMenu()
 
 void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame)
 {
-	GameInstance->AddScoreboardData(CurrentLevelType, FScoreboardData(Score, Cherries));
-	GameInstance->SaveGame();
+	if (GameInstance != nullptr)
+	{
+		GameInstance->AddScoreboardData(CurrentLevelType, FScoreboardData(Score, Cherries));
+		GameInstance->SaveGame();
+	}
 
-	if (EndGameSound != nullptr) UGameplayStatics::PlaySound2D(this, EndGameSound);
+	if (EndGameSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), EndGameSound);
+	}
 
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
 	{
 		PC->SetShowMouseCursor(true);
 		PC->SetInputMode(FInputModeUIOnly());
 	}
 
-	if (EndGameWidget != nullptr)
+	if (EndGameWidget)
 	{
 		EndGameWidget->SetFinalScores(Score, Cherries);
 		EndGameWidget->AddToViewport();
@@ -210,22 +185,12 @@ void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave*
 
 void APMGameModeBase::OpenNextLevel(const FName& LevelName)
 {
-	UGameplayStatics::OpenLevel(this, LevelName);
+	UGameplayStatics::OpenLevel(GetWorld(), LevelName);
 }
 
 void APMGameModeBase::GoToMenu()
 {
-	UGameplayStatics::OpenLevel(this, "Menu");
-}
-
-void APMGameModeBase::AddCoin()
-{
-	NumberOfCoins++;
-}
-
-void APMGameModeBase::SubtractCoin()
-{
-	NumberOfCoins--;
+	UGameplayStatics::OpenLevel(GetWorld(), "Menu");
 }
 
 void APMGameModeBase::SpawnSpecialCoin(TSubclassOf<APMCoin> SpecialCoinClass)
@@ -254,16 +219,9 @@ void APMGameModeBase::AddCherryCoin()
 	}
 }
 
-void APMGameModeBase::PlayerAttackState()
+void APMGameModeBase::StartPlayerAttackState()
 {
-	for (auto& ghost : Ghosts)
-	{
-		ghost->VulnerableState();
-	}
-}
-
-void APMGameModeBase::EndPlayerAttackState()
-{
+	OnPlayerAttack.Broadcast();
 }
 
 void APMGameModeBase::SetPlayerChased(bool IsPlayerChased)
@@ -326,37 +284,6 @@ void APMGameModeBase::InitializeWidgets(APlayerController* PlayerController)
 	}
 }
 
-void APMGameModeBase::PlayerChasedHandle(bool IsPlayerChased)
-{
-}
-
-void APMGameModeBase::SetPlayer()
-{
-	Player = Cast<APMPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
-	if (Player == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::SetPlayer | Player is nullptr"));
-	}
-}
-
-void APMGameModeBase::SetGhosts()
-{
-	TArray<AActor*> OutGhosts;
-	UGameplayStatics::GetAllActorsOfClass(this, GhostClass, OutGhosts);
-	for (auto& item : OutGhosts)
-	{
-		APMGhost* ghost = Cast<APMGhost>(item);
-		if (ghost != nullptr)
-		{
-			Ghosts.Add(ghost);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::SetGhosts | Ghost is nullptr"));
-		}
-	}
-}
-
 void APMGameModeBase::SetSplines()
 {
 	TArray<AActor*> OutSplines;
@@ -364,7 +291,7 @@ void APMGameModeBase::SetSplines()
 	for (auto& item : OutSplines)
 	{
 		APMSpline* spline = Cast<APMSpline>(item);
-		if (spline != nullptr && !spline->ActorHasTag(TEXT("withoutCoins")))
+		if (spline && !spline->ActorHasTag(TEXT("withoutCoins")))
 		{
 			Splines.Add(spline);
 		}

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Gameplay/Player/PMPlayer.h"
+#include "PMPlayer.h"
 #include "PMClassicPlayer.generated.h"
 
 class UInputAction;
@@ -35,18 +35,18 @@ public:
 private:
 	void AnimateMesh(float DeltaTime);
 
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<UStaticMeshComponent> TopMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<UStaticMeshComponent> BottomMesh;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
 	TObjectPtr<UInputAction> MoveUpAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
 	TObjectPtr<UInputAction> MoveDownAction;
-
-public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)\
-	TObjectPtr<UStaticMeshComponent> TopMesh;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TObjectPtr<UStaticMeshComponent> BottomMesh;
 
 private:
 	float AnimationSpeed;

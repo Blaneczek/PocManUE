@@ -30,8 +30,6 @@ void APMGameModeMaze::BeginPlay()
 
 void APMGameModeMaze::InitializeWidgets(APlayerController* PlayerController)
 {
-	Super::InitializeWidgets(PlayerController);
-
 	if (MazeHUDClass != nullptr)
 	{
 		HUDWidget = CreateWidget<UPMMazeHUD>(PlayerController, MazeHUDClass);		
@@ -43,6 +41,7 @@ void APMGameModeMaze::InitializeWidgets(APlayerController* PlayerController)
 		}	
 	}
 
+	Super::InitializeWidgets(PlayerController);
 }
 
 void APMGameModeMaze::PlayerChasedHandle(bool IsPlayerChased)
@@ -70,7 +69,7 @@ void APMGameModeMaze::PlayerChasedHandle(bool IsPlayerChased)
 
 void APMGameModeMaze::RestartGameType()
 {
-	UGameplayStatics::OpenLevel(this, *GameInstance->MazeLevels.Find(1));
+	UGameplayStatics::OpenLevel(GetWorld(), *GameInstance->MazeLevels.Find(1));
 }
 
 void APMGameModeMaze::SetGameplayValues()
@@ -82,6 +81,8 @@ void APMGameModeMaze::SetGameplayValues()
 
 void APMGameModeMaze::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame)
 {
+	ClearChasedState();
+
 	if (bWonGame && GameInstance->MazeLevels.Contains(CurrentLevelNum + 1))
 	{
 		if (NextLevelWidget != nullptr)
@@ -102,9 +103,7 @@ void APMGameModeMaze::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave*
 		GameInstance->MazeGameData = FGameData(1, 0, 0);
 	}
 
-	Super::EndGameHandle(EndGameWidget, EndGameSound, bWonGame);
-
-	ClearChasedState();
+	Super::EndGameHandle(EndGameWidget, EndGameSound, bWonGame);	
 }
 
 void APMGameModeMaze::HandleGhostHit()
@@ -114,42 +113,39 @@ void APMGameModeMaze::HandleGhostHit()
 	ClearChasedState();
 }
 
-void APMGameModeMaze::PlayerAttackState()
+void APMGameModeMaze::StartPlayerAttackState()
 {
-	Super::PlayerAttackState();
+	Super::StartPlayerAttackState();
 
-	ClearChasedState();
-
-	if (bStillVulnerable && VulnerableScreenTimer.IsValid())
+	if (VulnerableGhostTimer.IsValid())
 	{
 		if (IsValid(PlayerAttackAC))
 		{
 			PlayerAttackAC->Stop();
-			PlayerAttackAC = UGameplayStatics::SpawnSound2D(this, VulnerableSound);
+			PlayerAttackAC = UGameplayStatics::SpawnSound2D(GetWorld(), VulnerableSound);
 		}
-		GetWorld()->GetTimerManager().ClearTimer(VulnerableScreenTimer);
-		GetWorld()->GetTimerManager().SetTimer(VulnerableScreenTimer, this, &APMGameModeMaze::EndPlayerAttackState, 7.f, false);
-		bStillVulnerable = true;
+		GetWorld()->GetTimerManager().ClearTimer(VulnerableGhostTimer);
+		GetWorld()->GetTimerManager().SetTimer(VulnerableGhostTimer, this, &APMGameModeMaze::EndPlayerAttackState, 7.f, false);
 		return;
 	}
 
-	PlayerAttackAC = UGameplayStatics::SpawnSound2D(this, VulnerableSound);
+	ClearChasedState();
+	PlayerAttackAC = UGameplayStatics::SpawnSound2D(GetWorld(), VulnerableSound);
 	MazeHUD->ShowVulnerableScreen();	
-	GetWorld()->GetTimerManager().SetTimer(VulnerableScreenTimer, this, &APMGameModeMaze::EndPlayerAttackState, 7.f, false);
-	bStillVulnerable = true;
+	GetWorld()->GetTimerManager().SetTimer(VulnerableGhostTimer, this, &APMGameModeMaze::EndPlayerAttackState, 7.f, false);
 }
 
 void APMGameModeMaze::EndPlayerAttackState()
 {
-	if (VulnerableScreenTimer.IsValid())
+	if (VulnerableGhostTimer.IsValid())
 	{
-		GetWorld()->GetTimerManager().ClearTimer(VulnerableScreenTimer);
+		GetWorld()->GetTimerManager().ClearTimer(VulnerableGhostTimer);
 	}
 	if (IsValid(PlayerAttackAC))
 	{
 		PlayerAttackAC->Stop();
 	}
-	bStillVulnerable = false;
+
 	MazeHUD->HideVulnerableScreen();
 }
 
@@ -161,38 +157,32 @@ void APMGameModeMaze::HideMap()
 
 void APMGameModeMaze::ShowMap()
 {
-	if (bMapOpen || MapsNumber == 0) return;
+	if (bMapOpen || MapsNumber == 0)
+	{
+		return;
+	}
 
 	MazeHUD->SetMapVisibility(ESlateVisibility::Visible);
 	bMapOpen = true;
 	MazeHUD->UpdateMapIcon(MapsNumber, ESlateVisibility::Hidden);
 	MapsNumber--;
 
-	FTimerHandle MapTimer;
 	GetWorld()->GetTimerManager().SetTimer(MapTimer, this, &APMGameModeMaze::HideMap, 5.f, false);
 }
 
 void APMGameModeMaze::AddMap()
 {
-	if (MapsNumber == 2)
+	if (MapsNumber < 2)
 	{
-		//TODO: mazeHud-> add text "can't add more maps"
-		return;
-	}
-		
-
-	if (MapsNumber == 1)
-	{
-		MazeHUD->UpdateMapIcon(2, ESlateVisibility::Visible);
 		MapsNumber++;
+		MazeHUD->UpdateMapIcon(MapsNumber, ESlateVisibility::Visible);
 	}
-	else if (MapsNumber == 0)
+	else
 	{
-		MazeHUD->UpdateMapIcon(1, ESlateVisibility::Visible);
-		MapsNumber++;
+		MazeHUD->ShowFullMapsText();
 	}
 
-	GetWorld()->GetTimerManager().SetTimer(MapCoinTimer, MapCoinDel, 15.f, false);
+	GetWorld()->GetTimerManager().SetTimer(MapCoinTimer, MapCoinDel, 10.f, false);
 }
 
 void APMGameModeMaze::ClearChasedState()

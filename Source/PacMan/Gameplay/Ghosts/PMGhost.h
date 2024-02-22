@@ -12,6 +12,7 @@ DECLARE_MULTICAST_DELEGATE(FOnGhostHit);
 class UStaticMeshComponent;
 class USphereComponent;
 class APMSpline;
+class APMGameModeBase;
 class UPawnSensingComponent;
 class APMPlayer;
 class UMaterialInstanceDynamic;
@@ -129,6 +130,9 @@ public:
 	EGhostDirection CurrentDirection;
 
 private:
+	UPROPERTY()
+	TObjectPtr<APMGameModeBase> GameMode;
+
 	UPROPERTY()
 	EGhostState State;
 

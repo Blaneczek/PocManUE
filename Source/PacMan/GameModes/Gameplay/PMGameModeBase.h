@@ -20,6 +20,11 @@ class UPMGameInstance;
 class USoundWave;
 enum class ELevelType : uint8;
 
+DECLARE_MULTICAST_DELEGATE(FOnStartGame);
+DECLARE_MULTICAST_DELEGATE(FOnStopGame);
+DECLARE_MULTICAST_DELEGATE(FOnStartMovement);
+DECLARE_MULTICAST_DELEGATE(FOnStopMovement);
+DECLARE_MULTICAST_DELEGATE(FOnPlayerAttack);
 
 /**
  * 
@@ -37,64 +42,57 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void InitializeWidgets(APlayerController* PlayerController);
-	virtual void SetGameplayValues() {};
-	virtual void PlayerChasedHandle(bool IsPlayerChased);
-	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame);
-
-	UFUNCTION()
-	void OpenNextLevel(const FName& LevelName);
-	UFUNCTION()
-	virtual void RestartGameType() {};
-
 public:
 	virtual void HandleGhostHit();
+	virtual void EndPlayerAttackState() {};
+	virtual void StartPlayerAttackState();
+
+	void SetPlayerChased(bool IsPlayerChased);
+	void AddCherryCoin();
 	void AddPoints(int32 points);
-	void StartGame();
-	virtual void StopGame();
 	void StopAllMovement();
-	virtual void StartAllMovement();
-	
 	void OpenPauseMenu();
-	UFUNCTION()
-	void ClosePauseMenu();
 
+protected:	
+	virtual void InitializeWidgets(APlayerController* PlayerController);
+	virtual void SetGameplayValues() {};
+	virtual void PlayerChasedHandle(bool IsPlayerChased) {};
+	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame);
+	virtual void StopGame();
+	virtual void StartAllMovement();
+	virtual void RestartGameType() {};
+
+	void StartGame();
 	
-
-	UFUNCTION()
 	void GoToMenu();
-
-	void AddCoin();
-	void SubtractCoin();
-
+	void ClosePauseMenu();		
+	void OpenNextLevel(const FName& LevelName);
+	
 	UFUNCTION()
 	void SpawnSpecialCoin(TSubclassOf<APMCoin> SpecialCoinClass);
 
-	void AddCherryCoin();
-
-	virtual void PlayerAttackState();
-	virtual void EndPlayerAttackState();
-	void SetPlayerChased(bool IsPlayerChased);
-
-private:
-	
-	void SetPlayer();
-	void SetGhosts();
 	void SetSplines();
 
 public:
 	// Gameplay variables
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Gameplay")
 	int32 Score;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	int32 Lives;
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Gameplay")
 	int32 Cherries;
 	//
 
 	UPROPERTY()
 	ELevelType CurrentLevelType;
 	
+	// Gameplay delegates
+	FOnStartGame OnStartGame;
+	FOnStopGame OnStopGame;
+	FOnStartMovement OnStartMovement;
+	FOnStopMovement OnStopMovement;
+	FOnPlayerAttack OnPlayerAttack;
+	//
 
 protected:
 	// Widgets
@@ -128,16 +126,12 @@ protected:
 	UPROPERTY()
 	TArray<TObjectPtr<APMSpline>> Splines;
 	UPROPERTY()
-	TArray<TObjectPtr<APMGhost>> Ghosts;
-	UPROPERTY()
-	TObjectPtr<APMPlayer> Player;	
-	UPROPERTY()
 	TObjectPtr<UPMGameInstance> GameInstance;
 	
 	UPROPERTY()
 	int32 CurrentLevelNum;
 
-	// Sounds
+	// Audio
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> GameMusic;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
@@ -159,9 +153,13 @@ protected:
 	TSubclassOf<APMCherryCoin> CherryCoinClass;
 	//
 
+
+	//Timers
 	FTimerHandle CherryCoinTimer;
 	FTimerDelegate CherryCoinDel;
-
-	int32 NumberOfCoins;
+	FTimerHandle StartMovementTimerHandle;
+	FTimerHandle ResetGameTimer;
+	FTimerHandle StartMovementTimer;
+	// used to use the sound of every second coin collected
 	bool bCoinSound;
 };

@@ -19,16 +19,11 @@ void APMGameModeClassic::BeginPlay()
 {
 	Super::BeginPlay();
 
-
-	UE_LOG(LogTemp, Warning, TEXT("classic game mode"));
 	GhostAudio = UGameplayStatics::CreateSound2D(this, GhostSound, 1.f, 1.f, 0.f, nullptr, false, false);
-
 }
 
 void APMGameModeClassic::InitializeWidgets(APlayerController* PlayerController)
 {
-	Super::InitializeWidgets(PlayerController);
-
 	if (ClassicHUDClass != nullptr)
 	{
 		HUDWidget = CreateWidget<UPMClassicHUD>(PlayerController, ClassicHUDClass);
@@ -40,6 +35,8 @@ void APMGameModeClassic::InitializeWidgets(APlayerController* PlayerController)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | ClassicHUDClass is nullptr"));
 	}
+
+	Super::InitializeWidgets(PlayerController);
 }
 
 void APMGameModeClassic::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame)
@@ -97,7 +94,6 @@ void APMGameModeClassic::StopGame()
 	{
 		GhostAudio->Stop();
 	}
-
 }
 
 void APMGameModeClassic::RestartGameType()
@@ -105,28 +101,38 @@ void APMGameModeClassic::RestartGameType()
 	UGameplayStatics::OpenLevel(this, *GameInstance->ClassicLevels.Find(1));
 }
 
-
-void APMGameModeClassic::PlayerAttackState()
+void APMGameModeClassic::StartPlayerAttackState()
 {
-	Super::PlayerAttackState();
+	Super::StartPlayerAttackState();
 
-	if (!IsValid(GhostAudio)) return;
+	if (VulnerableGhostTimer.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(VulnerableGhostTimer);
+		GetWorld()->GetTimerManager().SetTimer(VulnerableGhostTimer, this, &APMGameModeClassic::EndPlayerAttackState, 7.f, false);
+		return;
+	}
+	
+	if (IsValid(GhostAudio))
+	{
+		GhostAudio->SetSound(VulnerableGhostSound);
+	}
 
-	GhostAudio->SetSound(VulnerableGhostSound);
+	GetWorld()->GetTimerManager().SetTimer(VulnerableGhostTimer, this, &APMGameModeClassic::EndPlayerAttackState, 7.f, false);
 }
 
 void APMGameModeClassic::EndPlayerAttackState()
 {
 	Super::EndPlayerAttackState();
 
-	for (auto ghost : Ghosts)
+	if (IsValid(GhostAudio))
 	{
-		if (ghost->IsVulnerable()) return;
+		GhostAudio->SetSound(GhostSound);
 	}
 
-	if (!IsValid(GhostAudio)) return;
-
-	GhostAudio->SetSound(GhostSound);
+	if (VulnerableGhostTimer.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(VulnerableGhostTimer);
+	}
 }
 
 

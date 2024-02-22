@@ -41,6 +41,9 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void MarkSpline();
+	void UnmarkSpline();
+
 protected:
 	UFUNCTION()
 	virtual void MoveLeft() {};
@@ -56,14 +59,10 @@ protected:
 	void ChooseNewSpline();
 
 	void RotatePlayer(float Yaw, EDirection Direction);	
-
-public:
 	void ResetPlayer();
 	void StartPlayer();
 	void StartMovement();
 	void StopMovement();
-	void MarkSpline();
-	void UnmarkSpline();
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -73,7 +72,6 @@ public:
 	TObjectPtr<UStaticMeshComponent> Mesh;
 
 protected:
-	//MappingContext
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
 	TObjectPtr<UInputMappingContext> MappingContext;
 
@@ -85,13 +83,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
 	TObjectPtr<UInputAction> OpenPauseMenuAction;
-
-	UPROPERTY()
-	TObjectPtr<APMSpline> CurrentSpline;
-
-	UPROPERTY()
-	TObjectPtr<APMGameModeBase> GameMode;
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	float Speed = 50.f;
 
@@ -103,6 +95,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	EDirection StartingDirection;
+
+	UPROPERTY()
+	TObjectPtr<APMSpline> CurrentSpline;
+
+	UPROPERTY()
+	TObjectPtr<APMGameModeBase> GameMode;
 
 	EDirection DesiredDirection;
 	EDirection CurrentDirection;

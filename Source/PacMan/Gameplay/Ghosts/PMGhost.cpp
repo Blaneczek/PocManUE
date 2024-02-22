@@ -51,6 +51,20 @@ void APMGhost::BeginPlay()
 	DynMaterial->SetVectorParameterValue("Color", StartingColor);
 	Mesh->SetMaterial(0, DynMaterial);
 
+	GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode != nullptr)
+	{
+		GameMode->OnStartGame.AddUObject(this, &APMGhost::StartGhost);
+		GameMode->OnStopGame.AddUObject(this, &APMGhost::ResetGhost);
+		GameMode->OnStartMovement.AddUObject(this, &APMGhost::StartMovement);
+		GameMode->OnStopMovement.AddUObject(this, &APMGhost::StopMovement);
+		GameMode->OnPlayerAttack.AddUObject(this, &APMGhost::VulnerableState);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("APMGhost::BeginPlay | GameMode is nullptr"));
+	}
+
 	if (PawnSensing != nullptr)
 	{
 		PawnSensing->OnSeePawn.AddDynamic(this, &APMGhost::OnSeePawn);
@@ -381,9 +395,9 @@ void APMGhost::OnSeePawn(APawn* OtherPawn)
 	{		
 		State = EGhostState::ATTACK;
 
-		if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
+		if (GameMode != nullptr)
 		{
-			gameMode->SetPlayerChased(true);
+			GameMode->SetPlayerChased(true);
 		}
 
 		Player->MarkSpline();		
@@ -408,9 +422,9 @@ void APMGhost::AttackTimer()
 			GetWorld()->GetTimerManager().ClearTimer(ChaseTimerHandle);
 		}	
 
-		if (APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
+		if (GameMode != nullptr && State != EGhostState::RELEASE)
 		{
-			if (State != EGhostState::RELEASE) gameMode->SetPlayerChased(false);
+			GameMode->SetPlayerChased(false);
 		}
 
 		bCanSee = false;
@@ -554,11 +568,6 @@ void APMGhost::EndVulnerableState()
 	Speed = State == EGhostState::WAIT ? VulnerableSpeed : NormalSpeed;
 	bDoOnce = true;
 	bFlickering = false;
-
-	if (APMGameModeBase* GM = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this)))
-	{
-		GM->EndPlayerAttackState();
-	}
 	
 	if (VulnerableTimerHandle.IsValid())
 	{
