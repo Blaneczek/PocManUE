@@ -6,7 +6,6 @@
 #include "PMCoin.h"
 #include "PMMapCoin.generated.h"
 
-class USoundWave;
 /**
  * 
  */

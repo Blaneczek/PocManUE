@@ -17,10 +17,6 @@ int32 APMCherryCoin::Interaction()
 			UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 		}		
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("APMCherryCoin::Interaction | gameMode is nullptr"))
-	}
 
 	Destroy();
 	return 100;

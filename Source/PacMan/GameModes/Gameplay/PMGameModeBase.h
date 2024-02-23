@@ -65,7 +65,9 @@ protected:
 	void StartGame();
 	
 	void GoToMenu();
-	void ClosePauseMenu();		
+	void ClosePauseMenu();
+
+	UFUNCTION()
 	void OpenNextLevel(const FName& LevelName);
 	
 	UFUNCTION()

@@ -16,6 +16,7 @@ void UPMMazeHUD::NativeConstruct()
 	ChaseScreen->SetVisibility(ESlateVisibility::Hidden);
 	VulnerableScreen->SetVisibility(ESlateVisibility::Hidden);
 	FullMapsText->SetVisibility(ESlateVisibility::Hidden);
+	FullLivesText->SetVisibility(ESlateVisibility::Hidden);
 	
 	FTimerHandle MapTimer;
 	FTimerDelegate MapTimerDel;
@@ -105,3 +106,18 @@ void UPMMazeHUD::ShowFullMapsText()
 	FullMapsDel.BindLambda([&]() { FullMapsText->SetVisibility(ESlateVisibility::Hidden); });
 	GetWorld()->GetTimerManager().SetTimer(FullMapsTextTimer, FullMapsDel, 2.f, false);
 }
+
+void UPMMazeHUD::ShowFullLivesText()
+{
+	FullLivesText->SetVisibility(ESlateVisibility::Visible);
+
+	if (FullLivesTextTimer.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FullLivesTextTimer);
+	}
+
+	FTimerDelegate FullLivesDel;
+	FullLivesDel.BindLambda([&]() { FullLivesText->SetVisibility(ESlateVisibility::Hidden); });
+	GetWorld()->GetTimerManager().SetTimer(FullMapsTextTimer, FullLivesDel, 2.f, false);
+}
+

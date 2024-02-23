@@ -8,12 +8,11 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Perception/PawnSensingComponent.h"
-#include "Gameplay/Player/PMPlayer.h"
 #include "GameModes/Gameplay/PMGameModeBase.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include <Queue>
 #include "Sound/SoundWave.h"
 #include "GameInstance/PMGameInstance.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 APMGhost::APMGhost()
@@ -26,10 +25,11 @@ APMGhost::APMGhost()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(CollisionSphere);
 
+	PointsWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PointWidget"));	
 	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensing"));
 
 	State = EGhostState::NONE;
-	CurrentDirection = EGhostDirection::NONE;
+	MovementState = EGhostMovementState::NONE;
 	MovingDirection = 1.f;
 	PositionOnSpline = 1.f;
 	bIsMoving = false;
@@ -40,7 +40,7 @@ APMGhost::APMGhost()
 	SplineIndex = 0;
 	Speed = NormalSpeed;
 	StartingMovingDirection = 1.f;
-	ChaseTimeCounter = 0;
+	MaxChaseTime = 4.f;
 	StartingRotation = FRotator(0, 0, 0);
 	SetEyesPosition(0);
 }
@@ -50,43 +50,16 @@ void APMGhost::BeginPlay()
 {
 	Super::BeginPlay();
 
-	DynMaterial = UMaterialInstanceDynamic::Create(Mesh->GetMaterial(0), this);
-	DynMaterial->SetVectorParameterValue("Color", StartingColor);
-	Mesh->SetMaterial(0, DynMaterial);
+	InitializeMaterial();
+	BindGameModeDelegates();
 
-	GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (GameMode)
-	{
-		GameMode->OnStartGame.AddUObject(this, &APMGhost::StartGhost);
-		GameMode->OnStopGame.AddUObject(this, &APMGhost::ResetGhost);
-		GameMode->OnStartMovement.AddUObject(this, &APMGhost::StartMovement);
-		GameMode->OnStopMovement.AddUObject(this, &APMGhost::StopMovement);
-		GameMode->OnPlayerAttack.AddUObject(this, &APMGhost::VulnerableState);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("APMGhost::BeginPlay | GameMode is nullptr"));
-	}
+	PointsWidget->SetVisibility(false);
 
 	if (PawnSensing != nullptr)
 	{
 		PawnSensing->OnSeePawn.AddDynamic(this, &APMGhost::OnSeePawn);
 	}
 
-	if (StartingSpline != nullptr)
-	{
-		StartGhost();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGhost::BeginPlay | StartingSpline is nullptr"));
-	}
-
-	Player = Cast<APMPlayer>(UGameplayStatics::GetPlayerController(GetWorld(),0)->GetPawn());
-	if (!Player)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGhost::BeginPlay | Player is nullptr"));
-	}
 }
 
 // Called every frame
@@ -115,19 +88,19 @@ TArray<int32> APMGhost::FindValidSplinesInRandomMovement()
 {
 	TArray<int32> OutValidSplines;
 
-	if ((CurrentSpline->Splines[SplineIndex].UPWARD != nullptr) && (!CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName("releaseGhost"))))
+	if ((CurrentSpline->Splines[SplineIndex].UPWARD != nullptr) && (!CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(TEXT("releaseGhost"))))
 	{
 		OutValidSplines.Add(0);
 	}
-	if ((CurrentSpline->Splines[SplineIndex].DOWN != nullptr) && (!CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName("releaseGhost"))))
+	if ((CurrentSpline->Splines[SplineIndex].DOWN != nullptr) && (!CurrentSpline->Splines[SplineIndex].DOWN->ActorHasTag(TEXT("releaseGhost"))))
 	{
 		OutValidSplines.Add(1);
 	}
-	if ((CurrentSpline->Splines[SplineIndex].LEFT != nullptr) && (!CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName("releaseGhost"))))
+	if ((CurrentSpline->Splines[SplineIndex].LEFT != nullptr) && (!CurrentSpline->Splines[SplineIndex].LEFT->ActorHasTag(TEXT("releaseGhost"))))
 	{
 		OutValidSplines.Add(2);
 	}
-	if ((CurrentSpline->Splines[SplineIndex].RIGHT != nullptr) && (!CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName("releaseGhost"))))
+	if ((CurrentSpline->Splines[SplineIndex].RIGHT != nullptr) && (!CurrentSpline->Splines[SplineIndex].RIGHT->ActorHasTag(TEXT("releaseGhost"))))
 	{
 		OutValidSplines.Add(3);
 	}
@@ -153,219 +126,48 @@ bool APMGhost::CheckIfAtPoint()
 
 void APMGhost::HandleMovement()
 {
-	if (State == EGhostState::BASE)
-	{
-		GhostBaseMovement();
-		return;
-	}
+	int32 FoundSpline = 0;
 
-	if ((State == EGhostState::PASSIVE) || (State == EGhostState::VULNERABLE))
+	switch (MovementState)
 	{
-		TArray<int32> ValidSplines = FindValidSplinesInRandomMovement();
-		const int32 ValidSplinesNum = ValidSplines.Num();
-		if (ValidSplinesNum == 0)
+		case EGhostMovementState::BASE:
 		{
-			TurnAround();
+			GhostBaseMovement();
 			return;
 		}
-
-		const int32 RandomIndex = FMath::RandRange(-1, ValidSplinesNum - 1);
-		ChooseNewSpline(ValidSplines[RandomIndex]);
-		return;
-	}
-
-	if (State == EGhostState::ATTACK)
-	{
-		int32 FoundSpline = FindPath(FName("player_MarkedSpline")); 
-		ChooseNewSpline(FoundSpline);
-		return;
-	}
-
-	if (State == EGhostState::RELEASE)
-	{
-		int32 FoundSpline = FindPath(FName("release_MarkedSpline"));
-		ChooseNewSpline(FoundSpline);
-		return;
-	}
-
-	if (State == EGhostState::HITTED)
-	{
-		int32 FoundSpline = FindPath(FName("base_MarkedSpline"));
-		ChooseNewSpline(FoundSpline);
-		return;
-	}
-
-
-	/*
-	if (ValidSplinesNum == 0)
-	{
-  		MovingDirection *= -1;
-		const float yawRotation = GetActorRotation().Yaw + (-180 * MovingDirection);
-		SetActorRotation(FRotator(0, yawRotation, 0));
-		SetEyesPosition(yawRotation);
-		bIsMoving = true;
-		return;
-	}
-
-	// 0 - UPWARD, 1 - DOWN, 2 - LEFT, 3 - RIGHT
-	switch (State)
-	{
-		case EGhostState::VULNERABLE:
-		case EGhostState::PASSIVE:
+		case EGhostMovementState::PASSIVE:
 		{
-			const int32 randomIndex = FMath::RandRange(0, ValidSplinesNum - 1);
-
-			switch (ValidSplines[randomIndex])
+			TArray<int32> ValidSplines = FindValidSplinesInRandomMovement();
+			const int32 ValidSplinesNum = ValidSplines.Num();
+			if (ValidSplinesNum == 0)
 			{
-				case 0:
-				{
-					if (CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName("releaseGhost"))) return;
-
-					CurrentSpline = CurrentSpline->Splines[SplineIndex].UPWARD;
-					PositionOnSpline = 1.f;
-					MovingDirection = 1.f;
-					SetActorRotation(FRotator(0, -90, 0));
-					SetEyesPosition(-90);
-					bIsMoving = true;
-					return;
-				}
-				case 1:
-				{
-					if (CurrentSpline->Splines[SplineIndex].DOWN->ActorHasTag(FName("releaseGhost"))) return;
-
-					CurrentSpline = CurrentSpline->Splines[SplineIndex].DOWN;
-					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
-					MovingDirection = -1.f;
-					SetActorRotation(FRotator(0, 90, 0));
-					SetEyesPosition(90);
-					bIsMoving = true;
-					return;
-				}
-				case 2:
-				{
-					if (CurrentSpline->Splines[SplineIndex].LEFT->ActorHasTag(FName("releaseGhost"))) return;
-
-					CurrentSpline = CurrentSpline->Splines[SplineIndex].LEFT;
-					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
-					MovingDirection = -1.f;
-					SetActorRotation(FRotator(0, 180, 0));
-					SetEyesPosition(180);
-					bIsMoving = true;
-					return;
-				}
-				case 3:
-				{
-					if (CurrentSpline->Splines[SplineIndex].RIGHT->ActorHasTag(FName("releaseGhost"))) return;
-
-					CurrentSpline = CurrentSpline->Splines[SplineIndex].RIGHT;
-					PositionOnSpline = 1.f;
-					MovingDirection = 1.f;
-					SetActorRotation(FRotator(0, 0, 0));
-					SetEyesPosition(0);
-					bIsMoving = true;
-					return;
-				}
-				default: return;
+				TurnAround();
+				return;
 			}
+
+			const int32 RandomIndex = FMath::RandRange(0, ValidSplinesNum - 1);
+			FoundSpline = ValidSplines[RandomIndex];
+			break;
 		}
-		case EGhostState::HITTED:
-		case EGhostState::RELEASE:
-		case EGhostState::ATTACK: 
+		case EGhostMovementState::ATTACK:
 		{
-			int32 choosenSpline = FindPath(FName("sds")); //TODO: marked spline as parameter
-			
-			switch (choosenSpline)
-			{
-				case -1:
-				{
-					MovingDirection *= -1.f;
-					const float yawRotation = GetActorRotation().Yaw + (-180 * MovingDirection);
-					SetActorRotation(FRotator(0, yawRotation, 0));
-					PositionOnSpline += MovingDirection;
-					SetEyesPosition(yawRotation);
-					bIsMoving = true;
-					return;
-				}
-				case 0:
-				{
-					CurrentSpline = CurrentSpline->Splines[SplineIndex].UPWARD;
-					PositionOnSpline = 1.f;
-					MovingDirection = 1.f;
-					SetActorRotation(FRotator(0, -90, 0));
-					SetEyesPosition(-90);
-					bIsMoving = true;
-					return;
-				}
-				case 1:
-				{
-					CurrentSpline = CurrentSpline->Splines[SplineIndex].DOWN;
-					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
-					MovingDirection = -1.f;
-					SetActorRotation(FRotator(0, 90, 0));
-					SetEyesPosition(90);
-					bIsMoving = true;
-					return;
-				}
-				case 2:
-				{
-					CurrentSpline = CurrentSpline->Splines[SplineIndex].LEFT;
-					PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
-					MovingDirection = -1.f;
-					SetActorRotation(FRotator(0, 180, 0));
-					SetEyesPosition(180);
-					bIsMoving = true;
-					return;
-				}
-				case 3:
-				{
-					CurrentSpline = CurrentSpline->Splines[SplineIndex].RIGHT;
-					PositionOnSpline = 1.f;
-					MovingDirection = 1.f;
-					SetActorRotation(FRotator(0, 0, 0));
-					SetEyesPosition(0);
-					bIsMoving = true;
-					return;
-				}
-			default: return;
-			}
+			FoundSpline = FindPath(TEXT("player_MarkedSpline")); 
+			break;
 		}
-		case EGhostState::WAIT:
+		case EGhostMovementState::RELEASE:
 		{
-			if (CurrentSpline->Splines[SplineIndex].UPWARD != nullptr && CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(TEXT("releaseGhost")))
-			{
-				MovingDirection *= -1;
-				PositionOnSpline += 5 * MovingDirection;
-				const float yawRotation = GetActorRotation().Yaw + (-180 * MovingDirection);
-				SetActorRotation(FRotator(0, yawRotation, 0));
-				SetEyesPosition(yawRotation);
-				UE_LOG(LogTemp, Warning, TEXT("%f"), yawRotation);
-				bIsMoving = true;
-				return;
-			}
-
-			if (CurrentSpline->Splines[SplineIndex].UPWARD != nullptr)
-			{
-				CurrentSpline = CurrentSpline->Splines[SplineIndex].UPWARD;
-				MovingDirection = 1;
-				PositionOnSpline = 1.f;
-				bIsMoving = true;
-				return;
-			}
-
-			if (CurrentSpline->Splines[SplineIndex].DOWN != nullptr)
-			{
-				CurrentSpline = CurrentSpline->Splines[SplineIndex].DOWN;
-				MovingDirection = -1;
-				PositionOnSpline = CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
-				bIsMoving = true;
-				return;
-			}
-
-			return;
+			FoundSpline = FindPath(TEXT("release_MarkedSpline"));
+			break;
+		}
+		case EGhostMovementState::HITTED:
+		{
+			FoundSpline = FindPath(TEXT("base_MarkedSpline"));
+			break;
 		}
 		default: return;
-	}*/
+	}
 
+	ChooseNewSpline(FoundSpline);
 }
 
 int32 APMGhost::FindPath(const FName& SplineTag)
@@ -422,126 +224,93 @@ int32 APMGhost::FindPath(const FName& SplineTag)
 
 void APMGhost::OnSeePawn(APawn* OtherPawn)
 {
-	if (bVulnerable || bGhostHitted || !bCanSee)
-	{
-		return;
-	}
-
-	if (State == EGhostState::PASSIVE && OtherPawn == Player)
+	if (OtherPawn->ActorHasTag(TEXT("player")) && bCanSee && MovementState == EGhostMovementState::PASSIVE && State != EGhostState::VULNERABLE)
 	{		
-		State = EGhostState::ATTACK;
+		MovementState = EGhostMovementState::ATTACK;
 
 		if (GameMode != nullptr)
 		{
 			GameMode->SetPlayerChased(true);
 		}
-
-		Player->MarkSpline();		
-		GetWorld()->GetTimerManager().SetTimer(ChaseTimerHandle, this, &APMGhost::AttackTimer, 1.0f, true); //start timer
+	
+		GetWorld()->GetTimerManager().SetTimer(ChaseTimer, this, &APMGhost::AttackTimer, MaxChaseTime, false); 
 	}
 }
 
 void APMGhost::AttackTimer()
 {
-	if (ChaseTimerHandle.IsValid() && bGhostHitted)
+	bCanSee = false;
+	FTimerDelegate CanSeeDel;
+	CanSeeDel.BindLambda([&]() { bCanSee = true; });
+	GetWorld()->GetTimerManager().SetTimer(CanSeeTimer, CanSeeDel, 1.5f, false);
+	MovementState = EGhostMovementState::PASSIVE;
+
+	if (GameMode != nullptr)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(ChaseTimerHandle);
-		return;
-	}
-
-	ChaseTimeCounter++;
-	if (ChaseTimeCounter > MaxChaseTime)
-	{
-		ChaseTimeCounter = 0;
-		if (ChaseTimerHandle.IsValid())
-		{
-			GetWorld()->GetTimerManager().ClearTimer(ChaseTimerHandle);
-		}	
-
-		if (GameMode != nullptr && State != EGhostState::RELEASE)
-		{
-			GameMode->SetPlayerChased(false);
-		}
-
-		bCanSee = false;
-		GetWorld()->GetTimerManager().SetTimer(CanSeeTimerHandle, this, &APMGhost::CanSee, 2.0f, false);
-		State = EGhostState::PASSIVE;
+		GameMode->SetPlayerChased(false);
 	}
 }
 
 int32 APMGhost::Interaction()
 {
-	if (bDoOnce)
+	if (GameMode == nullptr)
 	{
-		APMGameModeBase* gameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(this));
-		if (gameMode == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("APMGhost::Interaction | GameMode is nullptr"));
-			return 0;
-		}
+		return 0;
+	}
 
-		if (!bVulnerable)
-		{	
-			gameMode->HandleGhostHit();		
-		}
-		else
-		{
-			gameMode->StopAllMovement();
+	if (bDoOnce)
+	{		
+		if (State == EGhostState::VULNERABLE)
+		{		
+			PointsWidget->SetWorldLocation(FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 100));
+			PointsWidget->SetVisibility(true);
+			GameMode->StopAllMovement();
 			BackToBase();
-			bDoOnce = false;
+			bDoOnce = false;	
 			return 200;
-		}	
-		bDoOnce = false;
+		}
+		else if (MovementState == EGhostMovementState::ATTACK || MovementState == EGhostMovementState::PASSIVE)
+		{
+			GameMode->HandleGhostHit();
+			bDoOnce = false;	
+		}
 	}	
 	return 0;
 }
 
 void APMGhost::ReleaseGhost()
 {
-	if (ReleaseTimerHandle.IsValid())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(ReleaseTimerHandle);
-	}
-
-	Speed = bVulnerable ? VulnerableSpeed : NormalSpeed;
-	Player->MarkSpline();
-	State = EGhostState::RELEASE;
-	GetWorld()->GetTimerManager().SetTimer(ChaseTimerHandle, this, &APMGhost::AttackTimer, 1.0f, true);
+	bDoOnce = true;
+	Speed = State == EGhostState::VULNERABLE ? VulnerableSpeed : NormalSpeed;
+	MovementState = EGhostMovementState::RELEASE;
 }
 
 void APMGhost::ResetGhost()
 {
-	if (ReleaseTimerHandle.IsValid())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(ReleaseTimerHandle);
-	}
-	if (ChaseTimerHandle.IsValid())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(ChaseTimerHandle);
-	}
-	bIsMoving = false;
-	FTimerHandle ResetTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &APMGhost::HideGhost, 1.f, false);
-}
+	State = EGhostState::NONE;
+	MovementState = EGhostMovementState::NONE;
 
-void APMGhost::HideGhost()
-{
-	this->SetActorHiddenInGame(true);
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+
+	bIsMoving = false;
+	FTimerHandle ResetTimer;
+	FTimerDelegate ResetDel;
+	ResetDel.BindUObject(this, &APMGhost::SetActorHiddenInGame, true);
+	GetWorld()->GetTimerManager().SetTimer(ResetTimer, ResetDel, 1.f, false);
 }
 
 void APMGhost::StartGhost()
 {	
-	bDoOnce = true;
-	bVulnerable = false;
-	bGhostHitted = false;
+	DynMaterial->SetVectorParameterValue(TEXT("Color"), StartingColor);
 	CurrentSpline = StartingSpline;
 	MovingDirection = StartingMovingDirection;
 	SetActorRotation(StartingRotation);
 	SetEyesPosition(StartingRotation.Yaw);
 	PositionOnSpline = 1.f;
-	State = StartingState;	
+	MovementState = StartingMovementState;	
+	State = EGhostState::NONE;
 
-	Speed = State == EGhostState::BASE ? VulnerableSpeed : NormalSpeed;
+	Speed = MovementState == EGhostMovementState::BASE ? VulnerableSpeed : NormalSpeed;
 
 	if (CurrentSpline != nullptr)
 	{
@@ -549,16 +318,18 @@ void APMGhost::StartGhost()
 		SetActorLocation(NewLocation);
 	}
 
-	this->SetActorHiddenInGame(false);
+	bDoOnce = true;
+	SetActorHiddenInGame(false);
 }
 
 void APMGhost::StartMovement()
 {
+	PointsWidget->SetVisibility(false);
 	bIsMoving = true;
-	if (State == EGhostState::BASE)
+
+	if (!GetWorld()->GetTimerManager().IsTimerActive(ReleaseTimer) && MovementState == EGhostMovementState::BASE)
 	{
-		Speed = VulnerableSpeed;
-		GetWorld()->GetTimerManager().SetTimer(ReleaseTimerHandle, this, &APMGhost::ReleaseGhost, ReleaseTime, false);
+		GetWorld()->GetTimerManager().SetTimer(ReleaseTimer, this, &APMGhost::ReleaseGhost, ReleaseTime, false);
 	}
 }
 
@@ -569,60 +340,42 @@ void APMGhost::StopMovement()
 
 void APMGhost::VulnerableState()
 {
-	if (bGhostHitted) return;
-
-	if (VulnerableTimerHandle.IsValid())
+	if (MovementState == EGhostMovementState::HITTED)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(VulnerableTimerHandle);
+		return;
 	}
 
-	bVulnerable = true;
+	ClearVulnerableTimers();
+
+	if (MovementState == EGhostMovementState::ATTACK)
+	{
+		TurnAround();
+		MovementState = EGhostMovementState::PASSIVE;
+	}
+
+	DynMaterial->SetVectorParameterValue(TEXT("Color"), VulnerableColor);
 	Speed = VulnerableSpeed;
+	State = EGhostState::VULNERABLE;
 
-	if (DynMaterial != nullptr)
-	{
-		DynMaterial->SetVectorParameterValue(TEXT("Color"), VulnerableColor);
-	}
-	
-	if (State == EGhostState::ATTACK)
-	{
-		State = EGhostState::PASSIVE;
-		MovingDirection *= -1.f;
-		const float yawRotation = GetActorRotation().Yaw + (-180 * MovingDirection);
-		SetActorRotation(FRotator(0, yawRotation, 0));
-		SetEyesPosition(yawRotation);
-	}
-
-	GetWorld()->GetTimerManager().SetTimer(VulnerableTimerHandle, this, &APMGhost::EndVulnerableState, 7.f, false);
-	GetWorld()->GetTimerManager().SetTimer(FlickeringTimerHandle, this, &APMGhost::VulnerableFlickering, 0.3f, true, 5);
+	GetWorld()->GetTimerManager().SetTimer(VulnerableTimer, this, &APMGhost::EndVulnerableState, 7.f, false);
+	GetWorld()->GetTimerManager().SetTimer(FlickeringTimer, this, &APMGhost::VulnerableFlickering, 0.3f, true, 5);
 }
 
 void APMGhost::EndVulnerableState()
 {
-	bGhostHitted = false;
-	bVulnerable = false;
-	Speed = State == EGhostState::BASE ? VulnerableSpeed : NormalSpeed;
+	State = EGhostState::NONE;
+	Speed = MovementState == EGhostMovementState::BASE ? VulnerableSpeed : NormalSpeed;
+	bFlickering = true;
 	bDoOnce = true;
-	bFlickering = false;
-	
-	if (VulnerableTimerHandle.IsValid())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(VulnerableTimerHandle);
-	}
-	if (FlickeringTimerHandle.IsValid())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(FlickeringTimerHandle);
-	}
 
-	if (DynMaterial != nullptr)
-	{
-		DynMaterial->SetVectorParameterValue(TEXT("Color"), StartingColor);
-	}
+	ClearVulnerableTimers();
+
+	DynMaterial->SetVectorParameterValue(TEXT("Color"), StartingColor);
 }
 
 void APMGhost::VulnerableFlickering()
 {
-	if (DynMaterial == nullptr)
+	if (State != EGhostState::VULNERABLE)
 	{
 		return;
 	}
@@ -641,21 +394,17 @@ void APMGhost::VulnerableFlickering()
 
 void APMGhost::BackToBase()
 {
-	if (VulnerableTimerHandle.IsValid())
+	if (HitSoundClassic != nullptr)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(VulnerableTimerHandle);
-	}
-	if (FlickeringTimerHandle.IsValid())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(FlickeringTimerHandle);
+		UGameplayStatics::PlaySound2D(GetWorld(), HitSoundClassic);
 	}
 
-	if (HitSoundClassic != nullptr) UGameplayStatics::PlaySound2D(this, HitSoundClassic);
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 
+	MovementState = EGhostMovementState::HITTED;
+	State = EGhostState::NONE;
 	Speed = ReturnSpeed;
-	bIsMoving = true;
-	bGhostHitted = true;
-	State = EGhostState::RELEASE;
+	bIsMoving = true;;
 }
 
 void APMGhost::CanSee()
@@ -663,14 +412,47 @@ void APMGhost::CanSee()
 	bCanSee = true;
 }
 
+void APMGhost::InitializeMaterial()
+{
+	if (Mesh != nullptr && Mesh->GetNumMaterials() > 0)
+	{
+		DynMaterial = UMaterialInstanceDynamic::Create(Mesh->GetMaterial(0), this);
+		DynMaterial->SetVectorParameterValue(TEXT("Color"), StartingColor);
+		Mesh->SetMaterial(0, DynMaterial);
+	}	
+}
+
+void APMGhost::BindGameModeDelegates()
+{
+	GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		GameMode->OnStartGame.AddUObject(this, &APMGhost::StartGhost);
+		GameMode->OnStopGame.AddUObject(this, &APMGhost::ResetGhost);
+		GameMode->OnStartMovement.AddUObject(this, &APMGhost::StartMovement);
+		GameMode->OnStopMovement.AddUObject(this, &APMGhost::StopMovement);
+		GameMode->OnPlayerAttack.AddUObject(this, &APMGhost::VulnerableState);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("APMGhost::BindGameModeDelegates | GameMode is nullptr"));
+	}
+}
+
 void APMGhost::MoveToNewSpline(APMSpline* NewSpline, float Direction, float YawRotation)
 {
-	if (!NewSpline)
+	MovingDirection = Direction;
+
+	if (NewSpline)
 	{
 		CurrentSpline = NewSpline;
+		PositionOnSpline = MovingDirection > 0 ? 1.f : CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 	}
-	MovingDirection = Direction;
-	PositionOnSpline = MovingDirection > 0 ? 1.f : CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
+	else
+	{
+		PositionOnSpline += MovingDirection > 0 ? 10.f : -10.f;
+	}
+		
 	SetActorRotation(FRotator(0, YawRotation, 0));
 	SetEyesPosition(YawRotation);
 	bIsMoving = true;
@@ -678,7 +460,7 @@ void APMGhost::MoveToNewSpline(APMSpline* NewSpline, float Direction, float YawR
 
 void APMGhost::TurnAround()
 {
-	const float NewMovingDirection = MovingDirection * -1.f;
+	const float NewMovingDirection = (MovingDirection * -1.f);
 	const float YawRotation = GetActorRotation().Yaw + (-180 * NewMovingDirection);
 	MoveToNewSpline(nullptr, NewMovingDirection, YawRotation);
 }
@@ -703,6 +485,7 @@ void APMGhost::GhostBaseMovement()
 		return;
 	}
 
+	TurnAround();
 	return;
 }
 
@@ -741,6 +524,37 @@ void APMGhost::ChooseNewSpline(int32 ChoosenSpline)
 
 void APMGhost::ReachingMarkedSpline()
 {
+	switch (MovementState)
+	{
+		case EGhostMovementState::ATTACK:
+		{
+			return;
+		}
+		case EGhostMovementState::RELEASE:
+		{
+			MovementState = EGhostMovementState::PASSIVE;
+			return;
+		}
+		case EGhostMovementState::HITTED:
+		{
+			EndVulnerableState();
+			ReleaseGhost();
+			return;
+		}
+		default: return;
+	}
+}
+
+void APMGhost::ClearVulnerableTimers()
+{
+	if (VulnerableTimer.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(VulnerableTimer);
+	}
+	if (FlickeringTimer.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FlickeringTimer);
+	}
 }
 
 TMap<int32, APMSpline*> APMGhost::FindValidSplinesInMarkedMovement(APMSpline* Spline, int32 index)

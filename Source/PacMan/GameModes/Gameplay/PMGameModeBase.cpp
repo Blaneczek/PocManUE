@@ -97,7 +97,7 @@ void APMGameModeBase::HandleGhostHit()
 
 	if (HUDWidget != nullptr)
 	{
-		HUDWidget->UpdateLives(Lives);
+		HUDWidget->UpdateLives(Lives, ESlateVisibility::Hidden);
 	}
 
 	if (PlayerHittedSound != nullptr)
@@ -199,12 +199,13 @@ void APMGameModeBase::SpawnSpecialCoin(TSubclassOf<APMCoin> SpecialCoinClass)
 
 	if (Splines[randomIndex] != nullptr)
 	{
-		const float splineLength = Splines[randomIndex]->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
-		const FVector location = Splines[randomIndex]->SplineComponent->GetLocationAtDistanceAlongSpline(splineLength / 2, ESplineCoordinateSpace::World);
-		const FRotator rotation = FRotator(0, 0, 0);
+		const float SplineLength = Splines[randomIndex]->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
+		const FVector Location = Splines[randomIndex]->SplineComponent->GetLocationAtDistanceAlongSpline(SplineLength / 2, ESplineCoordinateSpace::World);
+		FRotator Rotation;
+		GameInstance->GetCurrentLevelType() == ELevelType::CLASSIC ? Rotation = FRotator(0,0,0) : Rotation = Splines[randomIndex]->GetActorRotation();
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		GetWorld()->SpawnActor<APMCoin>(SpecialCoinClass, location, rotation, SpawnInfo);
+		GetWorld()->SpawnActor<APMCoin>(SpecialCoinClass, Location, Rotation, SpawnInfo);
 	}
 }
 

@@ -4,6 +4,7 @@
 #include "Gameplay/Ghosts/PMClassicGhost.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
+#include "Components/WidgetComponent.h"
 
 APMClassicGhost::APMClassicGhost()
 {

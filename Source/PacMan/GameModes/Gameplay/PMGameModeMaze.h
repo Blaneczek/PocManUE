@@ -8,6 +8,7 @@
 
 class UPMMazeHUD;
 class APMMapCoin;
+class APMLifeCoin;
 class USoundWave;
 class UAudioComponent;
 
@@ -37,6 +38,9 @@ public:
 	void AddMap();
 	int32 GetMapsNumber() { return MapsNumber; }
 
+	void AddLife();
+	int32 GetLivesNumber() { return Lives; }
+
 protected:	
 	virtual void InitializeWidgets(APlayerController* PlayerController) override;	
 	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame) override;
@@ -50,23 +54,20 @@ private:
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMMazeHUD> MazeHUDClass;
-
-	UPROPERTY()
-	TObjectPtr<UPMMazeHUD> MazeHUD;
-
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMMapCoin> MapCoinClass;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
+	TSubclassOf<APMLifeCoin> LifeCoinClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> VulnerableSound;
-
+	UPROPERTY()
+	TObjectPtr<UPMMazeHUD> MazeHUD;
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> PlayerAttackAC;
 
 	int32 MapsNumber;
 	bool bMapOpen;
-	bool bPlayerAlreadyChased;
-	bool bStillVulnerable;
 	TArray<bool> ChasingGhosts;
 
 	// Timers
@@ -74,5 +75,7 @@ private:
 	FTimerHandle MapCoinTimer;
 	FTimerHandle MapTimer;
 	FTimerDelegate MapCoinDel;
+	FTimerHandle LifeCoinTimer;
+	FTimerDelegate LifeCoinDel;
 	//
 };

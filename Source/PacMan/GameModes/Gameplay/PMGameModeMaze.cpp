@@ -7,6 +7,7 @@
 #include "Gameplay/Splines/PMSpline.h"
 #include "Components/SplineComponent.h"
 #include "Gameplay/Coins/PMMapCoin.h"
+#include "Gameplay/Coins/PMLifeCoin.h"
 #include "Kismet/GameplayStatics.h"
 #include "Gameplay/Ghosts/PMGhost.h"
 #include "Components/AudioComponent.h"
@@ -16,8 +17,6 @@ APMGameModeMaze::APMGameModeMaze()
 {
 	MapsNumber = 2;
 	bMapOpen = false;
-	bPlayerAlreadyChased = false;
-	bStillVulnerable = false;
 }
 
 void APMGameModeMaze::BeginPlay()
@@ -26,6 +25,10 @@ void APMGameModeMaze::BeginPlay()
 
 	MapCoinDel.BindUFunction(this, FName("SpawnSpecialCoin"), MapCoinClass);
 	GetWorld()->GetTimerManager().SetTimer(MapCoinTimer, MapCoinDel, 10.f, false);
+
+	LifeCoinDel.BindUFunction(this, FName("SpawnSpecialCoin"), LifeCoinClass);
+	GetWorld()->GetTimerManager().SetTimer(LifeCoinTimer, LifeCoinDel, 20.f, false);
+
 }
 
 void APMGameModeMaze::InitializeWidgets(APlayerController* PlayerController)
@@ -52,7 +55,7 @@ void APMGameModeMaze::PlayerChasedHandle(bool IsPlayerChased)
 	{
 		ChasingGhosts.Add(true);
 	}
-	else if (!IsPlayerChased && ChasingGhosts.Num() > 0)
+	else if (!IsPlayerChased && !ChasingGhosts.IsEmpty())
 	{
 		ChasingGhosts.Pop(true);
 	}
@@ -92,9 +95,10 @@ void APMGameModeMaze::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave*
 		GameInstance->MazeGameData = FGameData(CurrentLevelNum + 1, Score, Cherries);
 		GameInstance->SaveGame();
 
+		const FName NextLevelName = *GameInstance->MazeLevels.Find(CurrentLevelNum + 1);
 		FTimerHandle NextLevelTimer;
 		FTimerDelegate NextLevelDel;
-		NextLevelDel.BindUFunction(this, "OpenNextLevel", *GameInstance->MazeLevels.Find(CurrentLevelNum + 1));
+		NextLevelDel.BindUFunction(this, TEXT("OpenNextLevel"), NextLevelName);
 		GetWorld()->GetTimerManager().SetTimer(NextLevelTimer, NextLevelDel, 2.f, false);
 		return;
 	}
@@ -176,13 +180,26 @@ void APMGameModeMaze::AddMap()
 	{
 		MapsNumber++;
 		MazeHUD->UpdateMapIcon(MapsNumber, ESlateVisibility::Visible);
+		GetWorld()->GetTimerManager().SetTimer(MapCoinTimer, MapCoinDel, 10.f, false);
 	}
 	else
 	{
 		MazeHUD->ShowFullMapsText();
-	}
+	}	
+}
 
-	GetWorld()->GetTimerManager().SetTimer(MapCoinTimer, MapCoinDel, 10.f, false);
+void APMGameModeMaze::AddLife()
+{
+	if (Lives < 3)
+	{
+		MazeHUD->UpdateLives(Lives, ESlateVisibility::Visible);
+		GetWorld()->GetTimerManager().SetTimer(LifeCoinTimer, LifeCoinDel, 20.f, false);
+		Lives++;
+	}
+	else
+	{
+		MazeHUD->ShowFullLivesText();
+	}
 }
 
 void APMGameModeMaze::ClearChasedState()

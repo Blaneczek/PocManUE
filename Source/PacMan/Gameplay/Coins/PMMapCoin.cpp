@@ -9,16 +9,16 @@
 int32 APMMapCoin::Interaction()
 {
 	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(GetWorld())))
-	{
-		GM->AddMap();
+	{	
 		if (GM->GetMapsNumber() < 2)
-		{
+		{			
 			if (PickUpSound != nullptr)
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 			}		
 			Destroy();
 		}
+		GM->AddMap();
 	}
 	return 0;
 }

@@ -47,7 +47,6 @@ private:
 	TObjectPtr<USoundWave> GhostSound;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> VulnerableGhostSound;
-
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> GhostAudio;
 

@@ -31,6 +31,7 @@ APMPlayer::APMPlayer()
 	TempDirection = EDirection::NONE;
 	DesiredDirection = EDirection::RIGHT;
 	CurrentDirection = EDirection::RIGHT;
+	Tags.Add(TEXT("player"));
 }
 
 // Called when the game starts or when spawned
@@ -113,7 +114,7 @@ void APMPlayer::MarkSpline()
 {
 	if (CurrentSpline != nullptr)
 	{
-		CurrentSpline->Tags.Add(FName("markedSpline"));
+		CurrentSpline->Tags.Add(FName("player_MarkedSpline"));
 	}		
 }
 
@@ -121,7 +122,7 @@ void APMPlayer::UnmarkSpline()
 {
 	if (CurrentSpline != nullptr)
 	{
-		CurrentSpline->Tags.Remove(FName("markedSpline"));
+		CurrentSpline->Tags.Remove(FName("player_MarkedSpline"));
 	}
 }
 
@@ -158,6 +159,7 @@ void APMPlayer::StartPlayer()
 		return;
 	}
 
+	MarkSpline();
 	const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
 	SetActorLocation(NewLocation);
 	

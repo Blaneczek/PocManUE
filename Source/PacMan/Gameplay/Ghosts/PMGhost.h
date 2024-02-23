@@ -14,27 +14,24 @@ class APMGameModeBase;
 class UPawnSensingComponent;
 class APMPlayer;
 class UMaterialInstanceDynamic;
+class UWidgetComponent;
 
 UENUM()
 enum class EGhostState : uint8
+{
+	NONE		UMETA(DisplayName = "None"),
+	VULNERABLE	UMETA(DisplayName = "Vulnerable")
+};
+
+UENUM()
+enum class EGhostMovementState : uint8
 {
 	NONE		UMETA(DisplayName = "None"),
 	PASSIVE		UMETA(DisplayName = "Passive"),
 	ATTACK		UMETA(DisplayName = "Attack"),
 	BASE		UMETA(DisplayName = "Base"),
 	RELEASE		UMETA(DisplayName = "Release"),
-	VULNERABLE	UMETA(DisplayName = "Vulnerable"),
 	HITTED		UMETA(DisplayName = "Hitted")
-};
-
-UENUM()
-enum class EGhostDirection : uint8
-{
-	NONE	UMETA(DisplayName = "None"),
-	UPWARD	UMETA(DisplayName = "UP"),
-	DOWN	UMETA(DisplayName = "DOWN"),
-	LEFT	UMETA(DisplayName = "LEFT"),
-	RIGHT	UMETA(DisplayName = "RIGHT")
 };
 
 USTRUCT()
@@ -91,7 +88,6 @@ protected:
 
 	void ReleaseGhost();
 	void ResetGhost();
-	void HideGhost();
 	void StartGhost();
 	void StartMovement();
 	void StopMovement();
@@ -105,21 +101,26 @@ protected:
 	bool IsVulnerable() { return bVulnerable; }
 
 private:
+	void InitializeMaterial();
+	void BindGameModeDelegates();
 	void MoveToNewSpline(APMSpline* NewSpline, float Direction, float YawRotation);
 	void TurnAround();
 	void GhostBaseMovement();
 	void ChooseNewSpline(int32 ChoosenSpline);
 	void ReachingMarkedSpline();
+	void ClearVulnerableTimers();
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UStaticMeshComponent> Mesh;
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USphereComponent> CollisionSphere;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<USphereComponent> CollisionSphere;	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<UPawnSensingComponent> PawnSensing;	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<UWidgetComponent> PointsWidget;
 	UPROPERTY()
 	TObjectPtr<APMSpline> CurrentSpline;
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UPawnSensingComponent> PawnSensing;	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	float NormalSpeed = 800.f;
@@ -133,7 +134,7 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	TObjectPtr<APMSpline> StartingSpline;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
-	EGhostState StartingState;
+	EGhostMovementState StartingMovementState;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	FRotator StartingRotation;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
@@ -150,7 +151,7 @@ protected:
 	TObjectPtr<APMGameModeBase> GameMode;
 
 	EGhostState State;
-	EGhostDirection CurrentDirection;
+	EGhostMovementState MovementState;
 
 	UPROPERTY()
 	TObjectPtr<APMPlayer> Player = nullptr;
@@ -179,10 +180,10 @@ protected:
 	
 
 	// Timers
-	FTimerHandle ChaseTimerHandle;
-	FTimerHandle CanSeeTimerHandle;
-	FTimerHandle ReleaseTimerHandle;
-	FTimerHandle VulnerableTimerHandle;
-	FTimerHandle FlickeringTimerHandle;
+	FTimerHandle ChaseTimer;
+	FTimerHandle CanSeeTimer;
+	FTimerHandle ReleaseTimer;
+	FTimerHandle VulnerableTimer;
+	FTimerHandle FlickeringTimer;
 	//
 };

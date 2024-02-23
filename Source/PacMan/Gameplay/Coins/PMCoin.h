@@ -10,6 +10,7 @@
 class USphereComponent;
 class UStaticMeshComponent;
 class UMaterialInstance;
+class USoundWave;
 
 UCLASS()
 class PACMAN_API APMCoin : public AActor, public IPMInteractionInterface

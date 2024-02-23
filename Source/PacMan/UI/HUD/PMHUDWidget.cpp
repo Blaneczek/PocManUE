@@ -23,14 +23,14 @@ void UPMHUDWidget::SetCherries(int32 InCherries)
 	Cherries->SetText(FText::AsNumber(InCherries));
 }
 
-void UPMHUDWidget::UpdateLives(int32 LifeNum)
+void UPMHUDWidget::UpdateLives(int32 LifeNum, ESlateVisibility IconVisibility)
 {
 	if (LifeNum == 2)
 	{
-		Life2->SetVisibility(ESlateVisibility::Hidden);
+		Life2->SetVisibility(IconVisibility);
 	}
 	else if (LifeNum == 1)
 	{
-		Life1->SetVisibility(ESlateVisibility::Hidden);
+		Life1->SetVisibility(IconVisibility);
 	}
 }

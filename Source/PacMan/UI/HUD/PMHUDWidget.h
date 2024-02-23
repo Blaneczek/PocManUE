@@ -23,7 +23,7 @@ protected:
 public:
 	void SetScore(int32 InScore);
 	void SetCherries(int32 InCherries);
-	void UpdateLives(int32 LifeNum);
+	void UpdateLives(int32 LifeNum, ESlateVisibility IconVisibility);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))

@@ -33,6 +33,8 @@ public:
 	void UpdateMapIcon(int32 MapNumber, ESlateVisibility IconVisibility);
 	void ShowFullMapsText();
 
+	void ShowFullLivesText();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan");
 	TObjectPtr<UMaterial> M_Map01;
@@ -54,6 +56,8 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UTextBlock> FullMapsText;
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
+	TObjectPtr<UTextBlock> FullLivesText;
 
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", Transient, meta = (BindWidgetAnim))
 	TObjectPtr<UWidgetAnimation> ChaseFlickeringAnim;
@@ -62,4 +66,5 @@ protected:
 
 private:
 	FTimerHandle FullMapsTextTimer;
+	FTimerHandle FullLivesTextTimer;
 };

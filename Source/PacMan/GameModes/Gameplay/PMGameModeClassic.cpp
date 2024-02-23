@@ -50,9 +50,10 @@ void APMGameModeClassic::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWa
 		GameInstance->ClassicGameData = FGameData(CurrentLevelNum + 1, Score, Cherries);
 		GameInstance->SaveGame();
 
+		const FName NextLevelName = *GameInstance->ClassicLevels.Find(CurrentLevelNum + 1);
 		FTimerHandle NextLevelTimer;
 		FTimerDelegate NextLevelDel;
-		NextLevelDel.BindUFunction(this, FName("OpenNextLevel"), *GameInstance->ClassicLevels.Find(CurrentLevelNum + 1));
+		NextLevelDel.BindUFunction(this, TEXT("OpenNextLevel"), NextLevelName);
 		GetWorld()->GetTimerManager().SetTimer(NextLevelTimer, NextLevelDel, 2.f, false);
 		return;
 	}
