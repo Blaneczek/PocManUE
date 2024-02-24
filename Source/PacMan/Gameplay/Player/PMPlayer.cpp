@@ -77,10 +77,10 @@ void APMPlayer::Tick(float DeltaTime)
 	if (bIsMoving)
 	{
 		PositionOnSpline += DeltaTime * MovingDirection * Speed;
-	}
 
-	const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
-	SetActorLocation(NewLocation);
+		const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
+		SetActorLocation(NewLocation);
+	}
 
 	if (CheckIfAtSplinePoint())
 	{

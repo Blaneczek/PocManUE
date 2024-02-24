@@ -7,16 +7,15 @@
 
 int32 APMCoin::CoinsCounter = 0;
 
-// Sets default values
 APMCoin::APMCoin()
 {
+	PrimaryActorTick.bCanEverTick = false;
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Collision Sphere"));
 	RootComponent = CollisionSphere;
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(CollisionSphere);
 }
 
-// Called when the game starts or when spawned
 void APMCoin::BeginPlay()
 {
 	Super::BeginPlay();

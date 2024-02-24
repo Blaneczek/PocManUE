@@ -67,20 +67,18 @@ void APMGhost::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (CurrentSpline == nullptr) return;
-
 	if (bIsMoving)
 	{
 		PositionOnSpline += DeltaTime * MovingDirection * Speed;
-	}
 	
-	const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
-	SetActorLocation(NewLocation);
+		const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
+		SetActorLocation(NewLocation);
 
-	if (CheckIfAtPoint())
-	{
-		bIsMoving = false;
-		HandleMovement();
+		if (CheckIfAtPoint())
+		{
+			bIsMoving = false;
+			HandleMovement();
+		}
 	}
 }
 

@@ -27,7 +27,7 @@ void APMGameModeMaze::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(MapCoinTimer, MapCoinDel, 10.f, false);
 
 	LifeCoinDel.BindUFunction(this, FName("SpawnSpecialCoin"), LifeCoinClass);
-	GetWorld()->GetTimerManager().SetTimer(LifeCoinTimer, LifeCoinDel, 20.f, false);
+	GetWorld()->GetTimerManager().SetTimer(LifeCoinTimer, LifeCoinDel, 25.f, false);
 
 }
 
@@ -193,7 +193,7 @@ void APMGameModeMaze::AddLife()
 	if (Lives < 3)
 	{
 		MazeHUD->UpdateLives(Lives, ESlateVisibility::Visible);
-		GetWorld()->GetTimerManager().SetTimer(LifeCoinTimer, LifeCoinDel, 20.f, false);
+		GetWorld()->GetTimerManager().SetTimer(LifeCoinTimer, LifeCoinDel, 30.f, false);
 		Lives++;
 	}
 	else
