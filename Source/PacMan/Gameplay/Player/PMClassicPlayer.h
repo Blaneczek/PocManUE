@@ -15,13 +15,15 @@ UCLASS()
 class PACMAN_API APMClassicPlayer : public APMPlayer
 {
 	GENERATED_BODY()
-
 public:
 	APMClassicPlayer();
 
+protected:
+	virtual void BeginPlay() override;
+
+public:
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()

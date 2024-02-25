@@ -42,8 +42,8 @@ public:
 	int32 GetLivesNumber() { return Lives; }
 
 protected:	
-	virtual void InitializeWidgets(APlayerController* PlayerController) override;	
-	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame) override;
+	virtual void InitStartingWidgets(APlayerController* PC) override;	
+	virtual void HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame) override;
 	virtual void PlayerChasedHandle(bool IsPlayerChased) override;
 	virtual void RestartGameType() override;
 	virtual void SetGameplayValues() override;

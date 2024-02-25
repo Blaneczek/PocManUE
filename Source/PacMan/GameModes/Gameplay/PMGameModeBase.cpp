@@ -3,8 +3,6 @@
 #include "PMGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerControllers/PMPlayerController.h"
-#include "Gameplay/Player/PMPlayer.h"
-#include "Gameplay/Ghosts/PMGhost.h"
 #include "Gameplay/Coins/PMCoin.h"
 #include "Gameplay/Coins/PMCherryCoin.h"
 #include "Gameplay/Splines/PMSpline.h"
@@ -39,21 +37,25 @@ void APMGameModeBase::BeginPlay()
 		return;
 	}
 	
-	CurrentLevelType = GameInstance->GetCurrentLevelType();
-
-	if (GameMusic != nullptr) UGameplayStatics::PlaySound2D(GetWorld(), GameMusic);
+	if (GameMusic != nullptr)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), GameMusic);
+	}
 
 	SetGameplayValues();
 	SetSplines();
 		
-	InitializeWidgets(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+	{
+		InitStartingWidgets(PC);
+	}	
 
 	FTimerHandle StartGameTimer;
 	GetWorld()->GetTimerManager().SetTimer(StartGameTimer, this, &APMGameModeBase::StartGame, 1.f, false);
 
 	GetWorld()->GetTimerManager().SetTimer(StartMovementTimer, this, &APMGameModeBase::StartAllMovement, 3.f, false);
 
-	CherryCoinDel.BindUFunction(this, FName("SpawnSpecialCoin"), CherryCoinClass);
+	CherryCoinDel.BindUFunction(this, FName(TEXT("SpawnSpecialCoin")), CherryCoinClass);
 	GetWorld()->GetTimerManager().SetTimer(CherryCoinTimer, CherryCoinDel, 10.f, false);
 
 }
@@ -61,6 +63,17 @@ void APMGameModeBase::BeginPlay()
 void APMGameModeBase::AddPoints(int32 points)
 {
 	Score += points;
+
+	if (HUDWidget != nullptr)
+	{
+		HUDWidget->SetScore(Score);
+	}
+
+	if (APMCoin::GetCoinsNumber() == 0)
+	{
+		StopGame();
+		HandleEndGame(WinGameWidgetClass, WinGameSound, true);
+	}
 
 	if (bCoinSound && (CoinSound != nullptr))
 	{
@@ -71,17 +84,6 @@ void APMGameModeBase::AddPoints(int32 points)
 	{
 		bCoinSound = true;
 	}
-
-	if (HUDWidget != nullptr)
-	{
-		HUDWidget->SetScore(Score);
-	}
-
-	if (APMCoin::GetCoinsNumber() == 0)
-	{
-		StopGame();
-		EndGameHandle(WinGameWidget, WinGameSound, true);
-	}
 }
 
 void APMGameModeBase::HandleGhostHit()
@@ -91,7 +93,7 @@ void APMGameModeBase::HandleGhostHit()
 	Lives--;
 	if (Lives == 0)
 	{
-		EndGameHandle(LoseGameWidget, LoseGameSound, false);
+		HandleEndGame(LoseGameWidgetClass, LoseGameSound, false);
 		return;
 	}
 
@@ -131,6 +133,38 @@ void APMGameModeBase::StartAllMovement()
 	OnStartMovement.Broadcast();
 }
 
+void APMGameModeBase::CreateEndGameWidget(APlayerController* PC, TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, int32 InScore, int32 InCherries)
+{
+	if (EndGameWidgetClass != nullptr)
+	{
+		EndGameWidget = CreateWidget<UPMEndGameWidget>(PC, EndGameWidgetClass);
+		EndGameWidget->OnBackToMenu.BindUObject(this, &APMGameModeBase::GoToMenu);
+		EndGameWidget->OnRestartGame.BindUObject(this, &APMGameModeBase::RestartGameType);
+		EndGameWidget->SetFinalScores(InScore, InCherries);
+		EndGameWidget->AddToViewport();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitEndGameWidget| EndGameWidgetClass is nullptr"));
+	}
+}
+
+void APMGameModeBase::CreateNextLevelWidget()
+{
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (!PC) return;
+
+	if (NextLevelWidgetClass != nullptr)
+	{
+		NextLevelWidget = CreateWidget<UPMNextLevelWidget>(PC, NextLevelWidgetClass);
+		NextLevelWidget->AddToViewport();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | NextLevelWidgetClass is nullptr"));
+	}
+}
+
 void APMGameModeBase::OpenPauseMenu()
 {
 	if (PauseWidget != nullptr)
@@ -157,11 +191,11 @@ void APMGameModeBase::ClosePauseMenu()
 	PauseWidget->RemoveFromParent();
 }
 
-void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame)
+void APMGameModeBase::HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame)
 {
 	if (GameInstance != nullptr)
 	{
-		GameInstance->AddScoreboardData(CurrentLevelType, FScoreboardData(Score, Cherries));
+		GameInstance->AddScoreboardData(GameInstance->GetCurrentLevelType(), FScoreboardData(Score, Cherries));
 		GameInstance->SaveGame();
 	}
 
@@ -174,12 +208,7 @@ void APMGameModeBase::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave*
 	{
 		PC->SetShowMouseCursor(true);
 		PC->SetInputMode(FInputModeUIOnly());
-	}
-
-	if (EndGameWidget)
-	{
-		EndGameWidget->SetFinalScores(Score, Cherries);
-		EndGameWidget->AddToViewport();
+		CreateEndGameWidget(PC, EndGameWidgetClass, Score, Cherries);
 	}
 }
 
@@ -190,19 +219,20 @@ void APMGameModeBase::OpenNextLevel(const FName& LevelName)
 
 void APMGameModeBase::GoToMenu()
 {
-	UGameplayStatics::OpenLevel(GetWorld(), "Menu");
+	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Menu")));
 }
 
 void APMGameModeBase::SpawnSpecialCoin(TSubclassOf<APMCoin> SpecialCoinClass)
 {
 	const int32 randomIndex = FMath::RandRange(0, Splines.Num() - 1);
+	APMSpline* ChoosenSpline = Cast<APMSpline>(Splines[randomIndex]);
 
-	if (Splines[randomIndex] != nullptr)
+	if (ChoosenSpline)
 	{
-		const float SplineLength = Splines[randomIndex]->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
-		const FVector Location = Splines[randomIndex]->SplineComponent->GetLocationAtDistanceAlongSpline(SplineLength / 2, ESplineCoordinateSpace::World);
+		const float SplineLength = ChoosenSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
+		const FVector Location = ChoosenSpline->SplineComponent->GetLocationAtDistanceAlongSpline(SplineLength / 2, ESplineCoordinateSpace::World);
 		FRotator Rotation;
-		GameInstance->GetCurrentLevelType() == ELevelType::CLASSIC ? Rotation = FRotator(0,0,0) : Rotation = Splines[randomIndex]->GetActorRotation();
+		UPMGameInstance::GetCurrentLevelType() == ELevelType::CLASSIC ? Rotation = FRotator(0,0,0) : Rotation = Splines[randomIndex]->GetActorRotation();
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		GetWorld()->SpawnActor<APMCoin>(SpecialCoinClass, Location, Rotation, SpawnInfo);
@@ -230,11 +260,11 @@ void APMGameModeBase::SetPlayerChased(bool IsPlayerChased)
 	PlayerChasedHandle(IsPlayerChased);
 }
 
-void APMGameModeBase::InitializeWidgets(APlayerController* PlayerController)
+void APMGameModeBase::InitStartingWidgets(APlayerController* PC)
 {
 	if (StarterWidgetClass != nullptr)
 	{
-		StarterWidget = CreateWidget<UPMStarterWidget>(PlayerController, StarterWidgetClass);
+		StarterWidget = CreateWidget<UPMStarterWidget>(PC, StarterWidgetClass);
 		StarterWidget->AddToViewport();
 	}
 	else
@@ -242,46 +272,15 @@ void APMGameModeBase::InitializeWidgets(APlayerController* PlayerController)
 		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | StarterWidgetClass is nullptr"));
 	}
 
-	if (LoseGameWidgetClass != nullptr)
-	{
-		LoseGameWidget = CreateWidget<UPMEndGameWidget>(PlayerController, LoseGameWidgetClass);
-		LoseGameWidget->OnBackToMenu.BindUObject(this, &APMGameModeBase::GoToMenu);
-		LoseGameWidget->OnRestartGame.BindUObject(this, &APMGameModeBase::RestartGameType);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | LoseGameWidgetClass is nullptr"));
-	}
-
-	if (WinGameWidgetClass != nullptr)
-	{
-		WinGameWidget = CreateWidget<UPMEndGameWidget>(PlayerController, WinGameWidgetClass);
-		WinGameWidget->OnBackToMenu.BindUObject(this, &APMGameModeBase::GoToMenu);
-		WinGameWidget->OnRestartGame.BindUObject(this, &APMGameModeBase::RestartGameType);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | WindGameWidgetClass is nullptr"));
-	}
-
 	if (PauseWidgetClass != nullptr)
 	{
-		PauseWidget = CreateWidget<UPMPauseWidget>(PlayerController, PauseWidgetClass);
+		PauseWidget = CreateWidget<UPMPauseWidget>(PC, PauseWidgetClass);
 		PauseWidget->OnBackToMenu.BindUObject(this, &APMGameModeBase::GoToMenu);
 		PauseWidget->OnContinue.BindUObject(this, &APMGameModeBase::ClosePauseMenu);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | WindGameWidgetClass is nullptr"));
-	}
-
-	if (NextLevelWidgetClass != nullptr)
-	{
-		NextLevelWidget = CreateWidget<UPMNextLevelWidget>(PlayerController, NextLevelWidgetClass);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | NextLevelWidgetClass is nullptr"));
 	}
 }
 
@@ -291,10 +290,9 @@ void APMGameModeBase::SetSplines()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APMSpline::StaticClass(), OutSplines);
 	for (auto& item : OutSplines)
 	{
-		APMSpline* spline = Cast<APMSpline>(item);
-		if (spline && !spline->ActorHasTag(TEXT("withoutCoins")))
+		if (!item->ActorHasTag(FName(TEXT("withoutCoins"))))
 		{
-			Splines.Add(spline);
+			Splines.Add(item);
 		}
 	}
 }

@@ -22,38 +22,36 @@ void APMGameModeClassic::BeginPlay()
 	GhostAudio = UGameplayStatics::CreateSound2D(this, GhostSound, 1.f, 1.f, 0.f, nullptr, false, false);
 }
 
-void APMGameModeClassic::InitializeWidgets(APlayerController* PlayerController)
+void APMGameModeClassic::InitStartingWidgets(APlayerController* PC)
 {
 	if (ClassicHUDClass != nullptr)
 	{
-		HUDWidget = CreateWidget<UPMClassicHUD>(PlayerController, ClassicHUDClass);
+		HUDWidget = CreateWidget<UPMClassicHUD>(PC, ClassicHUDClass);
 		HUDWidget->SetScore(Score);
 		HUDWidget->SetCherries(Cherries);
 		HUDWidget->AddToViewport();
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | ClassicHUDClass is nullptr"));
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeClassic::InitStartingWidgets | ClassicHUDClass is nullptr"));
 	}
 
-	Super::InitializeWidgets(PlayerController);
+	Super::InitStartingWidgets(PC);
 }
 
-void APMGameModeClassic::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame)
+void APMGameModeClassic::HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame)
 {
 	if (bWonGame && GameInstance->ClassicLevels.Contains(CurrentLevelNum + 1)) // Next level
 	{
-		if (NextLevelWidget != nullptr)
-		{
-			NextLevelWidget->AddToViewport();
-		}		
+		CreateNextLevelWidget();
+
 		GameInstance->ClassicGameData = FGameData(CurrentLevelNum + 1, Score, Cherries);
 		GameInstance->SaveGame();
 
 		const FName NextLevelName = *GameInstance->ClassicLevels.Find(CurrentLevelNum + 1);
 		FTimerHandle NextLevelTimer;
 		FTimerDelegate NextLevelDel;
-		NextLevelDel.BindUFunction(this, TEXT("OpenNextLevel"), NextLevelName);
+		NextLevelDel.BindUFunction(this, FName(TEXT("OpenNextLevel")), NextLevelName);
 		GetWorld()->GetTimerManager().SetTimer(NextLevelTimer, NextLevelDel, 2.f, false);
 		return;
 	}
@@ -62,7 +60,7 @@ void APMGameModeClassic::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWa
 		GameInstance->ClassicGameData = FGameData(1, 0, 0);
 	}
 
-	Super::EndGameHandle(EndGameWidget, EndGameSound, bWonGame);
+	Super::HandleEndGame(EndGameWidgetClass, EndGameSound, bWonGame);
 }
 
 void APMGameModeClassic::SetGameplayValues()

@@ -23,19 +23,19 @@ void APMGameModeMaze::BeginPlay()
 {
 	Super::BeginPlay();
 
-	MapCoinDel.BindUFunction(this, FName("SpawnSpecialCoin"), MapCoinClass);
-	GetWorld()->GetTimerManager().SetTimer(MapCoinTimer, MapCoinDel, 10.f, false);
+	MapCoinDel.BindUFunction(this, FName(TEXT("SpawnSpecialCoin")), MapCoinClass);
+	GetWorld()->GetTimerManager().SetTimer(MapCoinTimer, MapCoinDel, 20.f, false);
 
-	LifeCoinDel.BindUFunction(this, FName("SpawnSpecialCoin"), LifeCoinClass);
+	LifeCoinDel.BindUFunction(this, FName(TEXT("SpawnSpecialCoin")), LifeCoinClass);
 	GetWorld()->GetTimerManager().SetTimer(LifeCoinTimer, LifeCoinDel, 25.f, false);
 
 }
 
-void APMGameModeMaze::InitializeWidgets(APlayerController* PlayerController)
+void APMGameModeMaze::InitStartingWidgets(APlayerController* PC)
 {
 	if (MazeHUDClass != nullptr)
 	{
-		HUDWidget = CreateWidget<UPMMazeHUD>(PlayerController, MazeHUDClass);		
+		HUDWidget = CreateWidget<UPMMazeHUD>(PC, MazeHUDClass);		
 		MazeHUD = Cast<UPMMazeHUD>(HUDWidget);
 		if (MazeHUD != nullptr)
 		{
@@ -44,7 +44,7 @@ void APMGameModeMaze::InitializeWidgets(APlayerController* PlayerController)
 		}	
 	}
 
-	Super::InitializeWidgets(PlayerController);
+	Super::InitStartingWidgets(PC);
 }
 
 void APMGameModeMaze::PlayerChasedHandle(bool IsPlayerChased)
@@ -82,23 +82,21 @@ void APMGameModeMaze::SetGameplayValues()
 	CurrentLevelNum = GameInstance->MazeGameData.LevelNum;
 }
 
-void APMGameModeMaze::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame)
+void APMGameModeMaze::HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame)
 {
 	ClearChasedState();
 
 	if (bWonGame && GameInstance->MazeLevels.Contains(CurrentLevelNum + 1))
 	{
-		if (NextLevelWidget != nullptr)
-		{
-			NextLevelWidget->AddToViewport();
-		}
+		CreateNextLevelWidget();
+
 		GameInstance->MazeGameData = FGameData(CurrentLevelNum + 1, Score, Cherries);
 		GameInstance->SaveGame();
 
 		const FName NextLevelName = *GameInstance->MazeLevels.Find(CurrentLevelNum + 1);
 		FTimerHandle NextLevelTimer;
 		FTimerDelegate NextLevelDel;
-		NextLevelDel.BindUFunction(this, TEXT("OpenNextLevel"), NextLevelName);
+		NextLevelDel.BindUFunction(this, FName(TEXT("OpenNextLevel")), NextLevelName);
 		GetWorld()->GetTimerManager().SetTimer(NextLevelTimer, NextLevelDel, 2.f, false);
 		return;
 	}
@@ -107,7 +105,7 @@ void APMGameModeMaze::EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave*
 		GameInstance->MazeGameData = FGameData(1, 0, 0);
 	}
 
-	Super::EndGameHandle(EndGameWidget, EndGameSound, bWonGame);	
+	Super::HandleEndGame(EndGameWidgetClass, EndGameSound, bWonGame);
 }
 
 void APMGameModeMaze::HandleGhostHit()
@@ -161,10 +159,7 @@ void APMGameModeMaze::HideMap()
 
 void APMGameModeMaze::ShowMap()
 {
-	if (bMapOpen || MapsNumber == 0)
-	{
-		return;
-	}
+	if (bMapOpen || MapsNumber == 0) return;
 
 	MazeHUD->SetMapVisibility(ESlateVisibility::Visible);
 	bMapOpen = true;
@@ -180,7 +175,7 @@ void APMGameModeMaze::AddMap()
 	{
 		MapsNumber++;
 		MazeHUD->UpdateMapIcon(MapsNumber, ESlateVisibility::Visible);
-		GetWorld()->GetTimerManager().SetTimer(MapCoinTimer, MapCoinDel, 10.f, false);
+		GetWorld()->GetTimerManager().SetTimer(MapCoinTimer, MapCoinDel, 20.f, false);
 	}
 	else
 	{

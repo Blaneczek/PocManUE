@@ -22,6 +22,8 @@ public:
 	APMClassicGhost();
 
 protected:
+	virtual void BeginPlay() override;
+
 	virtual void SetEyesPosition(const int32 YawRotation) override;
 
 private:

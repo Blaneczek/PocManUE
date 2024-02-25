@@ -10,15 +10,15 @@ void UPMGameInstance::Init()
 {
 	Super::Init();
 
-	ClassicLevels.Add(1, "Classic01");
-	ClassicLevels.Add(2, "Classic02");
-	ClassicLevels.Add(3, "Classic03");
+	ClassicLevels.Add(1, FName(TEXT("Classic01")));
+	ClassicLevels.Add(2, FName(TEXT("Classic02")));
+	ClassicLevels.Add(3, FName(TEXT("Classic03")));
 
-	MazeLevels.Add(1, "Maze01");
-	MazeLevels.Add(2, "Maze02");
-	MazeLevels.Add(3, "Maze03");
+	MazeLevels.Add(1, FName(TEXT("Maze01")));
+	MazeLevels.Add(2, FName(TEXT("Maze02")));
+	MazeLevels.Add(3, FName(TEXT("Maze03")));
 
-	SaveSlotName = "SaveSlot";
+	SaveSlotName = FString(TEXT("SaveSlot"));
 
 	SetLevelType(ELevelType::MENU);
 
@@ -27,7 +27,7 @@ void UPMGameInstance::Init()
 
 FText UPMGameInstance::MakeScoreboardDataAsText(const TArray<FScoreboardData>& FinalScoresData) const
 {
-	FString FinalScores = "";
+	FString FinalScores = FString(TEXT(""));
 	for (int32 index = 0; index < FinalScoresData.Num(); ++index)
 	{
 		FString itemScores = FString::FromInt(index + 1)

@@ -1,10 +1,11 @@
 // Copyright (c) 2024 Dawid Szoldra. All rights reserved.
 
 
-#include "Gameplay/Player/PMClassicPlayer.h"
+#include "PMClassicPlayer.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameModes/Gameplay/PMGameModeBase.h"
 
 APMClassicPlayer::APMClassicPlayer()
 {
@@ -15,6 +16,26 @@ APMClassicPlayer::APMClassicPlayer()
 
 	AnimationSpeed = 0.2f;
 	AnimationDirection = 1.f;
+}
+
+void APMClassicPlayer::BeginPlay()
+{
+	Super::BeginPlay();
+
+	switch (GameMode->CurrentLevelNum)
+	{
+		case 2:
+		{
+			Speed += 50;
+			break;
+		}
+		case 3:
+		{
+			Speed += 70;
+			break;
+		}
+		default: break;
+	}
 }
 
 void APMClassicPlayer::Tick(float DeltaTime)
@@ -50,7 +71,7 @@ void APMClassicPlayer::MoveUp()
 
 	if (CurrentDirection == EDirection::DOWN)
 	{
-		RotatePlayer(-90.f, EDirection::UPWARD);
+		Rotate(-90.f, EDirection::UPWARD);
 	}
 }
 
@@ -63,7 +84,7 @@ void APMClassicPlayer::MoveDown()
 
 	if (CurrentDirection == EDirection::UPWARD)
 	{
-		RotatePlayer(90.f, EDirection::DOWN);
+		Rotate(90.f, EDirection::DOWN);
 	}
 }
 
@@ -76,7 +97,7 @@ void APMClassicPlayer::MoveLeft()
 
 	if (CurrentDirection == EDirection::RIGHT)
 	{
-		RotatePlayer(180.f, EDirection::LEFT);
+		Rotate(180.f, EDirection::LEFT);
 	}
 }
 
@@ -89,7 +110,7 @@ void APMClassicPlayer::MoveRight()
 
 	if (CurrentDirection == EDirection::LEFT)
 	{
-		RotatePlayer(0.f, EDirection::RIGHT);
+		Rotate(0.f, EDirection::RIGHT);
 	}
 }
 

@@ -111,9 +111,9 @@ public:
 	UPROPERTY()
 	TMap<int32, FName> MazeLevels;
 
-private:
 	static ELevelType CurrentLevelType;
 
+private:
 	// Save system
 	FString SaveSlotName;
 	UPROPERTY()

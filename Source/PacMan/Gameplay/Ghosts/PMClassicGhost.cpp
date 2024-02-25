@@ -5,6 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/WidgetComponent.h"
+#include "GameModes/Gameplay/PMGameModeBase.h"
 
 APMClassicGhost::APMClassicGhost()
 {
@@ -22,6 +23,26 @@ APMClassicGhost::APMClassicGhost()
 	IrisR->SetupAttachment(EyeR);
 	IrisL = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Iris_L"));
 	IrisL->SetupAttachment(EyeL);
+}
+
+void APMClassicGhost::BeginPlay()
+{
+	Super::BeginPlay();
+
+	switch (GameMode->CurrentLevelNum)
+	{
+		case 2:
+		{
+			Speed += 50;
+			break;
+		}
+		case 3:
+		{
+			Speed += 70;
+			break;
+		}
+		default: break;
+	}
 }
 
 void APMClassicGhost::SetEyesPosition(const int32 YawRotation)

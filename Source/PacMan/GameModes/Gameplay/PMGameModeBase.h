@@ -6,8 +6,6 @@
 #include "GameFramework/GameModeBase.h"
 #include "PMGameModeBase.generated.h"
 
-class APMPlayer;
-class APMGhost;
 class APMSpline;
 class APMCoin;
 class APMCherryCoin;
@@ -54,13 +52,16 @@ public:
 	void OpenPauseMenu();
 
 protected:	
-	virtual void InitializeWidgets(APlayerController* PlayerController);
+	virtual void InitStartingWidgets(APlayerController* PC);
 	virtual void SetGameplayValues() {};
 	virtual void PlayerChasedHandle(bool IsPlayerChased) {};
-	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame);
+	virtual void HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame);
 	virtual void StopGame();
 	virtual void StartAllMovement();
 	virtual void RestartGameType() {};
+
+	void CreateEndGameWidget(APlayerController* PC, TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, int32 InScore, int32 InCherries);
+	void CreateNextLevelWidget();
 
 	void StartGame();
 	
@@ -85,9 +86,6 @@ public:
 	int32 Cherries;
 	//
 
-	UPROPERTY()
-	ELevelType CurrentLevelType;
-	
 	// Gameplay delegates
 	FOnStartGame OnStartGame;
 	FOnStopGame OnStopGame;
@@ -96,6 +94,9 @@ public:
 	FOnPlayerAttack OnPlayerAttack;
 	//
 
+	UPROPERTY()
+	int32 CurrentLevelNum;
+
 protected:
 	// Widgets
 	UPROPERTY(BlueprintReadWrite, Category ="PocMan|Widgets")
@@ -103,9 +104,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
 	TObjectPtr<UPMStarterWidget> StarterWidget;
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
-	TObjectPtr<UPMEndGameWidget> LoseGameWidget;
-	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
-	TObjectPtr<UPMEndGameWidget> WinGameWidget;
+	TObjectPtr<UPMEndGameWidget> EndGameWidget;
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
 	TObjectPtr<UPMPauseWidget> PauseWidget;
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
@@ -126,12 +125,11 @@ protected:
 	//
 
 	UPROPERTY()
-	TArray<TObjectPtr<APMSpline>> Splines;
+	TArray<TObjectPtr<AActor>> Splines;
 	UPROPERTY()
 	TObjectPtr<UPMGameInstance> GameInstance;
 	
-	UPROPERTY()
-	int32 CurrentLevelNum;
+	
 
 	// Audio
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
@@ -148,8 +146,6 @@ protected:
 	
 	// Gameplay classes
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
-	TSubclassOf<APMGhost> GhostClass;
-	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMCoin> CoinClass;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMCherryCoin> CherryCoinClass;
@@ -162,6 +158,7 @@ protected:
 	FTimerHandle StartMovementTimerHandle;
 	FTimerHandle ResetGameTimer;
 	FTimerHandle StartMovementTimer;
-	// used to use the sound of every second coin collected
+
+	// used to make the sound of every second coin collected
 	bool bCoinSound;
 };

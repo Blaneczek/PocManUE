@@ -31,7 +31,7 @@ APMPlayer::APMPlayer()
 	TempDirection = EDirection::NONE;
 	DesiredDirection = EDirection::RIGHT;
 	CurrentDirection = EDirection::RIGHT;
-	Tags.Add(TEXT("player"));
+	Tags.Add(FName(TEXT("player")));
 }
 
 // Called when the game starts or when spawned
@@ -42,8 +42,8 @@ void APMPlayer::BeginPlay()
 	GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode)
 	{
-		GameMode->OnStartGame.AddUObject(this, &APMPlayer::StartPlayer);
-		GameMode->OnStopGame.AddUObject(this, &APMPlayer::ResetPlayer);
+		GameMode->OnStartGame.AddUObject(this, &APMPlayer::Start);
+		GameMode->OnStopGame.AddUObject(this, &APMPlayer::Reset);
 		GameMode->OnStartMovement.AddUObject(this, &APMPlayer::StartMovement);
 		GameMode->OnStopMovement.AddUObject(this, &APMPlayer::StopMovement);		
 	}
@@ -101,12 +101,12 @@ void APMPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	}
 }
 
-void APMPlayer::RotatePlayer(float Yaw, EDirection Direction)
+void APMPlayer::Rotate(float Yaw, EDirection Direction)
 {
 	CurrentDirection = Direction;
 	SetActorRotation(FRotator(0, Yaw, 0));
 	MovingDirection = Yaw <= 0 ? 1.f : -1.f;
-	PositionOnSpline += (MovingDirection * 5); //to be sure that player won't stuck when PositionOnSpline == DistanceAtSplinePoint
+	PositionOnSpline = (MovingDirection * 5); //to be sure that player won't stuck when PositionOnSpline == DistanceAtSplinePoint
 	bIsMoving = true;
 }
 
@@ -114,7 +114,7 @@ void APMPlayer::MarkSpline()
 {
 	if (CurrentSpline != nullptr)
 	{
-		CurrentSpline->Tags.Add(FName("player_MarkedSpline"));
+		CurrentSpline->Tags.Add(FName(TEXT("player_MarkedSpline")));
 	}		
 }
 
@@ -122,11 +122,11 @@ void APMPlayer::UnmarkSpline()
 {
 	if (CurrentSpline != nullptr)
 	{
-		CurrentSpline->Tags.Remove(FName("player_MarkedSpline"));
+		CurrentSpline->Tags.Remove(FName(TEXT("player_MarkedSpline")));
 	}
 }
 
-void APMPlayer::ResetPlayer()
+void APMPlayer::Reset()
 {
 	StopMovement();
 
@@ -136,7 +136,7 @@ void APMPlayer::ResetPlayer()
 	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, ResetDel, 1.f, false);
 }
 
-void APMPlayer::StartPlayer()
+void APMPlayer::Start()
 {
 	SetActorRotation(FRotator(0, 0, 0));
 	MovingDirection = 1.f;
@@ -250,7 +250,7 @@ void APMPlayer::ChooseNewSpline()
 		default: return;
 	}
 
-	if (!NewSpline || NewSpline->ActorHasTag(FName("releaseGhost")))
+	if (!NewSpline || NewSpline->ActorHasTag(FName(TEXT("releaseGhost"))))
 	{
 		TempDirection = DesiredDirection;
 		DesiredDirection = CurrentDirection;

@@ -86,19 +86,19 @@ TArray<int32> APMGhost::FindValidSplinesInRandomMovement()
 {
 	TArray<int32> OutValidSplines;
 
-	if ((CurrentSpline->Splines[SplineIndex].UPWARD != nullptr) && (!CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(TEXT("releaseGhost"))))
+	if ((CurrentSpline->Splines[SplineIndex].UPWARD != nullptr) && (!CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName(TEXT("releaseGhost")))))
 	{
 		OutValidSplines.Add(0);
 	}
-	if ((CurrentSpline->Splines[SplineIndex].DOWN != nullptr) && (!CurrentSpline->Splines[SplineIndex].DOWN->ActorHasTag(TEXT("releaseGhost"))))
+	if ((CurrentSpline->Splines[SplineIndex].DOWN != nullptr) && (!CurrentSpline->Splines[SplineIndex].DOWN->ActorHasTag(FName(TEXT("releaseGhost")))))
 	{
 		OutValidSplines.Add(1);
 	}
-	if ((CurrentSpline->Splines[SplineIndex].LEFT != nullptr) && (!CurrentSpline->Splines[SplineIndex].LEFT->ActorHasTag(TEXT("releaseGhost"))))
+	if ((CurrentSpline->Splines[SplineIndex].LEFT != nullptr) && (!CurrentSpline->Splines[SplineIndex].LEFT->ActorHasTag(FName(TEXT("releaseGhost")))))
 	{
 		OutValidSplines.Add(2);
 	}
-	if ((CurrentSpline->Splines[SplineIndex].RIGHT != nullptr) && (!CurrentSpline->Splines[SplineIndex].RIGHT->ActorHasTag(TEXT("releaseGhost"))))
+	if ((CurrentSpline->Splines[SplineIndex].RIGHT != nullptr) && (!CurrentSpline->Splines[SplineIndex].RIGHT->ActorHasTag(FName(TEXT("releaseGhost")))))
 	{
 		OutValidSplines.Add(3);
 	}
@@ -149,17 +149,17 @@ void APMGhost::HandleMovement()
 		}
 		case EGhostMovementState::ATTACK:
 		{
-			FoundSpline = FindPath(TEXT("player_MarkedSpline")); 
+			FoundSpline = FindPath(FName(TEXT("player_MarkedSpline"))); 
 			break;
 		}
 		case EGhostMovementState::RELEASE:
 		{
-			FoundSpline = FindPath(TEXT("release_MarkedSpline"));
+			FoundSpline = FindPath(FName(TEXT("release_MarkedSpline")));
 			break;
 		}
 		case EGhostMovementState::HITTED:
 		{
-			FoundSpline = FindPath(TEXT("base_MarkedSpline"));
+			FoundSpline = FindPath(FName(TEXT("base_MarkedSpline")));
 			break;
 		}
 		default: return;
@@ -222,7 +222,7 @@ int32 APMGhost::FindPath(const FName& SplineTag)
 
 void APMGhost::OnSeePawn(APawn* OtherPawn)
 {
-	if (OtherPawn->ActorHasTag(TEXT("player")) && bCanSee && MovementState == EGhostMovementState::PASSIVE && State != EGhostState::VULNERABLE)
+	if (OtherPawn->ActorHasTag(FName(TEXT("player"))) && bCanSee && (MovementState == EGhostMovementState::PASSIVE) && (State != EGhostState::VULNERABLE))
 	{		
 		MovementState = EGhostMovementState::ATTACK;
 
@@ -276,14 +276,14 @@ int32 APMGhost::Interaction()
 	return 0;
 }
 
-void APMGhost::ReleaseGhost()
+void APMGhost::Release()
 {
 	bDoOnce = true;
 	Speed = State == EGhostState::VULNERABLE ? VulnerableSpeed : NormalSpeed;
 	MovementState = EGhostMovementState::RELEASE;
 }
 
-void APMGhost::ResetGhost()
+void APMGhost::Reset()
 {
 	State = EGhostState::NONE;
 	MovementState = EGhostMovementState::NONE;
@@ -297,9 +297,9 @@ void APMGhost::ResetGhost()
 	GetWorld()->GetTimerManager().SetTimer(ResetTimer, ResetDel, 1.f, false);
 }
 
-void APMGhost::StartGhost()
+void APMGhost::Start()
 {	
-	DynMaterial->SetVectorParameterValue(TEXT("Color"), StartingColor);
+	DynMaterial->SetVectorParameterValue(FName(TEXT("Color")), StartingColor);
 	CurrentSpline = StartingSpline;
 	MovingDirection = StartingMovingDirection;
 	SetActorRotation(StartingRotation);
@@ -327,7 +327,7 @@ void APMGhost::StartMovement()
 
 	if (!GetWorld()->GetTimerManager().IsTimerActive(ReleaseTimer) && MovementState == EGhostMovementState::BASE)
 	{
-		GetWorld()->GetTimerManager().SetTimer(ReleaseTimer, this, &APMGhost::ReleaseGhost, ReleaseTime, false);
+		GetWorld()->GetTimerManager().SetTimer(ReleaseTimer, this, &APMGhost::Release, ReleaseTime, false);
 	}
 }
 
@@ -351,7 +351,7 @@ void APMGhost::VulnerableState()
 		MovementState = EGhostMovementState::PASSIVE;
 	}
 
-	DynMaterial->SetVectorParameterValue(TEXT("Color"), VulnerableColor);
+	DynMaterial->SetVectorParameterValue(FName(TEXT("Color")), VulnerableColor);
 	Speed = VulnerableSpeed;
 	State = EGhostState::VULNERABLE;
 
@@ -368,7 +368,7 @@ void APMGhost::EndVulnerableState()
 
 	ClearVulnerableTimers();
 
-	DynMaterial->SetVectorParameterValue(TEXT("Color"), StartingColor);
+	DynMaterial->SetVectorParameterValue(FName(TEXT("Color")), StartingColor);
 }
 
 void APMGhost::VulnerableFlickering()
@@ -380,12 +380,12 @@ void APMGhost::VulnerableFlickering()
 
 	if (!bFlickering )
 	{
-		DynMaterial->SetVectorParameterValue(TEXT("Color"), VulnerableColor);
+		DynMaterial->SetVectorParameterValue(FName(TEXT("Color")), VulnerableColor);
 		bFlickering = true;
 	}
 	else
 	{
-		DynMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, 1.f, 1.f, 1));
+		DynMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(1.f, 1.f, 1.f, 1));
 		bFlickering = false;
 	}
 }
@@ -425,8 +425,8 @@ void APMGhost::BindGameModeDelegates()
 	GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode)
 	{
-		GameMode->OnStartGame.AddUObject(this, &APMGhost::StartGhost);
-		GameMode->OnStopGame.AddUObject(this, &APMGhost::ResetGhost);
+		GameMode->OnStartGame.AddUObject(this, &APMGhost::Start);
+		GameMode->OnStopGame.AddUObject(this, &APMGhost::Reset);
 		GameMode->OnStartMovement.AddUObject(this, &APMGhost::StartMovement);
 		GameMode->OnStopMovement.AddUObject(this, &APMGhost::StopMovement);
 		GameMode->OnPlayerAttack.AddUObject(this, &APMGhost::VulnerableState);
@@ -536,7 +536,7 @@ void APMGhost::ReachingMarkedSpline()
 		case EGhostMovementState::HITTED:
 		{
 			EndVulnerableState();
-			ReleaseGhost();
+			Release();
 			return;
 		}
 		default: return;

@@ -113,25 +113,25 @@ void APMMazePlayer::TurnAround()
 	{
 		case EDirection::UPWARD:
 		{			
-			RotatePlayer(90.f, EDirection::DOWN);
+			Rotate(90.f, EDirection::DOWN);
 			DesiredDirection = EDirection::DOWN;
 			break;
 		}
 		case EDirection::DOWN:
 		{			
-			RotatePlayer(-90.f, EDirection::UPWARD);
+			Rotate(-90.f, EDirection::UPWARD);
 			DesiredDirection = EDirection::UPWARD;
 			break;
 		}
 		case EDirection::LEFT:
 		{			
-			RotatePlayer(0.f, EDirection::RIGHT);
+			Rotate(0.f, EDirection::RIGHT);
 			DesiredDirection = EDirection::RIGHT;
 			break;
 		}
 		case EDirection::RIGHT:
 		{			
-			RotatePlayer(180.f, EDirection::LEFT);
+			Rotate(180.f, EDirection::LEFT);
 			DesiredDirection = EDirection::LEFT;			
 			break;
 		}

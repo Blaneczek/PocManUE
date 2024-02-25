@@ -86,9 +86,9 @@ protected:
 
 	void AttackTimer();
 
-	void ReleaseGhost();
-	void ResetGhost();
-	void StartGhost();
+	void Release();
+	void Reset();
+	void Start();
 	void StartMovement();
 	void StopMovement();
 

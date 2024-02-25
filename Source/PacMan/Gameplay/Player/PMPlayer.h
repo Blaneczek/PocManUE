@@ -58,9 +58,9 @@ protected:
 	bool CheckIfAtSplinePoint();
 	void ChooseNewSpline();
 
-	void RotatePlayer(float Yaw, EDirection Direction);	
-	void ResetPlayer();
-	void StartPlayer();
+	void Rotate(float Yaw, EDirection Direction);	
+	void Reset();
+	void Start();
 	void StartMovement();
 	void StopMovement();
 

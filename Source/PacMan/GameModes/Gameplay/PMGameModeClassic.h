@@ -32,8 +32,8 @@ public:
 	virtual void EndPlayerAttackState() override;
 
 protected:
-	virtual void InitializeWidgets(APlayerController* PlayerController) override;
-	virtual void EndGameHandle(UPMEndGameWidget* EndGameWidget, USoundWave* EndGameSound, bool bWonGame);
+	virtual void InitStartingWidgets(APlayerController* PC) override;
+	virtual void HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame);
 	virtual void SetGameplayValues() override;
 	virtual void StartAllMovement() override;
 	virtual void StopGame() override;
