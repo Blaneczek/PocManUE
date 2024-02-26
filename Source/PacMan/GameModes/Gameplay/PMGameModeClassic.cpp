@@ -3,7 +3,6 @@
 
 #include "PMGameModeClassic.h"
 #include "UI/HUD/PMClassicHUD.h"
-#include "UI/HUD/PMNextLevelWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundWave.h"
 #include "Components/AudioComponent.h"
@@ -22,11 +21,11 @@ void APMGameModeClassic::BeginPlay()
 	GhostAudio = UGameplayStatics::CreateSound2D(this, GhostSound, 1.f, 1.f, 0.f, nullptr, false, false);
 }
 
-void APMGameModeClassic::InitStartingWidgets(APlayerController* PC)
+void APMGameModeClassic::InitStartingWidgets()
 {
 	if (ClassicHUDClass != nullptr)
 	{
-		HUDWidget = CreateWidget<UPMClassicHUD>(PC, ClassicHUDClass);
+		HUDWidget = CreateWidget<UPMClassicHUD>(GetWorld(), ClassicHUDClass);
 		HUDWidget->SetScore(Score);
 		HUDWidget->SetCherries(Cherries);
 		HUDWidget->AddToViewport();
@@ -36,7 +35,7 @@ void APMGameModeClassic::InitStartingWidgets(APlayerController* PC)
 		UE_LOG(LogTemp, Warning, TEXT("PMGameModeClassic::InitStartingWidgets | ClassicHUDClass is nullptr"));
 	}
 
-	Super::InitStartingWidgets(PC);
+	Super::InitStartingWidgets();
 }
 
 void APMGameModeClassic::HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame)

@@ -32,9 +32,6 @@ private:
 	void InitializeMenu();
 
 protected:
-	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
-	TObjectPtr<UPMMenuWidget> MenuWidget;
-
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets");
 	TSubclassOf<UPMMenuWidget> MenuWidgetClass;
 

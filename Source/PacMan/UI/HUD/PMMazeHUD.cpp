@@ -56,6 +56,8 @@ void UPMMazeHUD::SetMapDisplay(int32 LevelNum)
 
 void UPMMazeHUD::ShowChaseScreen()
 {
+	if (ChaseScreen->GetVisibility() == ESlateVisibility::Visible) return;
+
 	ChaseScreen->SetVisibility(ESlateVisibility::Visible);
 	PlayAnimation(ChaseFlickeringAnim, 0.f, 0);
 }

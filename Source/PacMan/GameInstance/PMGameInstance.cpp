@@ -10,10 +10,10 @@ void UPMGameInstance::Init()
 {
 	Super::Init();
 
+	// Names must match the map names in the editor
 	ClassicLevels.Add(1, FName(TEXT("Classic01")));
 	ClassicLevels.Add(2, FName(TEXT("Classic02")));
 	ClassicLevels.Add(3, FName(TEXT("Classic03")));
-
 	MazeLevels.Add(1, FName(TEXT("Maze01")));
 	MazeLevels.Add(2, FName(TEXT("Maze02")));
 	MazeLevels.Add(3, FName(TEXT("Maze03")));
@@ -41,9 +41,9 @@ FText UPMGameInstance::MakeScoreboardDataAsText(const TArray<FScoreboardData>& F
 	return FText::FromString(FinalScores);
 }
 
-
 FText UPMGameInstance::GetScoreboardData(ELevelType LevelType) const
 {
+	// Switch because Text in Scoreboard widget is set individually in Classic and Maze column
 	switch (LevelType)
 	{
 		case ELevelType::CLASSIC: return MakeScoreboardDataAsText(ClassicScoreboardData);
@@ -73,6 +73,7 @@ void UPMGameInstance::AddScoreboardData(ELevelType LevelType, const FScoreboardD
 		case ELevelType::CLASSIC:
 		{
 			ClassicScoreboardData.Add(ScoreData);
+			// Sorts the scores to display from best to worst 
 			ClassicScoreboardData.Sort([](const FScoreboardData& a, const FScoreboardData& b) { return a.Score > b.Score; });
 			return;
 		}
@@ -97,6 +98,7 @@ void UPMGameInstance::SaveGame()
 		}				
 	}
 
+	// Set gameplay and scores data in SaveGame object
 	SaveGameInstance->SetSaveData(ClassicGameData, MazeGameData, ClassicScoreboardData, MazeScoreboardData);
 	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SaveSlotName, 0);
 }
@@ -108,6 +110,7 @@ void UPMGameInstance::LoadGame()
 		SaveGameInstance = Cast<UPMSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
 		if (SaveGameInstance != nullptr)
 		{
+			// Takes data from SaveGame object and assigns it to data in the game instance
 			SaveGameInstance->GetSaveData(ClassicGameData, MazeGameData, ClassicScoreboardData, MazeScoreboardData);
 		}		
 	}

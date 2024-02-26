@@ -31,11 +31,11 @@ void APMGameModeMaze::BeginPlay()
 
 }
 
-void APMGameModeMaze::InitStartingWidgets(APlayerController* PC)
+void APMGameModeMaze::InitStartingWidgets()
 {
 	if (MazeHUDClass != nullptr)
 	{
-		HUDWidget = CreateWidget<UPMMazeHUD>(PC, MazeHUDClass);		
+		HUDWidget = CreateWidget<UPMMazeHUD>(GetWorld(), MazeHUDClass);
 		MazeHUD = Cast<UPMMazeHUD>(HUDWidget);
 		if (MazeHUD != nullptr)
 		{
@@ -44,13 +44,11 @@ void APMGameModeMaze::InitStartingWidgets(APlayerController* PC)
 		}	
 	}
 
-	Super::InitStartingWidgets(PC);
+	Super::InitStartingWidgets();
 }
 
-void APMGameModeMaze::PlayerChasedHandle(bool IsPlayerChased)
+void APMGameModeMaze::SetPlayerChased(bool IsPlayerChased)
 {
-	Super::PlayerChasedHandle(IsPlayerChased);
-
 	if (IsPlayerChased)
 	{
 		ChasingGhosts.Add(true);
@@ -62,6 +60,7 @@ void APMGameModeMaze::PlayerChasedHandle(bool IsPlayerChased)
 
 	if (ChasingGhosts.Num() == 1)
 	{
+		// It will not show up when it is already shown
 		MazeHUD->ShowChaseScreen();
 	}
 	else if (ChasingGhosts.Num() == 0)
@@ -119,6 +118,7 @@ void APMGameModeMaze::StartPlayerAttackState()
 {
 	Super::StartPlayerAttackState();
 
+	// Reset Player's attack state if it is still active
 	if (VulnerableGhostTimer.IsValid())
 	{
 		if (IsValid(PlayerAttackAC))

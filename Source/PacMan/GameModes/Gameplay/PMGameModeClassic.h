@@ -8,7 +8,6 @@
 
 
 class UPMClassicHUD;
-class USoundWave;
 class UAudioComponent;
 
 /**
@@ -32,7 +31,7 @@ public:
 	virtual void EndPlayerAttackState() override;
 
 protected:
-	virtual void InitStartingWidgets(APlayerController* PC) override;
+	virtual void InitStartingWidgets() override;
 	virtual void HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame);
 	virtual void SetGameplayValues() override;
 	virtual void StartAllMovement() override;
@@ -49,6 +48,4 @@ private:
 	TObjectPtr<USoundWave> VulnerableGhostSound;
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> GhostAudio;
-
-	FTimerHandle VulnerableGhostTimer;
 };

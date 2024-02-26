@@ -9,7 +9,6 @@
 class UPMMazeHUD;
 class APMMapCoin;
 class APMLifeCoin;
-class USoundWave;
 class UAudioComponent;
 
 /**
@@ -33,6 +32,9 @@ public:
 	virtual void StartPlayerAttackState() override;
 	virtual void EndPlayerAttackState() override;
 
+	/** Shows the chase screen as long as there is any ghost chasing the player */
+	virtual void SetPlayerChased(bool IsPlayerChased) override;
+
 	void HideMap();
 	void ShowMap();
 	void AddMap();
@@ -42,13 +44,13 @@ public:
 	int32 GetLivesNumber() { return Lives; }
 
 protected:	
-	virtual void InitStartingWidgets(APlayerController* PC) override;	
+	virtual void InitStartingWidgets() override;	
 	virtual void HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame) override;
-	virtual void PlayerChasedHandle(bool IsPlayerChased) override;
 	virtual void RestartGameType() override;
 	virtual void SetGameplayValues() override;
 
 private:
+	/** Empties the array and hides the chase screen */
 	void ClearChasedState();
 
 private:
@@ -61,21 +63,22 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> VulnerableSound;
+
 	UPROPERTY()
 	TObjectPtr<UPMMazeHUD> MazeHUD;
+
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> PlayerAttackAC;
 
 	int32 MapsNumber;
 	bool bMapOpen;
+
+	/** Array of chasing ghosts for displaying Chase screen effect on HUD */
 	TArray<bool> ChasingGhosts;
 
-	// Timers
-	FTimerHandle VulnerableGhostTimer;
 	FTimerHandle MapCoinTimer;
 	FTimerHandle MapTimer;
 	FTimerDelegate MapCoinDel;
 	FTimerHandle LifeCoinTimer;
 	FTimerDelegate LifeCoinDel;
-	//
 };

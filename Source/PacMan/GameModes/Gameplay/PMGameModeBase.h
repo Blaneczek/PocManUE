@@ -33,34 +33,40 @@ class PACMAN_API APMGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	//Default constructor
 	APMGameModeBase();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:
+	/** When a player is hit by any ghost */
 	virtual void HandleGhostHit();
-	virtual void EndPlayerAttackState() {};
-	virtual void StartPlayerAttackState();
 
-	void SetPlayerChased(bool IsPlayerChased);
+	/** When a player collects attack coin */
+	virtual void StartPlayerAttackState();
+	virtual void EndPlayerAttackState() {};
+
+	/** When any ghost sees the player or loses sight of the player */
+	virtual void SetPlayerChased(bool IsPlayerChased) {};
+
 	void AddCherryCoin();
 	void AddPoints(int32 points);
 	void StopAllMovement();
 	void OpenPauseMenu();
 
-protected:	
-	virtual void InitStartingWidgets(APlayerController* PC);
+protected:
+	/** Initialize widgets that are added to viewport at the beggining or will be used many times later in the game */
+	virtual void InitStartingWidgets();
+
+	/** Set gameplay data from GameInstance depending on the game mode */
 	virtual void SetGameplayValues() {};
-	virtual void PlayerChasedHandle(bool IsPlayerChased) {};
+
 	virtual void HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame);
 	virtual void StopGame();
 	virtual void StartAllMovement();
 	virtual void RestartGameType() {};
 
-	void CreateEndGameWidget(APlayerController* PC, TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, int32 InScore, int32 InCherries);
+	void CreateEndGameWidget(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, int32 InScore, int32 InCherries);
 	void CreateNextLevelWidget();
 
 	void StartGame();
@@ -74,44 +80,35 @@ protected:
 	UFUNCTION()
 	void SpawnSpecialCoin(TSubclassOf<APMCoin> SpecialCoinClass);
 
+	/** Populates the Spline array with pointers to the splines at the current level */
 	void SetSplines();
 
 public:
-	// Gameplay variables
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Gameplay")
 	int32 Score;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	int32 Lives;
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Gameplay")
 	int32 Cherries;
-	//
 
-	// Gameplay delegates
+	/** Delegates to control player and ghosts */
 	FOnStartGame OnStartGame;
 	FOnStopGame OnStopGame;
 	FOnStartMovement OnStartMovement;
 	FOnStopMovement OnStopMovement;
 	FOnPlayerAttack OnPlayerAttack;
-	//
 
 	UPROPERTY()
 	int32 CurrentLevelNum;
 
 protected:
-	// Widgets
+	/** Widgets that will be used many times during the game */
 	UPROPERTY(BlueprintReadWrite, Category ="PocMan|Widgets")
 	TObjectPtr<UPMHUDWidget> HUDWidget;
 	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
-	TObjectPtr<UPMStarterWidget> StarterWidget;
-	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
-	TObjectPtr<UPMEndGameWidget> EndGameWidget;
-	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
 	TObjectPtr<UPMPauseWidget> PauseWidget;
-	UPROPERTY(BlueprintReadWrite, Category = "PocMan|Widgets")
-	TObjectPtr<UPMNextLevelWidget> NextLevelWidget;
-	//
-	 
-	// Widget classes
+
+	/** Blueprint widget classes to be set in blueprint version of PMGameModeBase */
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMEndGameWidget> LoseGameWidgetClass;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
@@ -122,16 +119,14 @@ protected:
 	TSubclassOf<UPMPauseWidget> PauseWidgetClass;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Widgets")
 	TSubclassOf<UPMNextLevelWidget> NextLevelWidgetClass;
-	//
 
+	/** Table containing all the splines from the level to spawn special coins */
 	UPROPERTY()
 	TArray<TObjectPtr<AActor>> Splines;
+
 	UPROPERTY()
 	TObjectPtr<UPMGameInstance> GameInstance;
 	
-	
-
-	// Audio
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> GameMusic;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
@@ -142,23 +137,23 @@ protected:
 	TObjectPtr<USoundWave> PlayerHittedSound;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> CoinSound;
-	//
-	
-	// Gameplay classes
+
+	/** Blueprint coin classes are different depending on the game mode */
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMCoin> CoinClass;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Gameplay")
 	TSubclassOf<APMCherryCoin> CherryCoinClass;
-	//
 
-
-	//Timers
+	/** To spawn cherries at appropriate intervals  */
 	FTimerHandle CherryCoinTimer;
 	FTimerDelegate CherryCoinDel;
+
+	/** To control the flow of the game with appropriate delays */
 	FTimerHandle StartMovementTimerHandle;
 	FTimerHandle ResetGameTimer;
 	FTimerHandle StartMovementTimer;
+	FTimerHandle VulnerableGhostTimer;
 
-	// used to make the sound of every second coin collected
+	/** used to make the sound of every second coin collected */
 	bool bCoinSound;
 };

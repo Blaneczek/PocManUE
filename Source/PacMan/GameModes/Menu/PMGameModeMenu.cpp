@@ -29,27 +29,27 @@ void APMGameModeMenu::ChooseNewGame(ELevelType GameType)
 	if (!IsValid(GameInstance)) return;
 
 	GameInstance->SetLevelType(GameType);
-	FName* LevelName;
+	FName LevelName;
 
 	switch (GameType)
 	{
 		case ELevelType::CLASSIC:
 		{
 			GameInstance->ClassicGameData = FGameData(1, 0, 0);
-			LevelName = GameInstance->ClassicLevels.Find(1);
+			LevelName = *GameInstance->ClassicLevels.Find(1);
 			break;
 		}
 		case ELevelType::MAZE:
 		{
 			GameInstance->MazeGameData = FGameData(1, 0, 0);
-			LevelName = GameInstance->MazeLevels.Find(1);
+			LevelName = *GameInstance->MazeLevels.Find(1);
 			break;
 		}
 		default: return;
 	}
 
 	GameInstance->SaveGame();
-	UGameplayStatics::OpenLevel(this, *LevelName);
+	UGameplayStatics::OpenLevel(this, LevelName);
 }
 
 void APMGameModeMenu::ContinueGame(ELevelType GameType)
@@ -79,7 +79,7 @@ void APMGameModeMenu::ContinueGame(ELevelType GameType)
 
 void APMGameModeMenu::ExitGame()
 {
-	UKismetSystemLibrary::QuitGame(this, UGameplayStatics::GetPlayerController(this, 0), EQuitPreference::Quit, true);
+	UKismetSystemLibrary::QuitGame(this, UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Quit, true);
 }
 
 void APMGameModeMenu::InitializeMenu()
@@ -90,26 +90,23 @@ void APMGameModeMenu::InitializeMenu()
 		return;
 	}
 
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+	UPMMenuWidget* MenuWidget = CreateWidget<UPMMenuWidget>(GetWorld(), MenuWidgetClass);
+	if (!MenuWidget)
 	{
-		MenuWidget = CreateWidget<UPMMenuWidget>(PC, MenuWidgetClass);
-		if (MenuWidget == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("APMGameModeMenu::InitializeMenu | MenuWidget is nullptr"));
-			return;
-		}
-
-		MenuWidget->OnStartNewClassic.BindUObject(this, &APMGameModeMenu::ChooseNewGame);
-		MenuWidget->OnStartNewMaze.BindUObject(this, &APMGameModeMenu::ChooseNewGame);
-		MenuWidget->OnContinueClassic.BindUObject(this, &APMGameModeMenu::ContinueGame);
-		MenuWidget->OnContinueMaze.BindUObject(this, &APMGameModeMenu::ContinueGame);
-		MenuWidget->OnExitGame.BindUObject(this, &APMGameModeMenu::ExitGame);
-
-		GameInstance->ClassicGameData.LevelNum == 1 ? MenuWidget->SetIsEnabledClassicButton(false) : MenuWidget->SetIsEnabledClassicButton(true);
-		GameInstance->MazeGameData.LevelNum == 1 ? MenuWidget->SetIsEnabledMazeButton(false) : MenuWidget->SetIsEnabledMazeButton(true);
-
-		MenuWidget->AddToViewport();
+		UE_LOG(LogTemp, Warning, TEXT("APMGameModeMenu::InitializeMenu | MenuWidget is nullptr"));
+		return;
 	}
+
+	MenuWidget->OnStartNewClassic.BindUObject(this, &APMGameModeMenu::ChooseNewGame);
+	MenuWidget->OnStartNewMaze.BindUObject(this, &APMGameModeMenu::ChooseNewGame);
+	MenuWidget->OnContinueClassic.BindUObject(this, &APMGameModeMenu::ContinueGame);
+	MenuWidget->OnContinueMaze.BindUObject(this, &APMGameModeMenu::ContinueGame);
+	MenuWidget->OnExitGame.BindUObject(this, &APMGameModeMenu::ExitGame);
+
+	GameInstance->ClassicGameData.LevelNum == 1 ? MenuWidget->SetIsEnabledClassicButton(false) : MenuWidget->SetIsEnabledClassicButton(true);
+	GameInstance->MazeGameData.LevelNum == 1 ? MenuWidget->SetIsEnabledMazeButton(false) : MenuWidget->SetIsEnabledMazeButton(true);
+
+	MenuWidget->AddToViewport();
 }
 
 

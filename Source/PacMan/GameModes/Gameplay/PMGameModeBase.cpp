@@ -45,10 +45,7 @@ void APMGameModeBase::BeginPlay()
 	SetGameplayValues();
 	SetSplines();
 		
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
-	{
-		InitStartingWidgets(PC);
-	}	
+	InitStartingWidgets();	
 
 	FTimerHandle StartGameTimer;
 	GetWorld()->GetTimerManager().SetTimer(StartGameTimer, this, &APMGameModeBase::StartGame, 1.f, false);
@@ -69,6 +66,7 @@ void APMGameModeBase::AddPoints(int32 points)
 		HUDWidget->SetScore(Score);
 	}
 
+	// If there are no more coins in the level
 	if (APMCoin::GetCoinsNumber() == 0)
 	{
 		StopGame();
@@ -133,11 +131,11 @@ void APMGameModeBase::StartAllMovement()
 	OnStartMovement.Broadcast();
 }
 
-void APMGameModeBase::CreateEndGameWidget(APlayerController* PC, TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, int32 InScore, int32 InCherries)
+void APMGameModeBase::CreateEndGameWidget(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, int32 InScore, int32 InCherries)
 {
 	if (EndGameWidgetClass != nullptr)
 	{
-		EndGameWidget = CreateWidget<UPMEndGameWidget>(PC, EndGameWidgetClass);
+		UPMEndGameWidget* EndGameWidget = CreateWidget<UPMEndGameWidget>(GetWorld(), EndGameWidgetClass);
 		EndGameWidget->OnBackToMenu.BindUObject(this, &APMGameModeBase::GoToMenu);
 		EndGameWidget->OnRestartGame.BindUObject(this, &APMGameModeBase::RestartGameType);
 		EndGameWidget->SetFinalScores(InScore, InCherries);
@@ -145,23 +143,20 @@ void APMGameModeBase::CreateEndGameWidget(APlayerController* PC, TSubclassOf<UPM
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitEndGameWidget| EndGameWidgetClass is nullptr"));
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::CreateEndGameWidget | EndGameWidgetClass is nullptr"));
 	}
 }
 
 void APMGameModeBase::CreateNextLevelWidget()
 {
-	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	if (!PC) return;
-
 	if (NextLevelWidgetClass != nullptr)
 	{
-		NextLevelWidget = CreateWidget<UPMNextLevelWidget>(PC, NextLevelWidgetClass);
+		UPMNextLevelWidget* NextLevelWidget = CreateWidget<UPMNextLevelWidget>(GetWorld(), NextLevelWidgetClass);
 		NextLevelWidget->AddToViewport();
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | NextLevelWidgetClass is nullptr"));
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::CreateNextLevelWidget | NextLevelWidgetClass is nullptr"));
 	}
 }
 
@@ -207,9 +202,10 @@ void APMGameModeBase::HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetC
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
 	{
 		PC->SetShowMouseCursor(true);
-		PC->SetInputMode(FInputModeUIOnly());
-		CreateEndGameWidget(PC, EndGameWidgetClass, Score, Cherries);
+		PC->SetInputMode(FInputModeUIOnly());		
 	}
+
+	CreateEndGameWidget(EndGameWidgetClass, Score, Cherries);
 }
 
 void APMGameModeBase::OpenNextLevel(const FName& LevelName)
@@ -255,32 +251,27 @@ void APMGameModeBase::StartPlayerAttackState()
 	OnPlayerAttack.Broadcast();
 }
 
-void APMGameModeBase::SetPlayerChased(bool IsPlayerChased)
-{
-	PlayerChasedHandle(IsPlayerChased);
-}
-
-void APMGameModeBase::InitStartingWidgets(APlayerController* PC)
+void APMGameModeBase::InitStartingWidgets()
 {
 	if (StarterWidgetClass != nullptr)
 	{
-		StarterWidget = CreateWidget<UPMStarterWidget>(PC, StarterWidgetClass);
+		UPMStarterWidget* StarterWidget = CreateWidget<UPMStarterWidget>(GetWorld(), StarterWidgetClass);
 		StarterWidget->AddToViewport();
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | StarterWidgetClass is nullptr"));
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitStartingWidgets | StarterWidgetClass is nullptr"));
 	}
 
 	if (PauseWidgetClass != nullptr)
 	{
-		PauseWidget = CreateWidget<UPMPauseWidget>(PC, PauseWidgetClass);
+		PauseWidget = CreateWidget<UPMPauseWidget>(GetWorld(), PauseWidgetClass);
 		PauseWidget->OnBackToMenu.BindUObject(this, &APMGameModeBase::GoToMenu);
 		PauseWidget->OnContinue.BindUObject(this, &APMGameModeBase::ClosePauseMenu);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitializeWidgets | WindGameWidgetClass is nullptr"));
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::InitStartingWidgets | WindGameWidgetClass is nullptr"));
 	}
 }
 

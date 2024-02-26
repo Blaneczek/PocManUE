@@ -6,8 +6,8 @@
 #include "Engine/GameInstance.h"
 #include "PMGameInstance.generated.h"
 
-class APMCamera;
 class UPMSaveGame;
+
 
 UENUM(BlueprintType)
 enum class ELevelType : uint8
@@ -17,7 +17,7 @@ enum class ELevelType : uint8
 	MAZE	UMETA(DisplayName = "Maze"),
 };
 
-
+/** Gameplay data for save system and moving to the next level */
 USTRUCT()
 struct FGameData
 {
@@ -42,6 +42,7 @@ struct FGameData
 	{}
 };
 
+/** Data for save system and Scoreboard widget */
 USTRUCT()
 struct FScoreboardData
 {
@@ -66,11 +67,6 @@ struct FScoreboardData
 	{
 		Date = FDateTime::Now().ToString();
 	}
-
-	FORCEINLINE bool operator<(const FScoreboardData& ScoreboardData) const
-	{
-		return (Score < ScoreboardData.Score);
-	}
 };
 
 /**
@@ -90,14 +86,19 @@ public:
 	void SetClassicData(const FGameData& Data) { ClassicGameData = Data; }
 	void SetMazeData(const FGameData& Data) { MazeGameData = Data; }
 
+	/** Return formatted text */
 	FText GetScoreboardData(ELevelType LevelType) const;
+
 	void ClearScoreboardData();
+
+	/** Added scores are sorted in descending order */
 	void AddScoreboardData(ELevelType LevelType, const FScoreboardData& ScoreboardData);
 
 	void SaveGame();
 	void LoadGame();
 
 private:
+	/** Converts table data into properly formatted text */
 	FText MakeScoreboardDataAsText(const TArray<FScoreboardData>& FinalScoresData) const;
 
 public:
@@ -106,19 +107,20 @@ public:
 	UPROPERTY()
 	FGameData MazeGameData;
 
+	/** Maps storing indexes and level names for moving to the next levels */
 	UPROPERTY()
 	TMap<int32, FName> ClassicLevels;
 	UPROPERTY()
-	TMap<int32, FName> MazeLevels;
-
-	static ELevelType CurrentLevelType;
+	TMap<int32, FName> MazeLevels;	
 
 private:
-	// Save system
+	static ELevelType CurrentLevelType;
+
 	FString SaveSlotName;
 	UPROPERTY()
 	TObjectPtr<UPMSaveGame> SaveGameInstance;
 
+	/** Data from these arrays are displayed in the Scoreboard widget */
 	UPROPERTY()
 	TArray<FScoreboardData> ClassicScoreboardData;
 	UPROPERTY()
