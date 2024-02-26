@@ -177,6 +177,7 @@ protected:
 	bool bGhostHitted;
 	bool bFlickering;
 	bool bCanSee;
+	bool bTurnedAround;
 	
 
 	// Timers

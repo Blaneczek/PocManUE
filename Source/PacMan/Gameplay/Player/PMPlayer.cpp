@@ -106,7 +106,7 @@ void APMPlayer::Rotate(float Yaw, EDirection Direction)
 	CurrentDirection = Direction;
 	SetActorRotation(FRotator(0, Yaw, 0));
 	MovingDirection = Yaw <= 0 ? 1.f : -1.f;
-	PositionOnSpline = (MovingDirection * 5); //to be sure that player won't stuck when PositionOnSpline == DistanceAtSplinePoint
+	PositionOnSpline += (MovingDirection * 10); //to be sure that player won't stuck when PositionOnSpline == DistanceAtSplinePoint
 	bIsMoving = true;
 }
 

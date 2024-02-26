@@ -37,6 +37,7 @@ APMGhost::APMGhost()
 	bFlickering = false;
 	bGhostHitted = false;
 	bCanSee = true;
+	bTurnedAround = false;
 	SplineIndex = 0;
 	Speed = NormalSpeed;
 	StartingMovingDirection = 1.f;
@@ -144,7 +145,21 @@ void APMGhost::HandleMovement()
 			}
 
 			const int32 RandomIndex = FMath::RandRange(0, ValidSplinesNum - 1);
-			FoundSpline = ValidSplines[RandomIndex];
+			const int32 RandomNum = FMath::RandRange(1, 10);
+
+			//10% chance of turning around if not turned before 
+			if (!bTurnedAround && RandomNum > 9)
+			{
+				FoundSpline = -1;
+				bTurnedAround = true;
+			}
+			else
+			{
+				FoundSpline = ValidSplines[RandomIndex];
+				bTurnedAround = false;
+			}
+
+			FoundSpline = RandomNum < 10 ? ValidSplines[RandomIndex] : -1; 
 			break;
 		}
 		case EGhostMovementState::ATTACK:
@@ -240,7 +255,7 @@ void APMGhost::AttackTimer()
 	bCanSee = false;
 	FTimerDelegate CanSeeDel;
 	CanSeeDel.BindLambda([&]() { bCanSee = true; });
-	GetWorld()->GetTimerManager().SetTimer(CanSeeTimer, CanSeeDel, 1.5f, false);
+	GetWorld()->GetTimerManager().SetTimer(CanSeeTimer, CanSeeDel, 2.f, false);
 	MovementState = EGhostMovementState::PASSIVE;
 
 	if (GameMode != nullptr)
