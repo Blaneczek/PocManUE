@@ -35,7 +35,6 @@ APMGhost::APMGhost()
 	bIsMoving = false;
 	bDoOnce = true;
 	bFlickering = false;
-	bGhostHitted = false;
 	bCanSee = true;
 	bTurnedAround = false;
 	SplineIndex = 0;
@@ -183,15 +182,20 @@ void APMGhost::HandleMovement()
 	ChooseNewSpline(FoundSpline);
 }
 
+// Implementation of the BFS (Breadth-First Search) algorithm to find a path to a target spline.
 int32 APMGhost::FindPath(const FName& SplineTag)
 {
 	TMap<FString, APMSpline*> VisitedSplines;
+
+	// Queue to store splines to be visited next and index of first spline from which the path begins (FSplineQueueData.FirstSplineIndex).
 	TQueue<FSplineQueueData> SplineQueue;
 
+	// Get all the splines from where the paths start 
 	TMap<int32, APMSpline*> ValidSplines = FindValidSplinesInMarkedMovement(CurrentSpline, SplineIndex);
 
 	for (auto& item : ValidSplines)
 	{
+		// Check if the ghost is already on the target spline.
 		if (item.Value->ActorHasTag(SplineTag))
 		{
 			ReachingMarkedSpline();
@@ -207,6 +211,7 @@ int32 APMGhost::FindPath(const FName& SplineTag)
 		const int32 NextSplineIndex = SplineQueue.Peek()->CurrentSplineIndex;
 		SplineQueue.Pop();
 
+		// 0 - UPWARD, 1 - DOWN, 2 - LEFT, 3 - RIGHT
 		if (NextSplineIndex == 0 || NextSplineIndex == 3)
 		{
 			ValidSplines = FindValidSplinesInMarkedMovement(CheckedSpline, 1);
@@ -226,12 +231,14 @@ int32 APMGhost::FindPath(const FName& SplineTag)
 
 				if ( item.Value->ActorHasTag(SplineTag))
 				{
+					// Next spline the ghost should enter to reach the target spline 
 					return FirstSpline;
 				}
 			}
 		}		
 	}
 
+	// If the path doesn't exist, turn around
 	return -1;
 }
 
@@ -274,7 +281,8 @@ int32 APMGhost::Interaction()
 	if (bDoOnce)
 	{		
 		if (State == EGhostState::VULNERABLE)
-		{		
+		{	
+			// Show the points widget where the ghost was hit
 			PointsWidget->SetWorldLocation(FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 100));
 			PointsWidget->SetVisibility(true);
 			GameMode->StopAllMovement();
@@ -358,8 +366,6 @@ void APMGhost::VulnerableState()
 		return;
 	}
 
-	ClearVulnerableTimers();
-
 	if (MovementState == EGhostMovementState::ATTACK)
 	{
 		TurnAround();
@@ -381,7 +387,14 @@ void APMGhost::EndVulnerableState()
 	bFlickering = true;
 	bDoOnce = true;
 
-	ClearVulnerableTimers();
+	if (VulnerableTimer.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(VulnerableTimer);
+	}
+	if (FlickeringTimer.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FlickeringTimer);
+	}
 
 	DynMaterial->SetVectorParameterValue(FName(TEXT("Color")), StartingColor);
 }
@@ -452,7 +465,7 @@ void APMGhost::BindGameModeDelegates()
 	}
 }
 
-void APMGhost::MoveToNewSpline(APMSpline* NewSpline, float Direction, float YawRotation)
+void APMGhost::MoveToNewSpline(float Direction, float YawRotation, APMSpline* NewSpline)
 {
 	MovingDirection = Direction;
 
@@ -475,7 +488,7 @@ void APMGhost::TurnAround()
 {
 	const float NewMovingDirection = (MovingDirection * -1.f);
 	const float YawRotation = GetActorRotation().Yaw + (-180 * NewMovingDirection);
-	MoveToNewSpline(nullptr, NewMovingDirection, YawRotation);
+	MoveToNewSpline(NewMovingDirection, YawRotation);
 }
 
 void APMGhost::GhostBaseMovement()
@@ -488,13 +501,13 @@ void APMGhost::GhostBaseMovement()
 
 	if (CurrentSpline->Splines[SplineIndex].UPWARD != nullptr)
 	{
-		MoveToNewSpline(CurrentSpline->Splines[SplineIndex].UPWARD, 1.f, -90.f);
+		MoveToNewSpline(1.f, -90.f, CurrentSpline->Splines[SplineIndex].UPWARD);
 		return;
 	}
 
 	if (CurrentSpline->Splines[SplineIndex].DOWN != nullptr)
 	{
-		MoveToNewSpline(CurrentSpline->Splines[SplineIndex].DOWN, -1.f, 90.f);
+		MoveToNewSpline(-1.f, 90.f, CurrentSpline->Splines[SplineIndex].DOWN);
 		return;
 	}
 
@@ -513,22 +526,22 @@ void APMGhost::ChooseNewSpline(int32 ChoosenSpline)
 		}
 		case 0:
 		{
-			MoveToNewSpline(CurrentSpline->Splines[SplineIndex].UPWARD, 1.f, -90.f);
+			MoveToNewSpline(1.f, -90.f, CurrentSpline->Splines[SplineIndex].UPWARD);
 			return;
 		}
 		case 1:
 		{
-			MoveToNewSpline(CurrentSpline->Splines[SplineIndex].DOWN, -1.f, 90.f);
+			MoveToNewSpline(-1.f, 90.f, CurrentSpline->Splines[SplineIndex].DOWN);
 			return;
 		}
 		case 2:
 		{
-			MoveToNewSpline(CurrentSpline->Splines[SplineIndex].LEFT, -1.f, 180.f);
+			MoveToNewSpline(-1.f, 180.f, CurrentSpline->Splines[SplineIndex].LEFT);
 			return;
 		}
 		case 3:
 		{
-			MoveToNewSpline(CurrentSpline->Splines[SplineIndex].RIGHT, 1.f, 0.f);
+			MoveToNewSpline(1.f, 0.f, CurrentSpline->Splines[SplineIndex].RIGHT);
 			return;
 		}
 		default: return;
@@ -555,18 +568,6 @@ void APMGhost::ReachingMarkedSpline()
 			return;
 		}
 		default: return;
-	}
-}
-
-void APMGhost::ClearVulnerableTimers()
-{
-	if (VulnerableTimer.IsValid())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(VulnerableTimer);
-	}
-	if (FlickeringTimer.IsValid())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(FlickeringTimer);
 	}
 }
 

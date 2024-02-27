@@ -15,6 +15,7 @@ class PACMAN_API APMLifeCoin : public APMCoin
 	GENERATED_BODY()
 
 protected:
+	/** Collecting life coins is not required to pass a level */
 	virtual void IncreaseCoinsCounter() override {};
 
 public:

@@ -32,7 +32,6 @@ void APMSpline::BeginPlay()
 
 void APMSpline::SpawnCoins()
 {
-
 	if (this->ActorHasTag(FName(TEXT("withoutCoins"))))
 	{
 		return;

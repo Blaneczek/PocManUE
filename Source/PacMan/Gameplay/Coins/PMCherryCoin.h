@@ -16,6 +16,7 @@ class PACMAN_API APMCherryCoin : public APMCoin
 	GENERATED_BODY()
 
 protected:
+	/** Collecting cherries coins is not required to pass a level */
 	virtual void IncreaseCoinsCounter() override {};
 
 public:

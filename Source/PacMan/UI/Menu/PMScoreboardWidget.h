@@ -17,6 +17,9 @@ class PACMAN_API UPMScoreboardWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+public:
+	void SetFinalScores();
+
 protected:
 	void NativeConstruct() override;
 
@@ -24,9 +27,6 @@ protected:
 	void OnXButtonClicked();
 	UFUNCTION()
 	void OnClearButtonClicked();
-
-public:
-	void SetFinalScores();
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))

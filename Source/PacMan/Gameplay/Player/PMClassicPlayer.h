@@ -6,7 +6,6 @@
 #include "PMPlayer.h"
 #include "PMClassicPlayer.generated.h"
 
-class UInputAction;
 
 /**
  * 

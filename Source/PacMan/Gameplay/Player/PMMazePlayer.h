@@ -6,7 +6,6 @@
 #include "Gameplay/Player/PMPlayer.h"
 #include "PMMazePlayer.generated.h"
 
-class UInputAction;
 class UCameraComponent;
 class USpringArmComponent;
 

@@ -41,6 +41,7 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	/** It gives the current Spline a Tag so that the chasing ghosts know where to go. */
 	void MarkSpline();
 	void UnmarkSpline();
 
@@ -56,9 +57,11 @@ protected:
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	bool CheckIfAtSplinePoint();
+	
+	/** Decides in which direction to go next when player is at the Spline point */
 	void ChooseNewSpline();
 
-	void Rotate(float Yaw, EDirection Direction);	
+	void Rotate180(EDirection Direction);	
 	void Reset();
 	void Start();
 	void StartMovement();
@@ -74,10 +77,8 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
 	TObjectPtr<UInputMappingContext> MappingContext;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
 	TObjectPtr<UInputAction> MoveLeftAction;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PocMan|Enhanced Input")
 	TObjectPtr<UInputAction> MoveRightAction;
 
@@ -104,6 +105,8 @@ protected:
 
 	EDirection DesiredDirection;
 	EDirection CurrentDirection;
+
+	/** Used when a player chooses a direction that is not available in the next ChooseNewSpline so it can turn to Desired direction in the next possible situation */
 	EDirection TempDirection;
 
 	float PositionOnSpline;

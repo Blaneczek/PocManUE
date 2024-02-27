@@ -71,7 +71,7 @@ void APMClassicPlayer::MoveUp()
 
 	if (CurrentDirection == EDirection::DOWN)
 	{
-		Rotate(-90.f, EDirection::UPWARD);
+		Rotate180(EDirection::UPWARD);
 	}
 }
 
@@ -84,7 +84,7 @@ void APMClassicPlayer::MoveDown()
 
 	if (CurrentDirection == EDirection::UPWARD)
 	{
-		Rotate(90.f, EDirection::DOWN);
+		Rotate180(EDirection::DOWN);
 	}
 }
 
@@ -97,7 +97,7 @@ void APMClassicPlayer::MoveLeft()
 
 	if (CurrentDirection == EDirection::RIGHT)
 	{
-		Rotate(180.f, EDirection::LEFT);
+		Rotate180(EDirection::LEFT);
 	}
 }
 
@@ -110,7 +110,7 @@ void APMClassicPlayer::MoveRight()
 
 	if (CurrentDirection == EDirection::LEFT)
 	{
-		Rotate(0.f, EDirection::RIGHT);
+		Rotate180(EDirection::RIGHT);
 	}
 }
 

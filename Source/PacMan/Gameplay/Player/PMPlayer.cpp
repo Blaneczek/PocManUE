@@ -84,8 +84,8 @@ void APMPlayer::Tick(float DeltaTime)
 
 	if (CheckIfAtSplinePoint())
 	{
-		UnmarkSpline();
 		bIsMoving = false;
+		UnmarkSpline();		
 		ChooseNewSpline();
 		MarkSpline();
 	}
@@ -101,11 +101,12 @@ void APMPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	}
 }
 
-void APMPlayer::Rotate(float Yaw, EDirection Direction)
+void APMPlayer::Rotate180(EDirection Direction)
 {
 	CurrentDirection = Direction;
-	SetActorRotation(FRotator(0, Yaw, 0));
-	MovingDirection = Yaw <= 0 ? 1.f : -1.f;
+	MovingDirection *= -1;
+	const float NewYaw = GetActorRotation().Yaw + (-180 * MovingDirection);
+	SetActorRotation(FRotator(0, NewYaw, 0));
 	PositionOnSpline += (MovingDirection * 10); //to be sure that player won't stuck when PositionOnSpline == DistanceAtSplinePoint
 	bIsMoving = true;
 }
@@ -195,7 +196,7 @@ void APMPlayer::OpenPauseMenu()
 
 void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if ( (OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr))
+	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		IPMInteractionInterface* InteractionInterface = Cast<IPMInteractionInterface>(OtherActor);
 		if (InteractionInterface != nullptr)

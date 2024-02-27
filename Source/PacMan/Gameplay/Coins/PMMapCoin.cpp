@@ -10,6 +10,7 @@ int32 APMMapCoin::Interaction()
 {
 	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(GetWorld())))
 	{	
+		// Interact only when the player does not have all the maps
 		if (GM->GetMapsNumber() < 2)
 		{			
 			if (PickUpSound != nullptr)

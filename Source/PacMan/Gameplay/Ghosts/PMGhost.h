@@ -34,6 +34,7 @@ enum class EGhostMovementState : uint8
 	HITTED		UMETA(DisplayName = "Hitted")
 };
 
+/** For the BFS algorithm in the search for the target spline  */
 USTRUCT()
 struct FSplineQueueData
 {
@@ -75,16 +76,24 @@ public:
 protected:
 	virtual void SetEyesPosition(const int32 YawRotation) {};
 
-	TArray<int32> FindValidSplinesInRandomMovement();
+private:
+	/** Movement */
 	bool CheckIfAtPoint();
 	void HandleMovement();
 	int32 FindPath(const FName& SplineTag);
+	TArray<int32> FindValidSplinesInRandomMovement();
 	TMap<int32, APMSpline*> FindValidSplinesInMarkedMovement(APMSpline* Spline, int32 index);
+	void MoveToNewSpline(float Direction, float YawRotation, APMSpline* NewSpline = nullptr);
+	void GhostBaseMovement();
+	void ChooseNewSpline(int32 ChoosenSpline);
+	void ReachingMarkedSpline();
+	void TurnAround();	
 
 	UFUNCTION()
 	void OnSeePawn(APawn* OtherPawn);
 
 	void AttackTimer();
+	void CanSee();
 
 	void Release();
 	void Reset();
@@ -96,20 +105,11 @@ protected:
 	void EndVulnerableState();
 	void VulnerableFlickering();
 	void BackToBase();
-	void CanSee();
-
-	bool IsVulnerable() { return bVulnerable; }
-
-private:
+	
 	void InitializeMaterial();
 	void BindGameModeDelegates();
-	void MoveToNewSpline(APMSpline* NewSpline, float Direction, float YawRotation);
-	void TurnAround();
-	void GhostBaseMovement();
-	void ChooseNewSpline(int32 ChoosenSpline);
-	void ReachingMarkedSpline();
-	void ClearVulnerableTimers();
-
+	
+	
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UStaticMeshComponent> Mesh;
@@ -154,37 +154,33 @@ protected:
 	EGhostMovementState MovementState;
 
 	UPROPERTY()
-	TObjectPtr<APMPlayer> Player = nullptr;
-
-	UPROPERTY()
 	UMaterialInstanceDynamic* DynMaterial;
 
-	// Audio
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> HitSoundClassic;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> HitSoundMaze;
-	//
 
-	float Speed = 500.f;
+	float Speed;
 	float PositionOnSpline;
 	float MovingDirection;
 	int32 SplineIndex;
 	int32 ChaseTimeCounter;
 	bool bIsMoving;
-	bool bDoOnce;
-	bool bVulnerable;
-	bool bGhostHitted;
 	bool bFlickering;
-	bool bCanSee;
+
+	/** To call Interaction function only once when overlap with player */
+	bool bDoOnce;
+
+	/** To turn off the ghost's sight and give the player a chance to escape */
+	bool bCanSee; 
+
+	/** Ghost has 10% chance to turn around but if he didn't do it previously */
 	bool bTurnedAround;
 	
-
-	// Timers
 	FTimerHandle ChaseTimer;
 	FTimerHandle CanSeeTimer;
 	FTimerHandle ReleaseTimer;
 	FTimerHandle VulnerableTimer;
 	FTimerHandle FlickeringTimer;
-	//
 };

@@ -24,11 +24,15 @@ UCLASS()
 class PACMAN_API UPMMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
+public:
+	void SetIsEnabledClassicButton(bool bInIsEnabled);
+	void SetIsEnabledMazeButton(bool bInIsEnabled);	
+
 protected:
 	void NativeConstruct() override;
 
-	//Buttons handle
+	/** Buttons handle */
 	UFUNCTION()
 	void OnClassicButtonClicked();
 	UFUNCTION()
@@ -51,10 +55,6 @@ protected:
 	void OnContinueMazeButtonClicked();
 
 	void ToggleButtons(bool bInIsEnabled);
-
-public:
-	void SetIsEnabledClassicButton(bool bInIsEnabled);
-	void SetIsEnabledMazeButton(bool bInIsEnabled);
 
 private:
 	void BindButtons();
@@ -90,6 +90,7 @@ protected:
 	TObjectPtr<UPMScoreboardWidget> Scoreboard;
 
 public:
+	/** Delegates to be bound in MenuGameMode */
 	FOnNewClassic OnStartNewClassic;	
 	FOnNewMaze OnStartNewMaze;	
 	FOnContinueClassic OnContinueClassic;	

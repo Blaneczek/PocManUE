@@ -69,7 +69,6 @@ void APMClassicGhost::SetEyesPosition(const int32 YawRotation)
 			SetEyes(FVector(0, 0, 0), FVector(0, 0, 0), FVector(-5, 0, -5), FVector(0, 0, -5));
 			return;
 		}
-
 	}
 }
 

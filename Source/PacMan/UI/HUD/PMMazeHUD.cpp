@@ -56,10 +56,11 @@ void UPMMazeHUD::SetMapDisplay(int32 LevelNum)
 
 void UPMMazeHUD::ShowChaseScreen()
 {
-	if (ChaseScreen->GetVisibility() == ESlateVisibility::Visible) return;
-
-	ChaseScreen->SetVisibility(ESlateVisibility::Visible);
-	PlayAnimation(ChaseFlickeringAnim, 0.f, 0);
+	if (ChaseScreen->GetVisibility() == ESlateVisibility::Hidden)
+	{
+		ChaseScreen->SetVisibility(ESlateVisibility::Visible);
+		PlayAnimation(ChaseFlickeringAnim, 0.f, 0);
+	}	
 }
 
 void UPMMazeHUD::HideChaseScreen()
@@ -73,14 +74,20 @@ void UPMMazeHUD::HideChaseScreen()
 
 void UPMMazeHUD::ShowVulnerableScreen()
 {
-	VulnerableScreen->SetVisibility(ESlateVisibility::Visible);
-	PlayAnimation(VulnerableFlickeringAnim, 0.f, 0);
+	if (VulnerableScreen->GetVisibility() == ESlateVisibility::Hidden)
+	{
+		VulnerableScreen->SetVisibility(ESlateVisibility::Visible);
+		PlayAnimation(VulnerableFlickeringAnim, 0.f, 0);
+	}	
 }
 
 void UPMMazeHUD::HideVulnerableScreen()
 {
-	VulnerableScreen->SetVisibility(ESlateVisibility::Hidden);
-	StopAnimation(VulnerableFlickeringAnim);
+	if (VulnerableScreen->GetVisibility() == ESlateVisibility::Visible)
+	{
+		VulnerableScreen->SetVisibility(ESlateVisibility::Hidden);
+		StopAnimation(VulnerableFlickeringAnim);
+	}
 }
 
 void UPMMazeHUD::UpdateMapIcon(int32 MapNumber, ESlateVisibility IconVisibility)
@@ -97,6 +104,8 @@ void UPMMazeHUD::UpdateMapIcon(int32 MapNumber, ESlateVisibility IconVisibility)
 
 void UPMMazeHUD::ShowFullMapsText()
 {
+	if (FullMapsText->GetVisibility() == ESlateVisibility::Visible) return;
+
 	FullMapsText->SetVisibility(ESlateVisibility::Visible);
 
 	if (FullMapsTextTimer.IsValid())
@@ -111,6 +120,8 @@ void UPMMazeHUD::ShowFullMapsText()
 
 void UPMMazeHUD::ShowFullLivesText()
 {
+	if (FullLivesText->GetVisibility() == ESlateVisibility::Visible) return;
+
 	FullLivesText->SetVisibility(ESlateVisibility::Visible);
 
 	if (FullLivesTextTimer.IsValid())

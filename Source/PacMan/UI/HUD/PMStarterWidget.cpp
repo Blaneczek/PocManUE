@@ -27,7 +27,7 @@ void UPMStarterWidget::TextCounter()
 	if (NumberToShow == 0 && TextCounterTimer.IsValid())
 	{
 		GetWorld()->GetTimerManager().ClearTimer(TextCounterTimer);
-		DisplayTime->SetText(FText::FromString("LET'S GO!"));
+		DisplayTime->SetText(FText::FromString(TEXT("LET'S GO!")));
 
 		FTimerHandle RemoveWidgetTimer;
 		GetWorld()->GetTimerManager().SetTimer(RemoveWidgetTimer, this, &UPMStarterWidget::RemoveFromParent, 1, false);
