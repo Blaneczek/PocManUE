@@ -9,6 +9,9 @@
 class UButton;
 class UBorder;
 class UPMScoreboardWidget;
+class USlider;
+class USoundClass;
+class USoundMix;
 enum class ELevelType : uint8;
 
 DECLARE_DELEGATE_OneParam(FOnNewClassic, ELevelType);
@@ -53,6 +56,13 @@ protected:
 	void OnContinueClassicButtonClicked();
 	UFUNCTION()
 	void OnContinueMazeButtonClicked();
+	UFUNCTION()
+	void OnSettingsButtonClicked();
+	UFUNCTION()
+	void OnXSettingsButtonClicked();
+	
+	UFUNCTION()
+	void SetAudioMasterValue(float Value);
 
 	void ToggleButtons(bool bInIsEnabled);
 
@@ -80,14 +90,28 @@ protected:
 	TObjectPtr<UButton> ContinueClassicButton;
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UButton> ContinueMazeButton;
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
+	TObjectPtr<UButton> SettingsButton;
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
+	TObjectPtr<UButton> XSettingsButton;
 
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UBorder> ClassicStarter;
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UBorder> MazeStarter;
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
+	TObjectPtr<UBorder> Settings;
 
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UPMScoreboardWidget> Scoreboard;
+
+	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
+	TObjectPtr<USlider> MasterAudioSlider;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan")
+	TObjectPtr<USoundClass> MasterSoundClass;
+	UPROPERTY(EditDefaultsOnly, Category = "PocMan")
+	TObjectPtr<USoundMix> MasterSoundMixClass;
 
 public:
 	/** Delegates to be bound in MenuGameMode */

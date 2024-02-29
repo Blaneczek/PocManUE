@@ -21,8 +21,6 @@ void UPMGameInstance::Init()
 	SaveSlotName = FString(TEXT("SaveSlot"));
 
 	SetLevelType(ELevelType::MENU);
-
-	LoadGame();
 }
 
 FText UPMGameInstance::MakeScoreboardDataAsText(const TArray<FScoreboardData>& FinalScoresData) const

@@ -15,7 +15,7 @@ void UPMMazeHUD::NativeConstruct()
 	MapDisplay->SetVisibility(ESlateVisibility::Visible);
 	ChaseScreen->SetVisibility(ESlateVisibility::Hidden);
 	VulnerableScreen->SetVisibility(ESlateVisibility::Hidden);
-	FullMapsText->SetVisibility(ESlateVisibility::Hidden);
+	MapsText->SetVisibility(ESlateVisibility::Hidden);
 	FullLivesText->SetVisibility(ESlateVisibility::Hidden);
 	
 	FTimerHandle MapTimer;
@@ -102,20 +102,21 @@ void UPMMazeHUD::UpdateMapIcon(int32 MapNumber, ESlateVisibility IconVisibility)
 	}
 }
 
-void UPMMazeHUD::ShowFullMapsText()
+void UPMMazeHUD::ShowMapsText(const FText& Text)
 {
-	if (FullMapsText->GetVisibility() == ESlateVisibility::Visible) return;
+	if (MapsText->GetVisibility() == ESlateVisibility::Visible) return;
 
-	FullMapsText->SetVisibility(ESlateVisibility::Visible);
+	MapsText->SetText(Text);
+	MapsText->SetVisibility(ESlateVisibility::Visible);
 
-	if (FullMapsTextTimer.IsValid())
+	if (MapsTextTimer.IsValid())
 	{
-		GetWorld()->GetTimerManager().ClearTimer(FullMapsTextTimer);
+		GetWorld()->GetTimerManager().ClearTimer(MapsTextTimer);
 	}
 
 	FTimerDelegate FullMapsDel;
-	FullMapsDel.BindLambda([&]() { FullMapsText->SetVisibility(ESlateVisibility::Hidden); });
-	GetWorld()->GetTimerManager().SetTimer(FullMapsTextTimer, FullMapsDel, 2.f, false);
+	FullMapsDel.BindLambda([&]() { MapsText->SetVisibility(ESlateVisibility::Hidden); });
+	GetWorld()->GetTimerManager().SetTimer(MapsTextTimer, FullMapsDel, 2.f, false);
 }
 
 void UPMMazeHUD::ShowFullLivesText()
@@ -131,6 +132,6 @@ void UPMMazeHUD::ShowFullLivesText()
 
 	FTimerDelegate FullLivesDel;
 	FullLivesDel.BindLambda([&]() { FullLivesText->SetVisibility(ESlateVisibility::Hidden); });
-	GetWorld()->GetTimerManager().SetTimer(FullMapsTextTimer, FullLivesDel, 2.f, false);
+	GetWorld()->GetTimerManager().SetTimer(FullLivesTextTimer, FullLivesDel, 2.f, false);
 }
 

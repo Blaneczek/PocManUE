@@ -6,13 +6,23 @@
 #include "Components/Border.h"
 #include "GameInstance/PMGameInstance.h"
 #include "PMScoreboardWidget.h"
+#include "Components/Slider.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundClass.h"
+#include "Sound/SoundMix.h"
 
 void UPMMenuWidget::NativeConstruct()
 {
 	ClassicStarter->SetVisibility(ESlateVisibility::Hidden);
 	MazeStarter->SetVisibility(ESlateVisibility::Hidden);
+	Settings->SetVisibility(ESlateVisibility::Hidden);
 
 	BindButtons();
+
+	if (MasterSoundClass != nullptr && MasterSoundMixClass != nullptr)
+	{
+		MasterAudioSlider->OnValueChanged.AddDynamic(this, &UPMMenuWidget::SetAudioMasterValue);
+	}
 }
 
 void UPMMenuWidget::OnClassicButtonClicked()
@@ -70,6 +80,18 @@ void UPMMenuWidget::OnContinueMazeButtonClicked()
 	OnContinueMaze.ExecuteIfBound(ELevelType::MAZE);
 }
 
+void UPMMenuWidget::OnSettingsButtonClicked()
+{
+	Settings->SetVisibility(ESlateVisibility::Visible);
+	ToggleButtons(false);
+}
+
+void UPMMenuWidget::OnXSettingsButtonClicked()
+{
+	Settings->SetVisibility(ESlateVisibility::Hidden);
+	ToggleButtons(true);
+}
+
 void UPMMenuWidget::SetIsEnabledClassicButton(bool bInIsEnabled)
 {
 	ContinueClassicButton->SetIsEnabled(bInIsEnabled);
@@ -92,6 +114,8 @@ void UPMMenuWidget::BindButtons()
 	NewMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnNewMazeButtonClicked);
 	ContinueClassicButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnContinueClassicButtonClicked);
 	ContinueMazeButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnContinueMazeButtonClicked);
+	SettingsButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnSettingsButtonClicked);
+	XSettingsButton->OnClicked.AddDynamic(this, &UPMMenuWidget::OnXSettingsButtonClicked);
 }
 
 void UPMMenuWidget::ToggleButtons(bool bInIsEnabled)
@@ -100,4 +124,11 @@ void UPMMenuWidget::ToggleButtons(bool bInIsEnabled)
 	MazeButton->SetIsEnabled(bInIsEnabled);
 	ScoreboardButton->SetIsEnabled(bInIsEnabled);
 	ExitGameButton->SetIsEnabled(bInIsEnabled);
+	SettingsButton->SetIsEnabled(bInIsEnabled);
+}
+
+void UPMMenuWidget::SetAudioMasterValue(float Value)
+{
+	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), MasterSoundMixClass, MasterSoundClass, Value);
+	UGameplayStatics::PushSoundMixModifier(GetWorld(), MasterSoundMixClass);
 }

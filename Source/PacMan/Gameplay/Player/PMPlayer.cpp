@@ -199,7 +199,7 @@ void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Othe
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		IPMInteractionInterface* InteractionInterface = Cast<IPMInteractionInterface>(OtherActor);
-		if (InteractionInterface != nullptr)
+		if (InteractionInterface)
 		{
 			GameMode->AddPoints(InteractionInterface->Interaction());
 		}

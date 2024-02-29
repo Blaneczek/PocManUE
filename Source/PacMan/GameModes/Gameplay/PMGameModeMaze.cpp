@@ -159,7 +159,13 @@ void APMGameModeMaze::HideMap()
 
 void APMGameModeMaze::ShowMap()
 {
-	if (bMapOpen || MapsNumber == 0) return;
+	if (bMapOpen) return;
+
+	if (MapsNumber == 0)
+	{
+		MazeHUD->ShowMapsText(FText::FromString("NO MORE MAPS!"));
+		return;
+	}
 
 	MazeHUD->SetMapVisibility(ESlateVisibility::Visible);
 	bMapOpen = true;
@@ -179,7 +185,7 @@ void APMGameModeMaze::AddMap()
 	}
 	else
 	{
-		MazeHUD->ShowFullMapsText();
+		MazeHUD->ShowMapsText(FText::FromString("MAPS ARE FULL!"));
 	}	
 }
 

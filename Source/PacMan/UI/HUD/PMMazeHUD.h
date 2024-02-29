@@ -31,7 +31,7 @@ public:
 	void HideVulnerableScreen();
 
 	void UpdateMapIcon(int32 MapNumber, ESlateVisibility IconVisibility);
-	void ShowFullMapsText();
+	void ShowMapsText(const FText& Text);
 
 	void ShowFullLivesText();
 
@@ -55,7 +55,7 @@ protected:
 	TObjectPtr<UImage> VulnerableScreen;
 
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
-	TObjectPtr<UTextBlock> FullMapsText;
+	TObjectPtr<UTextBlock> MapsText;
 	UPROPERTY(BlueprintReadOnly, Category = "PocMan", meta = (BindWidget))
 	TObjectPtr<UTextBlock> FullLivesText;
 
@@ -65,6 +65,6 @@ protected:
 	TObjectPtr<UWidgetAnimation> VulnerableFlickeringAnim;
 
 private:
-	FTimerHandle FullMapsTextTimer;
+	FTimerHandle MapsTextTimer;
 	FTimerHandle FullLivesTextTimer;
 };

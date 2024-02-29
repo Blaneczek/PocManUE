@@ -14,6 +14,7 @@ void APMGameModeMenu::BeginPlay()
 	if (GameInstance == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("APMGameModeMenu::BeginPlay | GameInstance is nullptr"));
+		return;
 	}
 
 	if (MenuAudio != nullptr)
@@ -21,6 +22,7 @@ void APMGameModeMenu::BeginPlay()
 		UGameplayStatics::PlaySound2D(this, MenuAudio, 0.5f);
 	}
 
+	GameInstance->LoadGame();
 	InitializeMenu();
 }
 
