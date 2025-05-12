@@ -28,9 +28,9 @@ APMPlayer::APMPlayer()
 	PositionOnSpline = 1.f;
 	bIsMoving = false;
 	SplineIndex = 0;
-	TempDirection = EDirection::NONE;
-	DesiredDirection = EDirection::RIGHT;
-	CurrentDirection = EDirection::RIGHT;
+	TempDirection = EPlayerDirection::NONE;
+	DesiredDirection = EPlayerDirection::RIGHT;
+	CurrentDirection = EPlayerDirection::RIGHT;
 	Tags.Add(FName(TEXT("player")));
 }
 
@@ -101,7 +101,7 @@ void APMPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	}
 }
 
-void APMPlayer::Rotate180(EDirection Direction)
+void APMPlayer::Rotate180(EPlayerDirection Direction)
 {
 	CurrentDirection = Direction;
 	MovingDirection *= -1;
@@ -143,9 +143,9 @@ void APMPlayer::Start()
 	MovingDirection = 1.f;
 	PositionOnSpline = 1.f;
 	SplineIndex = 0;
-	TempDirection = EDirection::NONE;
-	DesiredDirection = EDirection::RIGHT;
-	CurrentDirection = EDirection::RIGHT;
+	TempDirection = EPlayerDirection::NONE;
+	DesiredDirection = EPlayerDirection::RIGHT;
+	CurrentDirection = EPlayerDirection::RIGHT;
 
 	TArray<AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("start")), OutActors);
@@ -228,22 +228,22 @@ void APMPlayer::ChooseNewSpline()
 
 	switch (DesiredDirection)
 	{
-		case EDirection::UPWARD:
+		case EPlayerDirection::UPWARD:
 		{
 			NewSpline = CurrentSpline->Splines[SplineIndex].UPWARD;
 			break;
 		}		
-		case EDirection::DOWN:
+		case EPlayerDirection::DOWN:
 		{
 			NewSpline = CurrentSpline->Splines[SplineIndex].DOWN;
 			break;
 		}			
-		case EDirection::RIGHT:
+		case EPlayerDirection::RIGHT:
 		{
 			NewSpline = CurrentSpline->Splines[SplineIndex].RIGHT;
 			break;
 		}			
-		case EDirection::LEFT:
+		case EPlayerDirection::LEFT:
 		{
 			NewSpline = CurrentSpline->Splines[SplineIndex].LEFT;
 			break;
@@ -259,28 +259,28 @@ void APMPlayer::ChooseNewSpline()
 	}
 
 	float NewYaw = 0.f;
-	if (DesiredDirection == EDirection::UPWARD)
+	if (DesiredDirection == EPlayerDirection::UPWARD)
 	{
 		NewYaw = -90.f;
 	}
-	else if (DesiredDirection == EDirection::DOWN)
+	else if (DesiredDirection == EPlayerDirection::DOWN)
 	{
 		NewYaw = 90.f;
 	}	
-	else if (DesiredDirection == EDirection::LEFT)
+	else if (DesiredDirection == EPlayerDirection::LEFT)
 	{
 		NewYaw = 180.f;
 	}
 	
 	SetActorRotation(FRotator(0, NewYaw, 0));
 	CurrentSpline = NewSpline;
-	PositionOnSpline = (DesiredDirection == EDirection::UPWARD || DesiredDirection == EDirection::RIGHT) ? 1.f :
+	PositionOnSpline = (DesiredDirection == EPlayerDirection::UPWARD || DesiredDirection == EPlayerDirection::RIGHT) ? 1.f :
 						CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
 	CurrentDirection = DesiredDirection;
-	MovingDirection = (DesiredDirection == EDirection::UPWARD || DesiredDirection == EDirection::RIGHT) ? 1.f : -1.f;
+	MovingDirection = (DesiredDirection == EPlayerDirection::UPWARD || DesiredDirection == EPlayerDirection::RIGHT) ? 1.f : -1.f;
 	bIsMoving = true;
 
-	if (TempDirection != EDirection::NONE)
+	if (TempDirection != EPlayerDirection::NONE)
 	{
 		DesiredDirection = TempDirection;
 	}

@@ -14,7 +14,7 @@ class APMSpline;
 class APMGameModeBase;
 
 UENUM()
-enum class EDirection : uint8
+enum class EPlayerDirection : uint8
 {
 	NONE	UMETA(DisplayName = "None"),
 	UPWARD	UMETA(DisplayName = "UP"),
@@ -61,7 +61,7 @@ protected:
 	/** Decides in which direction to go next when player is at the Spline point */
 	void ChooseNewSpline();
 
-	void Rotate180(EDirection Direction);	
+	void Rotate180(EPlayerDirection Direction);	
 	void Reset();
 	void Start();
 	void StartMovement();
@@ -95,7 +95,7 @@ protected:
 	float StartingMovingDirection;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
-	EDirection StartingDirection;
+	EPlayerDirection StartingDirection;
 
 	UPROPERTY()
 	TObjectPtr<APMSpline> CurrentSpline;
@@ -103,11 +103,11 @@ protected:
 	UPROPERTY()
 	TObjectPtr<APMGameModeBase> GameMode;
 
-	EDirection DesiredDirection;
-	EDirection CurrentDirection;
+	EPlayerDirection DesiredDirection;
+	EPlayerDirection CurrentDirection;
 
 	/** Used when a player chooses a direction that is not available in the next ChooseNewSpline so it can turn to Desired direction in the next possible situation */
-	EDirection TempDirection;
+	EPlayerDirection TempDirection;
 
 	float PositionOnSpline;
 	float MovingDirection;

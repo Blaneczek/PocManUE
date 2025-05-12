@@ -44,30 +44,30 @@ void APMMazePlayer::MoveLeft()
 	*/
 	switch (CurrentDirection)
 	{
-		case EDirection::UPWARD:
+		case EPlayerDirection::UPWARD:
 		{
-			DesiredDirection = EDirection::LEFT;
+			DesiredDirection = EPlayerDirection::LEFT;
 			break;
 		}
-		case EDirection::DOWN:
+		case EPlayerDirection::DOWN:
 		{
-			DesiredDirection = EDirection::RIGHT;
+			DesiredDirection = EPlayerDirection::RIGHT;
 			break;
 		}
-		case EDirection::LEFT:
+		case EPlayerDirection::LEFT:
 		{
-			DesiredDirection = EDirection::DOWN;
+			DesiredDirection = EPlayerDirection::DOWN;
 			break;
 		}
-		case EDirection::RIGHT:
+		case EPlayerDirection::RIGHT:
 		{			
-			DesiredDirection = EDirection::UPWARD;
+			DesiredDirection = EPlayerDirection::UPWARD;
 			break;
 		}
 		default: break;
 	}
 
-	TempDirection = EDirection::NONE;
+	TempDirection = EPlayerDirection::NONE;
 }
 
 void APMMazePlayer::MoveRight()
@@ -81,64 +81,64 @@ void APMMazePlayer::MoveRight()
 	*/
 	switch (CurrentDirection)
 	{
-		case EDirection::UPWARD:
+		case EPlayerDirection::UPWARD:
 		{
-			DesiredDirection = EDirection::RIGHT;
+			DesiredDirection = EPlayerDirection::RIGHT;
 			break;
 		}
-		case EDirection::DOWN:
+		case EPlayerDirection::DOWN:
 		{
-			DesiredDirection = EDirection::LEFT;
+			DesiredDirection = EPlayerDirection::LEFT;
 			break;
 		}
-		case EDirection::LEFT:
+		case EPlayerDirection::LEFT:
 		{
-			DesiredDirection = EDirection::UPWARD;
+			DesiredDirection = EPlayerDirection::UPWARD;
 			break;
 		}
-		case EDirection::RIGHT:
+		case EPlayerDirection::RIGHT:
 		{
-			DesiredDirection = EDirection::DOWN;
+			DesiredDirection = EPlayerDirection::DOWN;
 			break;
 		}
 		default: break;
 	}
 
-	TempDirection = EDirection::NONE;
+	TempDirection = EPlayerDirection::NONE;
 }
 
 void APMMazePlayer::TurnAround()
 {
 	switch (CurrentDirection)
 	{
-		case EDirection::UPWARD:
+		case EPlayerDirection::UPWARD:
 		{			
-			Rotate180(EDirection::DOWN);
-			DesiredDirection = EDirection::DOWN;
+			Rotate180(EPlayerDirection::DOWN);
+			DesiredDirection = EPlayerDirection::DOWN;
 			break;
 		}
-		case EDirection::DOWN:
+		case EPlayerDirection::DOWN:
 		{			
-			Rotate180(EDirection::UPWARD);
-			DesiredDirection = EDirection::UPWARD;
+			Rotate180(EPlayerDirection::UPWARD);
+			DesiredDirection = EPlayerDirection::UPWARD;
 			break;
 		}
-		case EDirection::LEFT:
+		case EPlayerDirection::LEFT:
 		{			
-			Rotate180(EDirection::RIGHT);
-			DesiredDirection = EDirection::RIGHT;
+			Rotate180(EPlayerDirection::RIGHT);
+			DesiredDirection = EPlayerDirection::RIGHT;
 			break;
 		}
-		case EDirection::RIGHT:
+		case EPlayerDirection::RIGHT:
 		{			
-			Rotate180(EDirection::LEFT);
-			DesiredDirection = EDirection::LEFT;			
+			Rotate180(EPlayerDirection::LEFT);
+			DesiredDirection = EPlayerDirection::LEFT;			
 			break;
 		}
 		default: return;
 	}
 
-	TempDirection = EDirection::NONE;
+	TempDirection = EPlayerDirection::NONE;
 }
 
 void APMMazePlayer::OpenMap()

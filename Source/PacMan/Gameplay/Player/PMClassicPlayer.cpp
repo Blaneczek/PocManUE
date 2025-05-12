@@ -64,53 +64,53 @@ void APMClassicPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APMClassicPlayer::MoveUp()
 {
-	if (CurrentDirection == EDirection::UPWARD) return;
+	if (CurrentDirection == EPlayerDirection::UPWARD) return;
 
-	TempDirection = EDirection::NONE;
-	DesiredDirection = EDirection::UPWARD;
+	TempDirection = EPlayerDirection::NONE;
+	DesiredDirection = EPlayerDirection::UPWARD;
 
-	if (CurrentDirection == EDirection::DOWN)
+	if (CurrentDirection == EPlayerDirection::DOWN)
 	{
-		Rotate180(EDirection::UPWARD);
+		Rotate180(EPlayerDirection::UPWARD);
 	}
 }
 
 void APMClassicPlayer::MoveDown()
 {
-	if (CurrentDirection == EDirection::DOWN) return;
+	if (CurrentDirection == EPlayerDirection::DOWN) return;
 
-	TempDirection = EDirection::NONE;
-	DesiredDirection = EDirection::DOWN;
+	TempDirection = EPlayerDirection::NONE;
+	DesiredDirection = EPlayerDirection::DOWN;
 
-	if (CurrentDirection == EDirection::UPWARD)
+	if (CurrentDirection == EPlayerDirection::UPWARD)
 	{
-		Rotate180(EDirection::DOWN);
+		Rotate180(EPlayerDirection::DOWN);
 	}
 }
 
 void APMClassicPlayer::MoveLeft()
 {
-	if (CurrentDirection == EDirection::LEFT) return;
+	if (CurrentDirection == EPlayerDirection::LEFT) return;
 
-	TempDirection = EDirection::NONE;
-	DesiredDirection = EDirection::LEFT;
+	TempDirection = EPlayerDirection::NONE;
+	DesiredDirection = EPlayerDirection::LEFT;
 
-	if (CurrentDirection == EDirection::RIGHT)
+	if (CurrentDirection == EPlayerDirection::RIGHT)
 	{
-		Rotate180(EDirection::LEFT);
+		Rotate180(EPlayerDirection::LEFT);
 	}
 }
 
 void APMClassicPlayer::MoveRight()
 {
-	if (CurrentDirection == EDirection::RIGHT) return;
+	if (CurrentDirection == EPlayerDirection::RIGHT) return;
 
-	TempDirection = EDirection::NONE;
-	DesiredDirection = EDirection::RIGHT;
+	TempDirection = EPlayerDirection::NONE;
+	DesiredDirection = EPlayerDirection::RIGHT;
 
-	if (CurrentDirection == EDirection::LEFT)
+	if (CurrentDirection == EPlayerDirection::LEFT)
 	{
-		Rotate180(EDirection::RIGHT);
+		Rotate180(EPlayerDirection::RIGHT);
 	}
 }
 
