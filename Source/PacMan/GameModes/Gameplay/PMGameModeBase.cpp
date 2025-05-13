@@ -2,9 +2,7 @@
 
 #include "PMGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "PlayerControllers/PMPlayerController.h"
 #include "Gameplay/Coins/PMCoin.h"
-#include "Gameplay/Coins/PMCherryCoin.h"
 #include "Gameplay/Splines/PMSpline.h"
 #include "Components/SplineComponent.h"
 #include "UI/HUD/PMHUDWidget.h"
@@ -14,7 +12,6 @@
 #include "UI/HUD/PMNextLevelWidget.h"
 #include "GameInstance/PMGameInstance.h"
 #include "Sound/SoundWave.h"
-#include "Saved/PMSaveGame.h"
 
 
 APMGameModeBase::APMGameModeBase()
@@ -23,6 +20,7 @@ APMGameModeBase::APMGameModeBase()
 	Lives = 3;
 	Cherries = 0;
 	bCoinSound = true;
+	CurrentLevelNum = 0;
 	APMCoin::ResetCoinsNumber();
 }
 
@@ -100,9 +98,9 @@ void APMGameModeBase::HandleGhostHit()
 		HUDWidget->UpdateLives(Lives, ESlateVisibility::Hidden);
 	}
 
-	if (PlayerHittedSound != nullptr)
+	if (PlayerHitSound != nullptr)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), PlayerHittedSound);
+		UGameplayStatics::PlaySound2D(GetWorld(), PlayerHitSound);
 	}
 
 	GetWorld()->GetTimerManager().SetTimer(ResetGameTimer, this, &APMGameModeBase::StartGame, 2.f, false);
@@ -131,7 +129,7 @@ void APMGameModeBase::StartAllMovement()
 	OnStartMovement.Broadcast();
 }
 
-void APMGameModeBase::CreateEndGameWidget(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, int32 InScore, int32 InCherries)
+void APMGameModeBase::CreateEndGameWidget(const TSubclassOf<UPMEndGameWidget>& EndGameWidgetClass, int32 InScore, int32 InCherries)
 {
 	if (EndGameWidgetClass != nullptr)
 	{
@@ -218,17 +216,16 @@ void APMGameModeBase::GoToMenu()
 	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Menu")));
 }
 
-void APMGameModeBase::SpawnSpecialCoin(TSubclassOf<APMCoin> SpecialCoinClass)
+void APMGameModeBase::SpawnSpecialCoin(const TSubclassOf<APMCoin>& SpecialCoinClass)
 {
-	const int32 randomIndex = FMath::RandRange(0, Splines.Num() - 1);
-	APMSpline* ChoosenSpline = Cast<APMSpline>(Splines[randomIndex]);
+	const int32 RandomIndex = FMath::RandRange(0, Splines.Num() - 1);
 
-	if (ChoosenSpline)
+	if (APMSpline* ChosenSpline = Cast<APMSpline>(Splines[RandomIndex]))
 	{
-		const float SplineLength = ChoosenSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
-		const FVector Location = ChoosenSpline->SplineComponent->GetLocationAtDistanceAlongSpline(SplineLength / 2, ESplineCoordinateSpace::World);
+		const float SplineLength = ChosenSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1);
+		const FVector Location = ChosenSpline->SplineComponent->GetLocationAtDistanceAlongSpline(SplineLength / 2, ESplineCoordinateSpace::World);
 		FRotator Rotation;
-		UPMGameInstance::GetCurrentLevelType() == ELevelType::CLASSIC ? Rotation = FRotator(0,0,0) : Rotation = Splines[randomIndex]->GetActorRotation();
+		UPMGameInstance::GetCurrentLevelType() == ELevelType::CLASSIC ? Rotation = FRotator(0,0,0) : Rotation = Splines[RandomIndex]->GetActorRotation();
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		GetWorld()->SpawnActor<APMCoin>(SpecialCoinClass, Location, Rotation, SpawnInfo);

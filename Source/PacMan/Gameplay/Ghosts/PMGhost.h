@@ -31,7 +31,7 @@ enum class EGhostMovementState : uint8
 	ATTACK		UMETA(DisplayName = "Attack"),
 	BASE		UMETA(DisplayName = "Base"),
 	RELEASE		UMETA(DisplayName = "Release"),
-	HITTED		UMETA(DisplayName = "Hitted")
+	HIT			UMETA(DisplayName = "Hit")
 };
 
 /** For the BFS algorithm in the search for the target spline  */
@@ -41,16 +41,15 @@ struct FSplineQueueData
 	GENERATED_BODY()
 
 	UPROPERTY()
-	int32 FirstSplineIndex;
+	int32 FirstSplineIndex = 0;
 	UPROPERTY()
-	int32 CurrentSplineIndex;
+	int32 CurrentSplineIndex = 0;
 	UPROPERTY()
-	TObjectPtr<APMSpline> Spline;
-
+	TObjectPtr<APMSpline> Spline = nullptr;
+	
 	FSplineQueueData()
-	{
-	}
-
+	{}
+	
 	FSplineQueueData(int32 firstSpline, int32 currentSplineIndex, APMSpline* Spline)
 		: FirstSplineIndex(firstSpline), CurrentSplineIndex(currentSplineIndex), Spline(Spline)
 	{}
@@ -82,10 +81,10 @@ private:
 	void HandleMovement();
 	int32 FindPath(const FName& SplineTag);
 	TArray<int32> FindValidSplinesInRandomMovement();
-	TMap<int32, APMSpline*> FindValidSplinesInMarkedMovement(APMSpline* Spline, int32 index);
+	TMap<int32, APMSpline*> FindValidSplinesInMarkedMovement(APMSpline* Spline, int32 Index);
 	void MoveToNewSpline(float Direction, float YawRotation, APMSpline* NewSpline = nullptr);
 	void GhostBaseMovement();
-	void ChooseNewSpline(int32 ChoosenSpline);
+	void ChooseNewSpline(int32 ChosenSpline);
 	void ReachingMarkedSpline();
 	void TurnAround();	
 
@@ -113,36 +112,51 @@ private:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UStaticMeshComponent> Mesh;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TObjectPtr<USphereComponent> CollisionSphere;	
+	TObjectPtr<USphereComponent> CollisionSphere;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TObjectPtr<UPawnSensingComponent> PawnSensing;	
+	TObjectPtr<UPawnSensingComponent> PawnSensing;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UWidgetComponent> PointsWidget;
-	UPROPERTY()
-	TObjectPtr<APMSpline> CurrentSpline;
-
+	
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	float NormalSpeed = 800.f;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	float VulnerableSpeed = 600.f;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	float ReturnSpeed = 1200.f;
+	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	float ReleaseTime = 2.f;
 
+	
+	UPROPERTY()
+	TObjectPtr<APMSpline> CurrentSpline;
+	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	TObjectPtr<APMSpline> StartingSpline;
+	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	EGhostMovementState StartingMovementState;
+	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	FRotator StartingRotation;
+	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
-	float StartingMovingDirection;	
+	float StartingMovingDirection;
+	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	FLinearColor StartingColor;
+	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	FLinearColor VulnerableColor;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "PocMan|Gameplay")
 	int32 MaxChaseTime = 4;
 
@@ -158,6 +172,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> HitSoundClassic;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> HitSoundMaze;
 

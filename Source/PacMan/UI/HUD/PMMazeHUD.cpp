@@ -3,7 +3,6 @@
 
 #include "PMMazeHUD.h"
 #include "Components/Image.h"
-#include "Animation/WidgetAnimation.h"
 #include "Components/TextBlock.h"
 
 void UPMMazeHUD::NativeConstruct()
@@ -51,6 +50,7 @@ void UPMMazeHUD::SetMapDisplay(int32 LevelNum)
 			MapDisplay->SetDesiredSizeOverride(FVector2D(450.f, 420.f));
 			return;
 		}
+		default: return;
 	}
 }
 

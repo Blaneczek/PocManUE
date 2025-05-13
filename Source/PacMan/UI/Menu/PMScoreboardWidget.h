@@ -21,7 +21,7 @@ public:
 	void SetFinalScores();
 
 protected:
-	void NativeConstruct() override;
+	virtual void NativeConstruct() override;
 
 	UFUNCTION()
 	void OnXButtonClicked();

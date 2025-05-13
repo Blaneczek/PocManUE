@@ -38,10 +38,10 @@ public:
 	void HideMap();
 	void ShowMap();
 	void AddMap();
-	int32 GetMapsNumber() { return MapsNumber; }
+	int32 GetMapsNumber() const { return MapsNumber; } 
 
 	void AddLife();
-	int32 GetLivesNumber() { return Lives; }
+	int32 GetLivesNumber() const { return Lives; }
 
 protected:	
 	virtual void InitStartingWidgets() override;	
@@ -50,7 +50,6 @@ protected:
 	virtual void SetGameplayValues() override;
 
 private:
-	/** Empties the array and hides the chase screen */
 	void ClearChasedState();
 
 private:
@@ -73,9 +72,9 @@ private:
 	int32 MapsNumber;
 	bool bMapOpen;
 
-	/** Array of chasing ghosts for displaying Chase screen effect on HUD */
-	TArray<bool> ChasingGhosts;
-
+	// Counter of chasing Ghosts for displaying Chase screen effect on HUD
+	int32 ChasingGhostsCount;
+	
 	FTimerHandle MapCoinTimer;
 	FTimerHandle MapTimer;
 	FTimerDelegate MapCoinDel;

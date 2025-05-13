@@ -6,7 +6,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundWave.h"
 #include "Components/AudioComponent.h"
-#include "Gameplay/Ghosts/PMGhost.h"
 #include "GameInstance/PMGameInstance.h"
 
 APMGameModeClassic::APMGameModeClassic()
@@ -18,7 +17,8 @@ void APMGameModeClassic::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GhostAudio = UGameplayStatics::CreateSound2D(this, GhostSound, 1.f, 1.f, 0.f, nullptr, false, false);
+	GhostAudio = UGameplayStatics::CreateSound2D(this, GhostSound, 1.f, 1.f,
+										0.f, nullptr, false, false);
 }
 
 void APMGameModeClassic::InitStartingWidgets()

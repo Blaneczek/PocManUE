@@ -4,12 +4,7 @@
 #include "PMGameModeMaze.h"
 #include "UI/HUD/PMMazeHUD.h"
 #include "UI/HUD/PMNextLevelWidget.h"
-#include "Gameplay/Splines/PMSpline.h"
-#include "Components/SplineComponent.h"
-#include "Gameplay/Coins/PMMapCoin.h"
-#include "Gameplay/Coins/PMLifeCoin.h"
 #include "Kismet/GameplayStatics.h"
-#include "Gameplay/Ghosts/PMGhost.h"
 #include "Components/AudioComponent.h"
 #include "GameInstance/PMGameInstance.h"
 
@@ -17,6 +12,7 @@ APMGameModeMaze::APMGameModeMaze()
 {
 	MapsNumber = 2;
 	bMapOpen = false;
+	ChasingGhostsCount = 0;
 }
 
 void APMGameModeMaze::BeginPlay()
@@ -49,23 +45,22 @@ void APMGameModeMaze::InitStartingWidgets()
 
 void APMGameModeMaze::SetPlayerChased(bool IsPlayerChased)
 {
+	// Shows Chase Widget when the first Ghost starts chasing the player. Hides when none. 
 	if (IsPlayerChased)
 	{
-		ChasingGhosts.Add(true);
+		ChasingGhostsCount++;
+		if (ChasingGhostsCount == 1)
+		{
+			MazeHUD->ShowChaseScreen();
+		}
 	}
-	else if (!IsPlayerChased && !ChasingGhosts.IsEmpty())
+	else if (!IsPlayerChased && ChasingGhostsCount > 0)
 	{
-		ChasingGhosts.Pop(true);
-	}
-
-	if (ChasingGhosts.Num() == 1)
-	{
-		// It will not show up when it is already shown
-		MazeHUD->ShowChaseScreen();
-	}
-	else if (ChasingGhosts.Num() == 0)
-	{
-		MazeHUD->HideChaseScreen();
+		ChasingGhostsCount--;
+		if (ChasingGhostsCount == 0)
+		{
+			MazeHUD->HideChaseScreen();
+		}
 	}
 }
 
@@ -205,7 +200,7 @@ void APMGameModeMaze::AddLife()
 
 void APMGameModeMaze::ClearChasedState()
 {
-	ChasingGhosts.Empty();
+	ChasingGhostsCount = 0;
 	MazeHUD->HideChaseScreen();
 }
 

@@ -99,6 +99,8 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<APMSpline> CurrentSpline;
+	UPROPERTY()
+	TObjectPtr<APMSpline> StartingSpline;
 
 	UPROPERTY()
 	TObjectPtr<APMGameModeBase> GameMode;

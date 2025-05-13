@@ -23,7 +23,7 @@ void UPMGameInstance::Init()
 	SetLevelType(ELevelType::MENU);
 }
 
-FText UPMGameInstance::MakeScoreboardDataAsText(const TArray<FScoreboardData>& FinalScoresData) const
+FText UPMGameInstance::FormatScoreboardData(const TArray<FScoreboardData>& FinalScoresData) const
 {
 	FString FinalScores = FString(TEXT(""));
 	for (int32 index = 0; index < FinalScoresData.Num(); ++index)
@@ -44,8 +44,9 @@ FText UPMGameInstance::GetScoreboardData(ELevelType LevelType) const
 	// Switch because Text in Scoreboard widget is set individually in Classic and Maze column
 	switch (LevelType)
 	{
-		case ELevelType::CLASSIC: return MakeScoreboardDataAsText(ClassicScoreboardData);
-		case ELevelType::MAZE: return MakeScoreboardDataAsText(MazeScoreboardData);
+		case ELevelType::CLASSIC: return FormatScoreboardData(ClassicScoreboardData);
+		case ELevelType::MAZE: return FormatScoreboardData(MazeScoreboardData);
+		case ELevelType::MENU: return FText::FromString("");
 	}
 
 	return FText::FromString("");
@@ -64,20 +65,20 @@ void UPMGameInstance::ClearScoreboardData()
 }
 
 
-void UPMGameInstance::AddScoreboardData(ELevelType LevelType, const FScoreboardData& ScoreData)
+void UPMGameInstance::AddScoreboardData(ELevelType LevelType, const FScoreboardData& ScoreboardData)
 {
 	switch (LevelType)
 	{
 		case ELevelType::CLASSIC:
 		{
-			ClassicScoreboardData.Add(ScoreData);
+			ClassicScoreboardData.Add(ScoreboardData);
 			// Sorts the scores to display from best to worst 
 			ClassicScoreboardData.Sort([](const FScoreboardData& a, const FScoreboardData& b) { return a.Score > b.Score; });
 			return;
 		}
 		case ELevelType::MAZE:
 		{
-			MazeScoreboardData.Add(ScoreData);
+			MazeScoreboardData.Add(ScoreboardData);
 			MazeScoreboardData.Sort([](const FScoreboardData& a, const FScoreboardData& b) { return a.Score > b.Score; });
 			return;
 		}
@@ -96,7 +97,7 @@ void UPMGameInstance::SaveGame()
 		}				
 	}
 
-	// Set gameplay and scores data in SaveGame object
+	// Sets gameplay and scores data in SaveGame object
 	SaveGameInstance->SetSaveData(ClassicGameData, MazeGameData, ClassicScoreboardData, MazeScoreboardData);
 	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SaveSlotName, 0);
 }

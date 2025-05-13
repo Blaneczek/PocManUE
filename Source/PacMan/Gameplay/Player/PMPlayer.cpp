@@ -3,7 +3,6 @@
 #include "PMPlayer.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
-#include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Kismet/GameplayStatics.h"
@@ -38,6 +37,13 @@ APMPlayer::APMPlayer()
 void APMPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+
+	TArray<AActor*> OutActors;
+	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("start")), OutActors);
+	for (AActor* Item : OutActors)
+	{
+		StartingSpline = Cast<APMSpline>(Item);
+	}
 	
 	GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GameMode)
@@ -146,22 +152,17 @@ void APMPlayer::Start()
 	TempDirection = EPlayerDirection::NONE;
 	DesiredDirection = EPlayerDirection::RIGHT;
 	CurrentDirection = EPlayerDirection::RIGHT;
-
-	TArray<AActor*> OutActors;
-	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), APMSpline::StaticClass(), FName(TEXT("start")), OutActors);
-	for (AActor* item : OutActors)
-	{
-		CurrentSpline = Cast<APMSpline>(item);
-	}
-
-	if (CurrentSpline == nullptr)
+	
+	if (StartingSpline == nullptr)
 	{		
 		UE_LOG(LogTemp, Warning, TEXT("APMPlayer::BeginPlay | CurrentSpline is nullptr"));
 		return;
 	}
 
+	CurrentSpline = StartingSpline;
+	
 	MarkSpline();
-	const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
+	const FVector NewLocation = StartingSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
 	SetActorLocation(NewLocation);
 	
 	SetActorHiddenInGame(false);
@@ -198,8 +199,7 @@ void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Othe
 {
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
-		IPMInteractionInterface* InteractionInterface = Cast<IPMInteractionInterface>(OtherActor);
-		if (InteractionInterface)
+		if (IPMInteractionInterface* InteractionInterface = Cast<IPMInteractionInterface>(OtherActor))
 		{
 			GameMode->AddPoints(InteractionInterface->Interaction());
 		}

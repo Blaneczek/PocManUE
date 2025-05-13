@@ -4,7 +4,6 @@
 #include "Gameplay/Ghosts/PMClassicGhost.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
-#include "Components/WidgetComponent.h"
 #include "GameModes/Gameplay/PMGameModeBase.h"
 
 APMClassicGhost::APMClassicGhost()
@@ -51,24 +50,29 @@ void APMClassicGhost::SetEyesPosition(const int32 YawRotation)
 	{
 		case 0: 
 		{
-			SetEyes(FVector(0, 0, 0), FVector(0, 0, 0), FVector(-19, 0, -5), FVector(-13, 0, -5));
+			SetEyes(FVector(0, 0, 0), FVector(0, 0, 0),
+				FVector(-19, 0, -5), FVector(-13, 0, -5));
 			return;
 		}
 		case 90:
 		{
-			SetEyes(FVector(0, 0, 0), FVector(0, 0, 0), FVector(-11, 0, -16), FVector(-5, 0, -16));
+			SetEyes(FVector(0, 0, 0), FVector(0, 0, 0),
+				FVector(-11, 0, -16), FVector(-5, 0, -16));
 			return;
 		}
 		case -90:
 		{
-			SetEyes(FVector(0, 0, 26), FVector(0, 0, 28), FVector(-11, 0, 8), FVector(-5, 0, 8));
+			SetEyes(FVector(0, 0, 26), FVector(0, 0, 28),
+				FVector(-11, 0, 8), FVector(-5, 0, 8));
 			return;
 		}
 		case 180:
 		{
-			SetEyes(FVector(0, 0, 0), FVector(0, 0, 0), FVector(-5, 0, -5), FVector(0, 0, -5));
+			SetEyes(FVector(0, 0, 0), FVector(0, 0, 0),
+				FVector(-5, 0, -5), FVector(0, 0, -5));
 			return;
 		}
+		default: return;
 	}
 }
 

@@ -128,7 +128,7 @@ void APMClassicPlayer::AnimateMesh(float DeltaTime)
 			TopMesh->SetRelativeRotation(FRotator(FMath::Lerp(-60.f, 0.f, AnimationTimeElapsed / AnimationSpeed), 0.f, 0.f));
 			BottomMesh->SetRelativeRotation(FRotator(FMath::Lerp(60.f, 0.f, AnimationTimeElapsed / AnimationSpeed), 0.f, 0.f));
 		}
-		
+	
 		AnimationTimeElapsed += DeltaTime;
 	}
 	else

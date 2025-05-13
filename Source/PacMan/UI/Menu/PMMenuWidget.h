@@ -33,7 +33,7 @@ public:
 	void SetIsEnabledMazeButton(bool bInIsEnabled);	
 
 protected:
-	void NativeConstruct() override;
+	virtual void NativeConstruct() override;
 
 	/** Buttons handle */
 	UFUNCTION()

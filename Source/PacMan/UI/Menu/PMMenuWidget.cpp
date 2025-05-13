@@ -8,8 +8,6 @@
 #include "PMScoreboardWidget.h"
 #include "Components/Slider.h"
 #include "Kismet/GameplayStatics.h"
-#include "Sound/SoundClass.h"
-#include "Sound/SoundMix.h"
 
 void UPMMenuWidget::NativeConstruct()
 {

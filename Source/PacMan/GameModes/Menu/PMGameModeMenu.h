@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "PMGameModeMenu.generated.h"
 
+enum class ELevelType : uint8;
 class UPMGameInstance;
 class UPMMenuWidget;
 class USoundWave;

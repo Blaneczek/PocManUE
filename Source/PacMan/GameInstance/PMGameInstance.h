@@ -86,7 +86,7 @@ public:
 	void SetClassicData(const FGameData& Data) { ClassicGameData = Data; }
 	void SetMazeData(const FGameData& Data) { MazeGameData = Data; }
 
-	/** Return formatted text */
+	/** Returns formatted text */
 	FText GetScoreboardData(ELevelType LevelType) const;
 
 	void ClearScoreboardData();
@@ -99,7 +99,7 @@ public:
 
 private:
 	/** Converts table data into properly formatted text */
-	FText MakeScoreboardDataAsText(const TArray<FScoreboardData>& FinalScoresData) const;
+	FText FormatScoreboardData(const TArray<FScoreboardData>& FinalScoresData) const;
 
 public:
 	UPROPERTY()
@@ -107,7 +107,7 @@ public:
 	UPROPERTY()
 	FGameData MazeGameData;
 
-	/** Maps storing indexes and level names for moving to the next levels */
+	/** Maps store indexes and level names for moving to the next levels */
 	UPROPERTY()
 	TMap<int32, FName> ClassicLevels;
 	UPROPERTY()
@@ -117,10 +117,11 @@ private:
 	static ELevelType CurrentLevelType;
 
 	FString SaveSlotName;
+	
 	UPROPERTY()
 	TObjectPtr<UPMSaveGame> SaveGameInstance;
 
-	/** Data from these arrays are displayed in the Scoreboard widget */
+	/** Data from these arrays is displayed in the Scoreboard widget */
 	UPROPERTY()
 	TArray<FScoreboardData> ClassicScoreboardData;
 	UPROPERTY()

@@ -2,9 +2,7 @@
 
 
 #include "PMMazePlayer.h"
-#include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameModes/Gameplay/PMGameModeMaze.h"

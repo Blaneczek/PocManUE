@@ -50,15 +50,15 @@ public:
 	virtual void SetPlayerChased(bool IsPlayerChased) {};
 
 	void AddCherryCoin();
-	void AddPoints(int32 points);
+	void AddPoints(int32 Points);
 	void StopAllMovement();
 	void OpenPauseMenu();
 
 protected:
-	/** Initialize widgets that are added to viewport at the beggining or will be used many times later in the game */
+	/** Initializes widgets added to viewport at the beginning that will be used many times later in the game */
 	virtual void InitStartingWidgets();
 
-	/** Set gameplay data from GameInstance depending on the game mode */
+	/** Sets gameplay data from GameInstance depending on the game mode */
 	virtual void SetGameplayValues() {};
 
 	virtual void HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame);
@@ -66,7 +66,7 @@ protected:
 	virtual void StartAllMovement();
 	virtual void RestartGameType() {};
 
-	void CreateEndGameWidget(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, int32 InScore, int32 InCherries);
+	void CreateEndGameWidget(const TSubclassOf<UPMEndGameWidget>& EndGameWidgetClass, int32 InScore, int32 InCherries);
 	void CreateNextLevelWidget();
 
 	void StartGame();
@@ -78,7 +78,7 @@ protected:
 	void OpenNextLevel(const FName& LevelName);
 	
 	UFUNCTION()
-	void SpawnSpecialCoin(TSubclassOf<APMCoin> SpecialCoinClass);
+	void SpawnSpecialCoin(const TSubclassOf<APMCoin>& SpecialCoinClass);
 
 	/** Populates the Spline array with pointers to the splines at the current level */
 	void SetSplines();
@@ -134,7 +134,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> LoseGameSound;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
-	TObjectPtr<USoundWave> PlayerHittedSound;
+	TObjectPtr<USoundWave> PlayerHitSound;
 	UPROPERTY(EditDefaultsOnly, Category = "PocMan|Sound")
 	TObjectPtr<USoundWave> CoinSound;
 
@@ -154,6 +154,6 @@ protected:
 	FTimerHandle StartMovementTimer;
 	FTimerHandle VulnerableGhostTimer;
 
-	/** used to make the sound of every second coin collected */
+	/** Used to make the sound of every second coin collected */
 	bool bCoinSound;
 };

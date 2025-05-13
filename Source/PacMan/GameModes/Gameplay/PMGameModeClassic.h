@@ -32,7 +32,7 @@ public:
 
 protected:
 	virtual void InitStartingWidgets() override;
-	virtual void HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame);
+	virtual void HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame) override;
 	virtual void SetGameplayValues() override;
 	virtual void StartAllMovement() override;
 	virtual void StopGame() override;
