@@ -94,15 +94,25 @@ private:
 	void AttackTimer();
 	void CanSee();
 
+	/** Sets proper speed and state to free Ghost from the base. */
 	void Release();
+
+	/** Resets all timers and needed variables. */
 	void Reset();
+
+	/** Sets proper values and states to prepare Ghost for the start of the game. */
 	void Start();
+	
 	void StartMovement();
 	void StopMovement();
-
+	
+	/** Starts vulnerable state where Ghost can be hit by the player. */
 	void VulnerableState();
+	
 	void EndVulnerableState();
 	void VulnerableFlickering();
+
+	/** Sends Ghost back to base after getting hit by the player by setting proper state. */
 	void BackToBase();
 	
 	void InitializeMaterial();
