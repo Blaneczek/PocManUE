@@ -14,7 +14,7 @@ https://blaneczek.itch.io/pocman
 
 |                                                                               | Description                                                     |
 |-------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| [Game modes](#game-modes-code)                                                 | Managing the flow of gameplay in classic and maze mode          |
+| [Game modes](#game-modes-code)                                                | Managing the flow of gameplay in classic and maze mode          |
 | [Splines](#splines-code)                                                      | Splines system on which movement and coins spawn are based.     |
 | [Movement](#movement-code-playercode-ghost)                                   | Detailed description of the movement.                           |
 | [Ghosts](#ghosts-code)                                                        | How ghosts work and how they behave.                            |
@@ -163,7 +163,59 @@ void APMSpline::SpawnCoins()
 
 <details>
 <summary>More</summary>
-  
+ Movement is a key part of both modes, and also the most complex part of the project. Precision was very important, so I decided to use splines for this. In short, the player character and ghosts move along splines. 
+
+```c++
+void APMPlayer::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (CurrentSpline == nullptr)
+	{
+		return;
+	}
+
+	if (bIsMoving)
+	{
+		PositionOnSpline += DeltaTime * MovingDirection * Speed;
+
+		const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
+		SetActorLocation(NewLocation);
+	}
+
+	if (CheckIfAtSplinePoint())
+	{
+		bIsMoving = false;
+		UnmarkSpline();		
+		ChooseNewSpline();
+		MarkSpline();
+	}
+}
+```
+
+ ```c++
+void APMGhost::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (bIsMoving)
+	{
+		PositionOnSpline += DeltaTime * MovingDirection * Speed;
+	
+		const FVector NewLocation = CurrentSpline->SplineComponent->GetLocationAtDistanceAlongSpline(PositionOnSpline, ESplineCoordinateSpace::World);
+		SetActorLocation(NewLocation);
+
+		if (CheckIfAtPoint())
+		{
+			bIsMoving = false;
+			HandleMovement();
+		}
+	}
+}
+```
+
+The challenge was to change directions. 
+
 </details>
 
 # Ghosts ([code](Source/PacMan/Gameplay/Ghosts)) 
