@@ -54,15 +54,109 @@ protected:
 	virtual void SetGameplayValues() {};
 ...
 ```
+In BeginPlay we cache the game instance pointer, as it will be used often later. Then we start the music, set all the necessary values, create widgets and set timers to start the game at the right time.
 
+```c++
+void APMGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
 
+	GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (GameInstance)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | GameInstance is nullptr"));
+		return;
+	}
+	
+	if (IsValid(GameMusic))
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), GameMusic);
+	}
+
+	SetGameplayValues();
+	SetSplines();
+		
+	InitStartingWidgets();	
+
+	FTimerHandle StartGameTimer;
+	GetWorld()->GetTimerManager().SetTimer(StartGameTimer, this, &APMGameModeBase::StartGame, 1.f, false);
+
+	GetWorld()->GetTimerManager().SetTimer(StartMovementTimer, this, &APMGameModeBase::StartAllMovement, 3.f, false);
+
+	CherryCoinDel.BindUFunction(this, FName(TEXT("SpawnSpecialCoin")), CherryCoinClass);
+	GetWorld()->GetTimerManager().SetTimer(CherryCoinTimer, CherryCoinDel, 10.f, false);
+
+}
+``` 
 </details>
 
 # Splines ([code](Source/PacMan/Gameplay/Splines)) 
 
 <details>
 <summary>More</summary>
-  
+Splines are an important part of the design. They are used for movement (described in the next section) and for the spawning of coins.</br>
+All the splines on which the player and the ghosts can move are placed on the level.
+	
+<img src="https://github.com/user-attachments/assets/120861a8-57ea-4334-a608-705612820c89" width="700">
+
+</br>Each spline must be connected to its neighboring splines.	
+
+<img src="https://github.com/user-attachments/assets/78fedaae-8e6a-4476-8ca2-b5c4b2361864" width="700">
+
+ </br>Due to the fact that there is often a problem with losing references to other actors, I needed to create a simple script that will automatically connect all the splines.
+
+<img src="https://github.com/user-attachments/assets/187602fd-d55d-4cd1-b21f-a8bab3666ff4" width="700">
+
+
+<img src="https://github.com/user-attachments/assets/b654f8da-fcb1-412d-a4b3-1d635bc51aad" width="700">
+
+</br>Splines are also used to fill levels with coins. To do this, the SpawnCoins function calculates the number of coins depending on the length of the spline and spawns the actors at the correct distance. 
+
+```c++
+void APMSpline::SpawnCoins()
+{
+	if (this->ActorHasTag(FName(TEXT("withoutCoins"))))
+	{
+		return;
+	}
+
+	if (!IsValid(SplineComponent))
+	{
+		return;
+	}
+	const int32 CoinsNumber = FMath::RoundToInt(SplineComponent->GetSplineLength() / CoinDistanceOnSpline);
+
+	for (int32 i = 0; i <= CoinsNumber; ++i)
+	{		
+		const FVector& Location = SplineComponent->GetLocationAtDistanceAlongSpline(CoinDistanceOnSpline * i, ESplineCoordinateSpace::World);
+		const FRotator& Rotation = FRotator(0, 0, 0);
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
+
+		switch (UPMGameInstance::GetCurrentLevelType())
+		{
+			case ELevelType::CLASSIC:
+			{
+				if (IsValid(ClassicCoinClass))
+				{
+					GetWorld()->SpawnActor<APMCoin>(ClassicCoinClass, Location, Rotation, SpawnInfo);
+				}
+				break;
+			}
+			case ELevelType::MAZE:
+			{
+				if (IsValid(MazeCoinClass))
+				{
+					GetWorld()->SpawnActor<APMCoin>(MazeCoinClass, Location, Rotation, SpawnInfo);
+				}
+				break;
+			}
+			default: break;
+		}
+	}
+}
+```
+
 </details>
 
 # Movement ([code player](Source/PacMan/Gameplay/Player/PMPlayer.cpp))([code ghost](Source/PacMan/Gameplay/Ghosts/PMGhost.cpp))
