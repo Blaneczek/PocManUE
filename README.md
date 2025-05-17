@@ -163,19 +163,14 @@ void APMSpline::SpawnCoins()
 
 <details>
 <summary>More</summary>
-Movement is a key part of both modes, and also the most complex part of the project. At first I tried the traditional movement and use of collision, but soon realized that I needed something more precise. I decided to use splines for this. In short, the player character and ghosts move along splines. 
+Movement is a key part of both modes. At first I tried the traditional movement and use of collision, but soon realized that I needed something more precise. I decided to use splines for this. In short, the player character and ghosts move along splines. 
 
 ```c++
 void APMPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!IsValid(CurrentSpline))
-	{
-		return;
-	}
-
-	if (bIsMoving)
+	if (bIsMoving && IsValid(CurrentSpline))
 	{
 		PositionOnSpline += DeltaTime * MovingDirection * Speed;
 
@@ -198,7 +193,7 @@ void APMGhost::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsMoving)
+	if (bIsMoving && IsValid(CurrentSpline))
 	{
 		PositionOnSpline += DeltaTime * MovingDirection * Speed;
 	
@@ -349,7 +344,213 @@ void APMMazePlayer::MoveLeft()
 
 <details>
 <summary>More</summary>
-  
+Ghost has 2 enums: EGhostState, which tells us whether it is currently vulnerable to player attack (the case when the player collects a special coin), and EGhostMovementState, which is used to control movement. 
+
+```c++
+UENUM()
+enum class EGhostState : uint8
+{
+	NONE		UMETA(DisplayName = "None"),
+	VULNERABLE	UMETA(DisplayName = "Vulnerable")
+};
+
+UENUM()
+enum class EGhostMovementState : uint8
+{
+	NONE		UMETA(DisplayName = "None"),
+	PASSIVE		UMETA(DisplayName = "Passive"),
+	ATTACK		UMETA(DisplayName = "Attack"),
+	BASE		UMETA(DisplayName = "Base"),
+	RELEASE		UMETA(DisplayName = "Release"),
+	HIT		UMETA(DisplayName = "Hit")
+};
+```
+
+```c++
+void APMGhost::HandleMovement()
+{
+	int32 FoundSpline = 0;
+
+	switch (MovementState)
+	{
+		case EGhostMovementState::BASE:
+		{
+			GhostBaseMovement();
+			return;
+		}
+		case EGhostMovementState::PASSIVE:
+		{
+			TArray<int32> ValidSplines = FindValidSplinesInRandomMovement();
+			const int32 ValidSplinesNum = ValidSplines.Num();
+			if (ValidSplinesNum == 0)
+			{
+				TurnAround();
+				return;
+			}
+
+			const int32 RandomIndex = FMath::RandRange(0, ValidSplinesNum - 1);
+			const int32 RandomNum = FMath::RandRange(1, 10);
+
+			//10% chance of turning around if not turned before 
+			if (!bTurnedAround && RandomNum < 10)
+			{
+				FoundSpline = -1;
+				bTurnedAround = true;
+			}
+			else
+			{
+				FoundSpline = ValidSplines[RandomIndex];
+				bTurnedAround = false;
+			}
+				
+			break;
+		}
+		case EGhostMovementState::ATTACK:
+		{
+			FoundSpline = FindPath(FName(TEXT("player_MarkedSpline"))); 
+			break;
+		}
+		case EGhostMovementState::RELEASE:
+		{
+			FoundSpline = FindPath(FName(TEXT("release_MarkedSpline")));
+			break;
+		}
+		case EGhostMovementState::HIT:
+		{
+			FoundSpline = FindPath(FName(TEXT("base_MarkedSpline")));
+			break;
+		}
+		default: return;
+	}
+
+	ChooseNewSpline(FoundSpline);
+}
+
+```
+
+<br>BASE state: when Ghost is in the base and moves up and down.
+
+```c++
+void APMGhost::GhostBaseMovement()
+{
+	if ((CurrentSpline->Splines[SplineIndex].UPWARD != nullptr) && (CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(TEXT("releaseGhost"))))
+	{
+		TurnAround();
+		return;
+	}
+
+	if (CurrentSpline->Splines[SplineIndex].UPWARD != nullptr)
+	{
+		MoveToNewSpline(1.f, -90.f, CurrentSpline->Splines[SplineIndex].UPWARD);
+		return;
+	}
+
+	if (CurrentSpline->Splines[SplineIndex].DOWN != nullptr)
+	{
+		MoveToNewSpline(-1.f, 90.f, CurrentSpline->Splines[SplineIndex].DOWN);
+		return;
+	}
+
+	TurnAround();
+}
+```
+
+<br>PASSIVE state: when Ghost moves freely, choosing random splines
+
+```c++
+TArray<int32> APMGhost::FindValidSplinesInRandomMovement()
+{
+	TArray<int32> OutValidSplines;
+
+	if ((CurrentSpline->Splines[SplineIndex].UPWARD != nullptr) && (!CurrentSpline->Splines[SplineIndex].UPWARD->ActorHasTag(FName(TEXT("releaseGhost")))))
+	{
+		OutValidSplines.Add(0);
+	}
+	if ((CurrentSpline->Splines[SplineIndex].DOWN != nullptr) && (!CurrentSpline->Splines[SplineIndex].DOWN->ActorHasTag(FName(TEXT("releaseGhost")))))
+	{
+		OutValidSplines.Add(1);
+	}
+	if ((CurrentSpline->Splines[SplineIndex].LEFT != nullptr) && (!CurrentSpline->Splines[SplineIndex].LEFT->ActorHasTag(FName(TEXT("releaseGhost")))))
+	{
+		OutValidSplines.Add(2);
+	}
+	if ((CurrentSpline->Splines[SplineIndex].RIGHT != nullptr) && (!CurrentSpline->Splines[SplineIndex].RIGHT->ActorHasTag(FName(TEXT("releaseGhost")))))
+	{
+		OutValidSplines.Add(3);
+	}
+
+	return OutValidSplines;
+}
+```
+
+<br>ATTACK state: when Ghost has seen the player and chases him through the splines. I used the BFS algorithm to find the best path between the Player character and Ghost.
+
+```c++
+// Implementation of the BFS (Breadth-First Search) algorithm to find a path to a target spline.
+int32 APMGhost::FindPath(const FName& SplineTag)
+{
+	TMap<FString, APMSpline*> VisitedSplines;
+
+	// Queue to store splines to be visited next and index of first spline from which the path begins (FSplineQueueData.FirstSplineIndex).
+	TQueue<FSplineQueueData> SplineQueue;
+
+	// Get all the splines from where the paths start 
+	TMap<int32, APMSpline*> ValidSplines = FindValidSplinesInMarkedMovement(CurrentSpline, SplineIndex);
+
+	for (const auto& Item : ValidSplines)
+	{
+		// Check if the ghost is already on the target spline.
+		if (Item.Value->ActorHasTag(SplineTag))
+		{
+			ReachingMarkedSpline();
+			return Item.Key;			
+		}
+		SplineQueue.Enqueue(FSplineQueueData(Item.Key, Item.Key, Item.Value));	
+	}
+
+	while (!SplineQueue.IsEmpty())
+	{
+		APMSpline* CheckedSpline = SplineQueue.Peek()->Spline;
+		const int32 FirstSpline = SplineQueue.Peek()->FirstSplineIndex;
+		const int32 NextSplineIndex = SplineQueue.Peek()->CurrentSplineIndex;
+		SplineQueue.Pop();
+
+		// 0 - UPWARD, 1 - DOWN, 2 - LEFT, 3 - RIGHT
+		if (NextSplineIndex == 0 || NextSplineIndex == 3)
+		{
+			ValidSplines = FindValidSplinesInMarkedMovement(CheckedSpline, 1);
+		}
+		else if (NextSplineIndex == 1 || NextSplineIndex == 2)
+		{
+			ValidSplines = FindValidSplinesInMarkedMovement(CheckedSpline, 0);
+		}
+
+		for (const auto& Item : ValidSplines)
+		{
+			FString SplineName = Item.Value->GetName();
+			if (!VisitedSplines.Contains(SplineName))
+			{
+				VisitedSplines.Add(SplineName, Item.Value);
+				SplineQueue.Enqueue(FSplineQueueData(FirstSpline, Item.Key, Item.Value));
+
+				if ( Item.Value->ActorHasTag(SplineTag))
+				{
+					// Next spline the ghost should enter to reach the target spline 
+					return FirstSpline;
+				}
+			}
+		}		
+	}
+
+	// If the path doesn't exist, turn around
+	return -1;
+}
+```
+
+<br>RELEASE state: when Ghost leaves the base, it uses the FindPath function. 
+
+<br>HIT state: when Ghost was hit by a player, it uses the FindPath function to return to the base.
+
 </details>
 
 # Coins ([code](Source/PacMan/Gameplay/Coins)) 
