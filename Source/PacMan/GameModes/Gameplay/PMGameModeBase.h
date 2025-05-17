@@ -61,7 +61,7 @@ protected:
 	/** Sets gameplay data from GameInstance depending on the game mode */
 	virtual void SetGameplayValues() {};
 
-	virtual void HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame);
+	virtual void HandleEndLevel(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame);
 	virtual void StopGame();
 	virtual void StartAllMovement();
 	virtual void RestartGameType() {};

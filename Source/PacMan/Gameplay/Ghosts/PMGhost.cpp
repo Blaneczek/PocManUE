@@ -52,9 +52,12 @@ void APMGhost::BeginPlay()
 	InitializeMaterial();
 	BindGameModeDelegates();
 
-	PointsWidget->SetVisibility(false);
-
-	if (PawnSensing != nullptr)
+	if (IsValid(PointsWidget))
+	{
+		PointsWidget->SetVisibility(false);
+	}
+	
+	if (IsValid(PawnSensing))
 	{
 		PawnSensing->OnSeePawn.AddDynamic(this, &APMGhost::OnSeePawn);
 	}
@@ -66,7 +69,7 @@ void APMGhost::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsMoving)
+	if (bIsMoving && IsValid(CurrentSpline))
 	{
 		PositionOnSpline += DeltaTime * MovingDirection * Speed;
 	
@@ -246,7 +249,7 @@ void APMGhost::OnSeePawn(APawn* OtherPawn)
 	{		
 		MovementState = EGhostMovementState::ATTACK;
 
-		if (GameMode != nullptr)
+		if (IsValid(GameMode))
 		{
 			GameMode->SetPlayerChased(true);
 		}
@@ -263,7 +266,7 @@ void APMGhost::AttackTimer()
 	GetWorld()->GetTimerManager().SetTimer(CanSeeTimer, CanSeeDel, 2.f, false);
 	MovementState = EGhostMovementState::PASSIVE;
 
-	if (GameMode != nullptr)
+	if (IsValid(GameMode))
 	{
 		GameMode->SetPlayerChased(false);
 	}
@@ -271,7 +274,7 @@ void APMGhost::AttackTimer()
 
 int32 APMGhost::Interaction()
 {
-	if (GameMode == nullptr)
+	if (!IsValid(GameMode))
 	{
 		return 0;
 	}
@@ -449,7 +452,7 @@ void APMGhost::InitializeMaterial()
 void APMGhost::BindGameModeDelegates()
 {
 	GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (GameMode)
+	if (IsValid(GameMode))
 	{
 		GameMode->OnStartGame.AddUObject(this, &APMGhost::Start);
 		GameMode->OnStopGame.AddUObject(this, &APMGhost::Reset);
@@ -510,7 +513,6 @@ void APMGhost::GhostBaseMovement()
 	}
 
 	TurnAround();
-	return;
 }
 
 void APMGhost::ChooseNewSpline(int32 ChosenSpline)
@@ -589,7 +591,7 @@ TMap<int32, APMSpline*> APMGhost::FindValidSplinesInMarkedMovement(APMSpline* Sp
 	{
 		ValidSplines.Add(3, Spline->Splines[Index].RIGHT);
 	}
-
+	
 	return ValidSplines;
 }
 

@@ -141,8 +141,8 @@ void APMMazePlayer::TurnAround()
 
 void APMMazePlayer::OpenMap()
 {
-	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(GetWorld())))
+	if (APMGameModeMaze* GameModeMaze = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		GM->ShowMap();
+		GameModeMaze->ShowMap();
 	}
 }

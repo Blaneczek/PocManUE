@@ -22,6 +22,11 @@ void APMClassicPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!IsValid(GameMode))
+	{
+		return;
+	}
+	
 	switch (GameMode->CurrentLevelNum)
 	{
 		case 2:

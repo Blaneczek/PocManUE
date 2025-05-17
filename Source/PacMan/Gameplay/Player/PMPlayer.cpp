@@ -74,13 +74,8 @@ void APMPlayer::BeginPlay()
 void APMPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (CurrentSpline == nullptr)
-	{
-		return;
-	}
-
-	if (bIsMoving)
+	
+	if (bIsMoving && IsValid(CurrentSpline))
 	{
 		PositionOnSpline += DeltaTime * MovingDirection * Speed;
 
@@ -119,7 +114,7 @@ void APMPlayer::Rotate180(EPlayerDirection Direction)
 
 void APMPlayer::MarkSpline()
 {
-	if (CurrentSpline != nullptr)
+	if (IsValid(CurrentSpline))
 	{
 		CurrentSpline->Tags.Add(FName(TEXT("player_MarkedSpline")));
 	}		
@@ -127,7 +122,7 @@ void APMPlayer::MarkSpline()
 
 void APMPlayer::UnmarkSpline()
 {
-	if (CurrentSpline != nullptr)
+	if (IsValid(CurrentSpline))
 	{
 		CurrentSpline->Tags.Remove(FName(TEXT("player_MarkedSpline")));
 	}
@@ -189,15 +184,16 @@ void APMPlayer::StopMovement()
 
 void APMPlayer::OpenPauseMenu()
 {
-	if (GameMode != nullptr)
+	if (IsValid(GameMode))
 	{
 		GameMode->OpenPauseMenu();
 	}	
 }
 
-void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+								int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && (OtherActor != this) && OtherComp)
+	if (OtherActor && (OtherActor != this) && OtherComp && IsValid(GameMode))
 	{
 		if (IPMInteractionInterface* InteractionInterface = Cast<IPMInteractionInterface>(OtherActor))
 		{
@@ -248,9 +244,11 @@ void APMPlayer::ChooseNewSpline()
 			NewSpline = CurrentSpline->Splines[SplineIndex].LEFT;
 			break;
 		}		
-		default: return;
+		default: break;
 	}
 
+	// If there is a spline leading to the Ghost base on the desired direction, ignore it, save the desired direction
+	// and choose the spline leading forward on the next tick. 
 	if (!NewSpline || NewSpline->ActorHasTag(FName(TEXT("releaseGhost"))))
 	{
 		TempDirection = DesiredDirection;

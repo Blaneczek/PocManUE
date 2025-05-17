@@ -11,11 +11,6 @@ int32 APMAttackCoin::Interaction()
 	{
 		GameMode->StartPlayerAttackState();
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("APMAttackCoin::Interaction | gameMode is nullptr"))
-	}
-
 	CoinsCounter--;
 	Destroy();
 	return 10;

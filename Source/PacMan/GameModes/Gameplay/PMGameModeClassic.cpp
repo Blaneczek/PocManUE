@@ -38,7 +38,7 @@ void APMGameModeClassic::InitStartingWidgets()
 	Super::InitStartingWidgets();
 }
 
-void APMGameModeClassic::HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame)
+void APMGameModeClassic::HandleEndLevel(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame)
 {
 	if (bWonGame && GameInstance->ClassicLevels.Contains(CurrentLevelNum + 1)) // Next level
 	{
@@ -59,7 +59,7 @@ void APMGameModeClassic::HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidg
 		GameInstance->ClassicGameData = FGameData(1, 0, 0);
 	}
 
-	Super::HandleEndGame(EndGameWidgetClass, EndGameSound, bWonGame);
+	Super::HandleEndLevel(EndGameWidgetClass, EndGameSound, bWonGame);
 }
 
 void APMGameModeClassic::SetGameplayValues()
@@ -103,6 +103,7 @@ void APMGameModeClassic::StartPlayerAttackState()
 {
 	Super::StartPlayerAttackState();
 
+	// Reset Player's attack state if it is still active
 	if (VulnerableGhostTimer.IsValid())
 	{
 		GetWorld()->GetTimerManager().ClearTimer(VulnerableGhostTimer);

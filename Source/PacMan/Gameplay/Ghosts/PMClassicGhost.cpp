@@ -28,6 +28,11 @@ void APMClassicGhost::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!IsValid(GameMode))
+	{
+		return;
+	}
+	
 	switch (GameMode->CurrentLevelNum)
 	{
 		case 2:
@@ -78,6 +83,11 @@ void APMClassicGhost::SetEyesPosition(const int32 YawRotation)
 
 void APMClassicGhost::SetEyes(const FVector& InEyeL, const FVector& InEyeR, const FVector& InIrisL, const FVector& InIrisR)
 {
+	if (!IsValid(EyeL) || !IsValid(EyeR) || !IsValid(IrisL) || !IsValid(IrisL))
+	{
+		return;
+	}
+	
 	EyeL->SetRelativeLocation(InEyeL);
 	EyeR->SetRelativeLocation(InEyeR);
 	IrisL->SetRelativeLocation(InIrisL);

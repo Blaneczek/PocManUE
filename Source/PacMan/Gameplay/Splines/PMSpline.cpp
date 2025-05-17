@@ -37,6 +37,10 @@ void APMSpline::SpawnCoins()
 		return;
 	}
 
+	if (!IsValid(SplineComponent))
+	{
+		return;
+	}
 	const int32 CoinsNumber = FMath::RoundToInt(SplineComponent->GetSplineLength() / CoinDistanceOnSpline);
 
 	for (int32 i = 0; i <= CoinsNumber; ++i)
@@ -50,18 +54,22 @@ void APMSpline::SpawnCoins()
 		{
 			case ELevelType::CLASSIC:
 			{
-				GetWorld()->SpawnActor<APMCoin>(ClassicCoinClass, Location, Rotation, SpawnInfo);
+				if (IsValid(ClassicCoinClass))
+				{
+					GetWorld()->SpawnActor<APMCoin>(ClassicCoinClass, Location, Rotation, SpawnInfo);
+				}
 				break;
 			}
 			case ELevelType::MAZE:
 			{
-				GetWorld()->SpawnActor<APMCoin>(MazeCoinClass, Location, Rotation, SpawnInfo);
+				if (IsValid(MazeCoinClass))
+				{
+					GetWorld()->SpawnActor<APMCoin>(MazeCoinClass, Location, Rotation, SpawnInfo);
+				}
 				break;
 			}
 			default: break;
 		}
-			
-				
 	}
 }
 

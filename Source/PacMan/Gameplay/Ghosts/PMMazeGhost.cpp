@@ -10,7 +10,7 @@ void APMMazeGhost::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (MovementCue != nullptr)
+	if (IsValid(MovementCue))
 	{
 		GhostAC = UGameplayStatics::SpawnSoundAttached(MovementCue, GetRootComponent());
 	}

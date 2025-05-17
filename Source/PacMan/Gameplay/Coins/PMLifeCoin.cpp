@@ -7,18 +7,18 @@
 
 int32 APMLifeCoin::Interaction()
 {
-	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(GetWorld())))
+	if (APMGameModeMaze* GameMode = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
 		// Interact only when the player does not have all the lives 
-		if (GM->GetLivesNumber() < 3)
+		if (GameMode->GetLivesNumber() < 3)
 		{
 			if (PickUpSound != nullptr)
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
 			}
+			GameMode->AddLife();
 			Destroy();
 		}
-		GM->AddLife();
 	}
 	return 0;
 }

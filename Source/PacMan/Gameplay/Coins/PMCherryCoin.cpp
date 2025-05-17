@@ -10,14 +10,12 @@ int32 APMCherryCoin::Interaction()
 {
 	if (APMGameModeBase* GameMode = Cast<APMGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		GameMode->AddCherryCoin();
-
 		if (PickUpSound != nullptr) 
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
-		}		
+		}
+		GameMode->AddCherryCoin();
 	}
-
 	Destroy();
 	return 100;
 }

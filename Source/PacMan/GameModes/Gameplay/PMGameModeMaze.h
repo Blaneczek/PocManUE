@@ -45,7 +45,7 @@ public:
 
 protected:	
 	virtual void InitStartingWidgets() override;	
-	virtual void HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame) override;
+	virtual void HandleEndLevel(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame) override;
 	virtual void RestartGameType() override;
 	virtual void SetGameplayValues() override;
 

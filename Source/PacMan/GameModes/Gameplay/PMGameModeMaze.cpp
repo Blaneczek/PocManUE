@@ -76,7 +76,7 @@ void APMGameModeMaze::SetGameplayValues()
 	CurrentLevelNum = GameInstance->MazeGameData.LevelNum;
 }
 
-void APMGameModeMaze::HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame)
+void APMGameModeMaze::HandleEndLevel(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame)
 {
 	ClearChasedState();
 
@@ -99,7 +99,7 @@ void APMGameModeMaze::HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetC
 		GameInstance->MazeGameData = FGameData(1, 0, 0);
 	}
 
-	Super::HandleEndGame(EndGameWidgetClass, EndGameSound, bWonGame);
+	Super::HandleEndLevel(EndGameWidgetClass, EndGameSound, bWonGame);
 }
 
 void APMGameModeMaze::HandleGhostHit()

@@ -8,18 +8,18 @@
 
 int32 APMMapCoin::Interaction()
 {
-	if (APMGameModeMaze* GM = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(GetWorld())))
+	if (APMGameModeMaze* GameMode = Cast<APMGameModeMaze>(UGameplayStatics::GetGameMode(GetWorld())))
 	{	
 		// Interact only when the player does not have all the maps
-		if (GM->GetMapsNumber() < 2)
+		if (GameMode->GetMapsNumber() < 2)
 		{			
 			if (PickUpSound != nullptr)
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), PickUpSound);
-			}		
+			}
+			GameMode->AddMap();		
 			Destroy();
 		}
-		GM->AddMap();
 	}
 	return 0;
 }

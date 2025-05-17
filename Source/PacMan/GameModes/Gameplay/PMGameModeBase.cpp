@@ -29,13 +29,13 @@ void APMGameModeBase::BeginPlay()
 	Super::BeginPlay();
 
 	GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (GameInstance == nullptr)
+	if (!GameInstance)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | GameInstance is nullptr"));
 		return;
 	}
 	
-	if (GameMusic != nullptr)
+	if (IsValid(GameMusic))
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), GameMusic);
 	}
@@ -55,9 +55,9 @@ void APMGameModeBase::BeginPlay()
 
 }
 
-void APMGameModeBase::AddPoints(int32 points)
+void APMGameModeBase::AddPoints(int32 Points)
 {
-	Score += points;
+	Score += Points;
 
 	if (HUDWidget != nullptr)
 	{
@@ -68,7 +68,7 @@ void APMGameModeBase::AddPoints(int32 points)
 	if (APMCoin::GetCoinsNumber() == 0)
 	{
 		StopGame();
-		HandleEndGame(WinGameWidgetClass, WinGameSound, true);
+		HandleEndLevel(WinGameWidgetClass, WinGameSound, true);
 	}
 
 	if (bCoinSound && (CoinSound != nullptr))
@@ -89,7 +89,7 @@ void APMGameModeBase::HandleGhostHit()
 	Lives--;
 	if (Lives == 0)
 	{
-		HandleEndGame(LoseGameWidgetClass, LoseGameSound, false);
+		HandleEndLevel(LoseGameWidgetClass, LoseGameSound, false);
 		return;
 	}
 
@@ -184,14 +184,12 @@ void APMGameModeBase::ClosePauseMenu()
 	PauseWidget->RemoveFromParent();
 }
 
-void APMGameModeBase::HandleEndGame(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame)
+void APMGameModeBase::HandleEndLevel(TSubclassOf<UPMEndGameWidget> EndGameWidgetClass, USoundWave* EndGameSound, bool bWonGame)
 {
-	if (GameInstance != nullptr)
-	{
-		GameInstance->AddScoreboardData(GameInstance->GetCurrentLevelType(), FScoreboardData(Score, Cherries));
-		GameInstance->SaveGame();
-	}
-
+	// Used when the game was lost or there was no next level.
+	GameInstance->AddScoreboardData(GameInstance->GetCurrentLevelType(), FScoreboardData(Score, Cherries));
+	GameInstance->SaveGame();
+	
 	if (EndGameSound)
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), EndGameSound);
@@ -276,11 +274,11 @@ void APMGameModeBase::SetSplines()
 {
 	TArray<AActor*> OutSplines;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APMSpline::StaticClass(), OutSplines);
-	for (auto& item : OutSplines)
+	for (const auto& Item : OutSplines)
 	{
-		if (!item->ActorHasTag(FName(TEXT("withoutCoins"))))
+		if (!Item->ActorHasTag(FName(TEXT("withoutCoins"))))
 		{
-			Splines.Add(item);
+			Splines.Add(Item);
 		}
 	}
 }
