@@ -62,7 +62,7 @@ void APMGameModeBase::BeginPlay()
 	Super::BeginPlay();
 
 	GameInstance = Cast<UPMGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (GameInstance)
+	if (!GameInstance)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PMGameModeBase::BeginPlay | GameInstance is nullptr"));
 		return;
@@ -163,14 +163,14 @@ void APMSpline::SpawnCoins()
 
 <details>
 <summary>More</summary>
- Movement is a key part of both modes, and also the most complex part of the project. Precision was very important, so I decided to use splines for this. In short, the player character and ghosts move along splines. 
+Movement is a key part of both modes, and also the most complex part of the project. At first I tried the traditional movement and use of collision, but soon realized that I needed something more precise. I decided to use splines for this. In short, the player character and ghosts move along splines. 
 
 ```c++
 void APMPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (CurrentSpline == nullptr)
+	if (!IsValid(CurrentSpline))
 	{
 		return;
 	}
@@ -214,7 +214,134 @@ void APMGhost::Tick(float DeltaTime)
 }
 ```
 
-The challenge was to change directions. 
+The challenge was to change directions. With the system of splines and their connections to each other, it was simply enough to change the CurrentSpline along which the character moves. The implementation is different in Ghosts and Player Character. Movement in Ghosts is closely related to their AI, so all the details are in the Ghosts section below. 
+</br>In the case of the Player character, the choice of spline depends on the input of the player.
+</br></br>The player's input is queued and stored in DesiredDirection. When the end of CurrentSpline is reached, a new spline is set depending on the saved DesiredDirection. The character is rotated and placed on the next spline.  
+
+ ```c++
+void APMPlayer::ChooseNewSpline()
+{
+	APMSpline* NewSpline = nullptr;
+
+	switch (DesiredDirection)
+	{
+		case EPlayerDirection::UPWARD:
+		{
+			NewSpline = CurrentSpline->Splines[SplineIndex].UPWARD;
+			break;
+		}		
+		case EPlayerDirection::DOWN:
+		{
+			NewSpline = CurrentSpline->Splines[SplineIndex].DOWN;
+			break;
+		}			
+		case EPlayerDirection::RIGHT:
+		{
+			NewSpline = CurrentSpline->Splines[SplineIndex].RIGHT;
+			break;
+		}			
+		case EPlayerDirection::LEFT:
+		{
+			NewSpline = CurrentSpline->Splines[SplineIndex].LEFT;
+			break;
+		}		
+		default: break;
+	}
+
+	// If there is a spline leading to the Ghost base on the desired direction, ignore it, save the desired direction
+	// and choose the spline leading forward on the next tick. 
+	if (!NewSpline || NewSpline->ActorHasTag(FName(TEXT("releaseGhost"))))
+	{
+		TempDirection = DesiredDirection;
+		DesiredDirection = CurrentDirection;
+		return;
+	}
+
+	float NewYaw = 0.f;
+	if (DesiredDirection == EPlayerDirection::UPWARD)
+	{
+		NewYaw = -90.f;
+	}
+	else if (DesiredDirection == EPlayerDirection::DOWN)
+	{
+		NewYaw = 90.f;
+	}	
+	else if (DesiredDirection == EPlayerDirection::LEFT)
+	{
+		NewYaw = 180.f;
+	}
+	
+	SetActorRotation(FRotator(0, NewYaw, 0));
+	CurrentSpline = NewSpline;
+	PositionOnSpline = (DesiredDirection == EPlayerDirection::UPWARD || DesiredDirection == EPlayerDirection::RIGHT) ? 1.f :
+			     CurrentSpline->SplineComponent->GetDistanceAlongSplineAtSplinePoint(1) - 1.f;
+	CurrentDirection = DesiredDirection;
+	MovingDirection = (DesiredDirection == EPlayerDirection::UPWARD || DesiredDirection == EPlayerDirection::RIGHT) ? 1.f : -1.f;
+	bIsMoving = true;
+
+	if (TempDirection != EPlayerDirection::NONE)
+	{
+		DesiredDirection = TempDirection;
+	}
+}
+```
+</br>In classic mode, the input is in 4 directions. Up, left, right, down. By pressing “W” or “up arrow” we queue that direction or do nothing if the character is already moving in that direction. We also check if the current direction is opposite to the upward movement. If so, the character stays in the same spline, but changes the direction of movement.
+
+ ```c++
+void APMClassicPlayer::MoveUp()
+{
+	if (CurrentDirection == EPlayerDirection::UPWARD) return;
+
+	TempDirection = EPlayerDirection::NONE;
+	DesiredDirection = EPlayerDirection::UPWARD;
+
+	if (CurrentDirection == EPlayerDirection::DOWN)
+	{
+		Rotate180(EPlayerDirection::UPWARD);
+	}
+}
+```
+
+</br>In maze mode, there are only 3 inputs available: Left, Right and Backward (spacebar). Desired direction depends on the current direction and is set in clockwise (MoveRight) or counterclockwise (MoveLeft) order. Backward is simply turning around. 
+
+ ```c++
+void APMMazePlayer::MoveLeft()
+{
+	/**
+	* Counterclockwise (e.g. if CurrentDirection is RIGHT, DesiredDirection will be UPWARD)
+	* 
+	*			 UPWARD
+	*		    LEFT	RIGHT
+	*			  DOWN
+	*/
+	switch (CurrentDirection)
+	{
+		case EPlayerDirection::UPWARD:
+		{
+			DesiredDirection = EPlayerDirection::LEFT;
+			break;
+		}
+		case EPlayerDirection::DOWN:
+		{
+			DesiredDirection = EPlayerDirection::RIGHT;
+			break;
+		}
+		case EPlayerDirection::LEFT:
+		{
+			DesiredDirection = EPlayerDirection::DOWN;
+			break;
+		}
+		case EPlayerDirection::RIGHT:
+		{			
+			DesiredDirection = EPlayerDirection::UPWARD;
+			break;
+		}
+		default: break;
+	}
+
+	TempDirection = EPlayerDirection::NONE;
+}
+```
 
 </details>
 
