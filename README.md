@@ -4,7 +4,7 @@ Pocman is a 2-in-1 game, with the well-known classic version and something new, 
 ![classic](https://github.com/user-attachments/assets/ce96ebc4-ab6e-4dd2-b071-04a50cc9f48d) ![maze](https://github.com/user-attachments/assets/fdb5eef9-ad6c-4365-8f17-94dc7729361c)
 
 # Introduction
-Pocman is a complete game developed in Unreal Engine 5 and C++ as part of my portfolio. It allows you to play in 2 different modes and has spline based movement.
+Pocman is a complete game developed in Unreal Engine 5 and C++ as a part of my portfolio. It allows you to play in 2 different modes and has spline based movement.
 
 # Playable game
 The game is fully playable. The build can be downloaded on the itchi.io platform:
@@ -14,7 +14,7 @@ https://blaneczek.itch.io/pocman
 
 |                                                                               | Description                                                     |
 |-------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| [Game modes](#game-modes-code)                                                | Managing the flow of gameplay in classic and maze mode          |
+| [Game modes](#game-modes-code)                                                | Managing the flow of gameplay in classic and maze mode.         |
 | [Splines](#splines-code)                                                      | Splines system on which movement and coins spawn are based.     |
 | [Movement](#movement-code-playercode-ghost)                                   | Detailed description of the movement.                           |
 | [Ghosts](#ghosts-code)                                                        | How ghosts work and how they behave.                            |
