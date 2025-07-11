@@ -24,7 +24,8 @@ https://blaneczek.itch.io/pocman
 
 <details>
 <summary>More</summary>
-The rules and gameplay are managed by the game modes. The base class contains all functions that are shared between modes and virtual functions that are ready to be overwritten.
+	
+</br>The rules and gameplay are managed by the game modes. The base class contains all functions that are shared between modes and virtual functions that are ready to be overwritten.
   
 ```c++
 class PACMAN_API APMGameModeBase : public AGameModeBase
@@ -54,7 +55,7 @@ protected:
 	virtual void SetGameplayValues() {};
 ...
 ```
-In BeginPlay we cache the game instance pointer, as it will be used often later. Then we start the music, set all the necessary values, create widgets and set timers to start the game at the right time.
+In **BeginPlay** we cache the game instance pointer, as it will be used often later. Then we start the music, set all the necessary values, create widgets and set timers to start the game at the right time.
 
 ```c++
 void APMGameModeBase::BeginPlay()
@@ -94,7 +95,8 @@ void APMGameModeBase::BeginPlay()
 
 <details>
 <summary>More</summary>
-Splines are an important part of the design. They are used for movement (described in the next section) and for the spawning of coins.</br>
+	
+</br>**Splines** are an important part of the design. They are used for movement (described in the next section) and for the spawning of coins.</br>
 All the splines on which the player and the ghosts can move are placed on the level.
 	
 <img src="https://github.com/user-attachments/assets/120861a8-57ea-4334-a608-705612820c89" width="700">
@@ -110,7 +112,7 @@ All the splines on which the player and the ghosts can move are placed on the le
 
 <img src="https://github.com/user-attachments/assets/b654f8da-fcb1-412d-a4b3-1d635bc51aad" width="700">
 
-</br>Splines are also used to fill levels with coins. To do this, the SpawnCoins function calculates the number of coins depending on the length of the spline and spawns the actors at the correct distance. 
+</br>Splines are also used to fill levels with coins. To do this, the **SpawnCoins** function calculates the number of coins depending on the length of the spline and spawns the actors at the correct distance. 
 
 ```c++
 void APMSpline::SpawnCoins()
@@ -163,7 +165,8 @@ void APMSpline::SpawnCoins()
 
 <details>
 <summary>More</summary>
-Movement is a key part of both modes. At first I tried the traditional movement and use of collision, but soon realized that I needed something more precise. I decided to use splines for this. In short, the player character and ghosts move along splines. 
+	
+</br>**Movement** is a key part of both modes. At first I tried the traditional movement and use of collision, but soon realized that I needed something more precise. I decided to use **splines** for this. In short, the player character and ghosts move along splines. 
 
 ```c++
 void APMPlayer::Tick(float DeltaTime)
@@ -209,9 +212,9 @@ void APMGhost::Tick(float DeltaTime)
 }
 ```
 
-The challenge was to change directions. With the system of splines and their connections to each other, it was simply enough to change the CurrentSpline along which the character moves. The implementation is different in Ghosts and Player Character. Movement in Ghosts is closely related to their AI, so all the details are in the Ghosts section below. 
+The challenge was to change directions. With the system of splines and their connections to each other, it was simply enough to change the **CurrentSpline** along which the character moves. The implementation is different in Ghosts and Player Character. Movement in Ghosts is closely related to their AI, so all the details are in the Ghosts section below. 
 </br>In the case of the Player character, the choice of spline depends on the input of the player.
-</br></br>The player's input is queued and stored in DesiredDirection. When the end of CurrentSpline is reached, a new spline is set depending on the saved DesiredDirection. The character is rotated and placed on the next spline.  
+</br></br>The player's input is queued and stored in **DesiredDirection**. When the end of **CurrentSpline** is reached, a new spline is set depending on the saved **DesiredDirection**. The character is rotated and placed on the next spline.  
 
  ```c++
 void APMPlayer::ChooseNewSpline()
@@ -280,7 +283,7 @@ void APMPlayer::ChooseNewSpline()
 	}
 }
 ```
-</br>In classic mode, the input is in 4 directions. Up, left, right, down. By pressing “W” or “up arrow” we queue that direction or do nothing if the character is already moving in that direction. We also check if the current direction is opposite to the upward movement. If so, the character stays in the same spline, but changes the direction of movement.
+</br>In classic mode, the input is in **4 directions**. Up, left, right, down. By pressing “W” or “up arrow” we queue that direction or do nothing if the character is already moving in that direction. We also check if the current direction is opposite to the upward movement. If so, the character stays in the same spline, but changes the direction of movement.
 
  ```c++
 void APMClassicPlayer::MoveUp()
@@ -297,7 +300,7 @@ void APMClassicPlayer::MoveUp()
 }
 ```
 
-</br>In maze mode, there are only 3 inputs available: Left, Right and Backward (spacebar). Desired direction depends on the current direction and is set in clockwise (MoveRight) or counterclockwise (MoveLeft) order. Backward is simply turning around. 
+</br>In maze mode, there are only **3 inputs available**: Left, Right and Backward (spacebar). Desired direction depends on the current direction and is set in clockwise (MoveRight) or counterclockwise (MoveLeft) order. Backward is simply turning around. 
 
  ```c++
 void APMMazePlayer::MoveLeft()
@@ -344,7 +347,8 @@ void APMMazePlayer::MoveLeft()
 
 <details>
 <summary>More</summary>
-Ghost has 2 enums: EGhostState, which tells us whether it is currently vulnerable to player attack (the case when the player collects a special coin), and EGhostMovementState, which is used to control movement. 
+	
+</br>**Ghost** has 2 enums: **EGhostState**, which tells us whether it is currently vulnerable to player attack (the case when the player collects a special coin), and **EGhostMovementState**, which is used to control movement. 
 
 ```c++
 UENUM()
@@ -428,7 +432,7 @@ void APMGhost::HandleMovement()
 
 ```
 
-<br>BASE state: when Ghost is in the base and moves up and down.
+<br>**BASE state:** when Ghost is in the base and moves up and down.
 
 ```c++
 void APMGhost::GhostBaseMovement()
@@ -455,7 +459,7 @@ void APMGhost::GhostBaseMovement()
 }
 ```
 
-<br>PASSIVE state: when Ghost moves freely, choosing random splines
+<br>**PASSIVE state:** when Ghost moves freely, choosing random splines
 
 ```c++
 TArray<int32> APMGhost::FindValidSplinesInRandomMovement()
@@ -483,7 +487,7 @@ TArray<int32> APMGhost::FindValidSplinesInRandomMovement()
 }
 ```
 
-<br>ATTACK state: when Ghost has seen the player and chases him through the splines. I used the BFS algorithm to find the best path between the Player character and Ghost.
+<br>**ATTACK state:** when Ghost has seen the player and chases him through the splines. I used the BFS algorithm to find the best path between the Player character and Ghost.
 
 ```c++
 // Implementation of the BFS (Breadth-First Search) algorithm to find a path to a target spline.
@@ -547,9 +551,9 @@ int32 APMGhost::FindPath(const FName& SplineTag)
 }
 ```
 
-<br>RELEASE state: when Ghost leaves the base, it uses the FindPath function. 
+<br>**RELEASE state:** when Ghost leaves the base, it uses the **FindPath** function. 
 
-<br>HIT state: when Ghost was hit by a player, it uses the FindPath function to return to the base.
+<br>**HIT state:** when Ghost was hit by a player, it uses the **FindPath** function to return to the base.
 
 </details>
 
@@ -557,8 +561,9 @@ int32 APMGhost::FindPath(const FName& SplineTag)
 
 <details>
 <summary>More</summary>
-Coins are divided into different types: basic, cherry, life, map. Each has a different use but share one common functionality, they can be collected by the player.</br></br>    
-Inheritance and IMPMInteractionInterface allows all coin types to easily communicate with the player character.
+	
+</br>**Coins** are divided into different types: basic, cherry, life, map. Each has a different use but share one common functionality, they can be collected by the player.</br></br>    
+Inheritance and **IMPMInteractionInterface** allows all coin types to easily communicate with the player character.
   
 ```c++
 class PACMAN_API APMCoin : public AActor, public IPMInteractionInterface
@@ -567,8 +572,7 @@ class PACMAN_API APMCoin : public AActor, public IPMInteractionInterface
 public:
 	virtual int32 Interaction() override; 
 ```
-</br>
-In this case, in the PMPlayer class, the OnOverlapBegin function when interacting with each coin calls a function that adds potential points and at the same time calls a function Interaction()  which has a different implementation depending on the type of coin.
+</br>In this case, in the **PMPlayer** class, the **OnOverlapBegin** function when interacting with each coin calls a function that adds potential points and at the same time calls a function **Interaction()** which has a different implementation depending on the type of coin.
 
 ```c++
 void APMPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
